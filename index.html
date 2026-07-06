@@ -26,7 +26,8 @@
   .user-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 8px; font-size: 13px; }
   #logoutBtn { background: var(--coral); color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-family: 'Tajawal'; }
 
-  main{max-width:1100px;margin:0 auto;padding:22px 16px 60px;}
+  main{max-width:1100px;margin:0 auto;padding:22px 166px 60px;}
+  @media (max-width:1100px){main{padding:22px 16px 60px;}}
   .save-status{ font-size:13px; color:var(--good); font-weight: bold; height:20px; margin-bottom:6px; text-align: center; }
 
   .today-panel{ background:var(--panel); border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,.06); border:1px solid var(--line); }
@@ -153,115 +154,3 @@ document.getElementById('loginBtn').addEventListener('click', () => {
     currentRole = USERS_DB[user].role;
     document.getElementById('currentUserName').textContent = user;
     document.getElementById('loginOverlay').style.display = 'none';
-    
-    if(currentRole === 'admin') {
-      document.getElementById('adminPanel').style.display = 'block';
-      fetchAdminData();
-    } else {
-      document.getElementById('adminPanel').style.display = 'none';
-    }
-    renderCards();
-  } else {
-    document.getElementById('loginErr').textContent = "❌ الرمز السري غير صحيح!";
-  }
-});
-
-function renderCards() {
-  const wrap = document.getElementById('todayCards');
-  wrap.innerHTML = '';
-  let total = 0;
-  
-  CATS.forEach(c => {
-    total += localCounts[c.key];
-    const card = document.createElement('div');
-    card.className = 'cat-card';
-    card.innerHTML = `
-      <div class="cat-icon">${c.icon}</div>
-      <div class="cat-name">${c.label}</div>
-      <div class="cat-sub">${c.sub}</div>
-      <div class="counter-val" id="val-${c.key}">${localCounts[c.key]}</div>
-      <div class="action-btns">
-        <button class="btn-add" onclick="modifyCount('${c.key}', 'add')">+</button>
-        <button class="btn-sub" onclick="modifyCount('${c.key}', 'sub')">-</button>
-      </div>
-    `;
-    wrap.appendChild(card);
-  });
-  document.getElementById('todayTotal').textContent = total;
-}
-
-async function modifyCount(category, actionType) {
-  if (actionType === 'add') {
-    localCounts[category]++;
-  } else {
-    if (localCounts[category] > 0) localCounts[category]--;
-  }
-  renderCards();
-
-  document.getElementById('saveStatus').textContent = "⏳ جاري مزامنة وحفظ التعديل تلقائياً في الشيت...";
-  
-  const targetObj = CATS.find(o => o.key === category);
-  const payload = {
-    user: currentUser,
-    category: category,
-    label: targetObj.label,
-    type: actionType === 'add' ? "إضافة (+1)" : "إنقاص (-1)"
-  };
-
-  try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    document.getElementById('saveStatus').textContent = "✅ تم الحفظ التلقائي في الشيت بنجاح!";
-    if(currentRole === 'admin') fetchAdminData();
-  } catch (e) {
-    document.getElementById('saveStatus').textContent = "⚠️ خطأ في الاتصال بالسيرفر. تأكد من نشر الرابط بنجاح.";
-  }
-}
-
-async function fetchAdminData() {
-  const tbody = document.getElementById('adminTableBody');
-  tbody.innerHTML = `<tr><td colspan="5">جاري سحب السجلات الحية من جوجل شيت...</td></tr>`;
-  try {
-    const res = await fetch(GOOGLE_SCRIPT_URL + "?action=read");
-    const data = await res.json();
-    tbody.innerHTML = '';
-    data.reverse().forEach(row => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${row.date}</td>
-          <td><b>${row.user}</b></td>
-          <td>${row.label} (${row.category})</td>
-          <td>${row.type}</td>
-          <td><button class="btn-danger" onclick="deleteRowFromServer(${row.id})">حذف السطر</button></td>
-        </tr>
-      `;
-    });
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="5">سيظهر سجل التحكم هنا بمجرد وضع رابط السيرفر بشكل صحيح.</td></tr>`;
-  }
-}
-
-async function deleteRowFromServer(rowId) {
-  if(!confirm("هل أنت متأكد من حذف هذا السطر نهائياً من جوجل شيت؟")) return;
-  try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "update", deleteRow: true, rowId: rowId })
-    });
-    alert("تم حذف البيانات بنجاح من السيرفر.");
-    fetchAdminData();
-  } catch(e) { alert("حدث خطأ أثناء محاولة الحذف."); }
-}
-
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  document.getElementById('loginOverlay').style.display = 'flex';
-});
-</script>
-</body>
-</html>
