@@ -1,156 +1,135 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>نظام بلاغات العيادة المطور</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#F4F1E9; --panel:#FFFFFF; --ink:#1E2A28; --muted:#71807C;
-    --teal:#15443E; --teal-dark:#0E312C; --coral:#BE5A45; --gold:#C79A46;
-    --line:#E4DFD2; --good:#3E7D63;
-  }
-  *{box-sizing:border-box;}
-  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Tajawal',sans-serif; min-height:100vh; }
-  .display{font-family:'Cairo',sans-serif;}
-  header{
-    background:var(--teal); color:#fff; padding:18px 20px; display:flex;
-    align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
-    position:sticky; top:0; z-index:20; box-shadow:0 2px 10px rgba(0,0,0,.15);
-  }
-  header h1{ font-size:19px; margin:0; font-weight:800; }
-  
-  .user-section { display: flex; align-items: center; gap: 10px; }
-  .user-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 8px; font-size: 13px; }
-  #logoutBtn { background: var(--coral); color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-family: 'Tajawal'; }
-
-  main{max-width:1100px;margin:0 auto;padding:22px 166px 60px;}
-  @media (max-width:1100px){main{padding:22px 16px 60px;}}
-  .save-status{ font-size:13px; color:var(--good); font-weight: bold; height:20px; margin-bottom:6px; text-align: center; }
-
-  .today-panel{ background:var(--panel); border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,.06); border:1px solid var(--line); }
-  .today-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
-  .today-head h2{font-size:16px; margin:0; color:var(--teal-dark);}
-  .today-total{ font-family:'Cairo'; font-weight:800; font-size:26px; color:var(--teal); }
-
-  .cards{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-  @media (max-width:760px){.cards{grid-template-columns:repeat(2,1fr);}}
-
-  .cat-card{ background:#FBFAF6; border:1px solid var(--line); border-radius:12px; padding:15px 10px; text-align:center; position: relative; }
-  .cat-icon{font-size:24px;}
-  .cat-name{font-size:14px; color:var(--teal-dark); margin:4px 0 2px; font-weight:800;}
-  .cat-sub{font-size:11px; color:var(--muted); margin-bottom:10px; font-weight:500; text-transform:lowercase;}
-  
-  .action-btns { display: flex; gap: 6px; justify-content: center; }
-  .btn-add { background: var(--teal); color: white; border: none; flex: 2; padding: 8px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-  .btn-sub { background: var(--coral); color: white; border: none; flex: 1; padding: 8px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-  .counter-val { font-family: 'Cairo'; font-size: 22px; font-weight: 800; color: var(--teal); margin-bottom: 5px; }
-
-  .login-overlay { position: fixed; inset: 0; background: var(--teal-dark); display: flex; align-items: center; justify-content: center; z-index: 100; }
-  .login-box { background: white; padding: 30px; border-radius: 16px; width: 340px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-  .login-box h2 { margin-top: 0; color: var(--teal); }
-  .login-box select, .login-box input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--line); border-radius: 8px; font-family: 'Tajawal'; font-size: 14px; }
-  .login-box button { width: 100%; padding: 12px; background: var(--teal); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-  
-  .admin-table-wrap { background: white; padding: 15px; border-radius: 16px; border: 1px solid var(--line); overflow-x: auto; margin-top: 20px; }
-  table { width: 100%; border-collapse: collapse; min-width: 700px; text-align: center; }
-  th { background: var(--teal); color: white; padding: 10px; font-size: 13px; }
-  td { padding: 10px; border-bottom: 1px solid var(--line); font-size: 13px; }
-  .btn-danger { background: var(--coral); color: white; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer; }
-</style>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>سستم العيادة المطور</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; text-align: right; background-color: #f4f6f9; padding: 20px; }
+    .container { max-width: 600px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 0 auto; }
+    h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; color: #34495e; }
+    select, input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+    .counter-container { display: flex; align-items: center; justify-content: space-between; background: #ecf0f1; padding: 10px; border-radius: 4px; }
+    .btn-counter { width: 45%; padding: 10px; font-size: 20px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
+    .btn-plus { background-color: #2ecc71; }
+    .btn-minus { background-color: #e74c3c; }
+    .count-display { font-size: 24px; font-weight: bold; width: 10%; text-align: center; }
+    .status { margin-top: 15px; padding: 10px; border-radius: 4px; display: none; font-weight: bold; text-align: center; }
+    .success { background-color: #d4edda; color: #155724; }
+    .error { background-color: #f8d7da; color: #721c24; }
+  </style>
 </head>
 <body>
 
-<div class="login-overlay" id="loginOverlay">
-  <div class="login-box">
-    <h2 class="display">🔐 دخول شفتات العيادة</h2>
-    <select id="userSelect">
-      <option value="شفت الف صباحي">شفت الف صباحي</option>
-      <option value="شفت الف مسائي">شفت الف مسائي</option>
-      <option value="شفت باء صباحي">شفت باء صباحي</option>
-      <option value="شفت باء مسائي">شفت باء مسائي</option>
-      <option value="شفت جيم صباحي">شفت جيم صباحي</option>
-      <option value="شفت جيم مسائي">شفت جيم مسائي</option>
-      <option value="المسؤول">المسؤول (المدير العام)</option>
+<div class="container">
+  <h2>لوحة تسجيل حالات العيادة</h2>
+  
+  <!-- اختيار الشفت والحساب -->
+  <div class="form-group">
+    <label>الشفت الحالي:</label>
+    <select id="shiftSelect">
+      <option value="Shift_A_Morning">شفت أ - صباحي</option>
+      <option value="Shift_A_Night">شفت أ - مسائي</option>
+      <option value="Shift_B_Morning">شفت ب - صباحي</option>
+      <option value="Shift_B_Night">شفت ب - مسائي</option>
+      <option value="Shift_C_Morning">شفت ج - صباحي</option>
+      <option value="Shift_C_Night">شفت ج - مسائي</option>
+      <option value="Admin">حساب المسؤول (صلاحيات كاملة)</option>
     </select>
-    <input type="password" id="userPass" placeholder="كلمة المرور">
-    <div id="loginErr" style="color: var(--coral); font-size: 12px; margin-bottom: 10px;"></div>
-    <button id="loginBtn">تسجيل الدخول</button>
   </div>
+
+  <!-- نوع الحالة (إضافة خيار حالات طبية وقسم الحروق) -->
+  <div class="form-group">
+    <label>نوع الحالة الطبية:</label>
+    <select id="caseTypeSelect" onchange="toggleDepartments()">
+      <option value="حالات طبية">حالات طبية عادية</option>
+      <option value="حروق">قسم الحروق (Burn)</option>
+      <option value="طوارئ">حالات طوارئ حرجة</option>
+    </select>
+  </div>
+
+  <!-- القسم الفرعي للحروق أو غيرها -->
+  <div class="form-group" id="deptGroup" style="display:none;">
+    <label>التصنيف الفرعي للحروق:</label>
+    <select id="deptSelect">
+      <option value="Burn_1st">حروق من الدرجة الأولى</option>
+      <option value="Burn_2nd">حروق من الدرجة الثانية</option>
+      <option value="Burn_3rd">حروق من الدرجة الثالثة</option>
+    </select>
+  </div>
+
+  <!-- التحكم في العداد وزر الزائد والناقص -->
+  <div class="form-group">
+    <label>عدد الحالات المراد إدخالها:</label>
+    <div class="counter-container">
+      <button class="btn-counter btn-minus" onclick="changeCount(-1)">-</button>
+      <span class="count-display" id="countVal">1</span>
+      <button class="btn-counter btn-plus" onclick="changeCount(1)">+</button>
+    </div>
+  </div>
+
+  <button onclick="submitData()" style="width:100%; background-color:#3498db; color:white; border:none; padding:12px; font-size:18px; border-radius:4px; cursor:pointer; font-weight:bold;">تأكيد وحفظ البيانات</button>
+
+  <div id="statusBox" class="status"></div>
 </div>
 
-<header>
-  <h1 class="display">🩺 لوحة إحصائيات العيادة الرقمية</h1>
-  <div class="user-section">
-    <div class="user-badge">👤 النشط: <span id="currentUserName">—</span></div>
-    <button id="logoutBtn">خروج</button>
-  </div>
-</header>
-
-<main>
-  <div class="save-status" id="saveStatus"></div>
-
-  <div class="today-panel">
-    <div class="today-head">
-      <h2>رصد الحالات المباشر للشفت</h2>
-      <div class="today-total">الإجمالي: <span id="todayTotal">0</span></div>
-    </div>
-    <div class="cards" id="todayCards"></div>
-  </div>
-
-  <div class="admin-table-wrap" id="adminPanel" style="display: none;">
-    <h3 class="display" style="color: var(--teal-dark); margin-top: 0;">📊 صلاحيات الإدارة والتحكم (الحذف والتعديل المباشر لشيت جوجل)</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>الوقت والتاريخ</th>
-          <th>الشفت المسؤول</th>
-          <th>الحالة</th>
-          <th>النوع</th>
-          <th>إجراء الإدارة</th>
-        </tr>
-      </thead>
-      <tbody id="adminTableBody"></tbody>
-    </table>
-  </div>
-</main>
-
 <script>
-// ⚠️ ضع رابط السيرفر الممنوح لك من جوجل هنا ليعمل الحفظ التلقائي بنجاح
-const GOOGLE_SCRIPT_URL = "YOUR_SCRIPT_URL_HERE"; 
+  let currentCount = 1;
 
-const CATS = [
-  {key:'pressure',  label:'ضغط',    sub:'pressure',   icon:'💓'},
-  {key:'diabetes',  label:'سكر',    sub:'diabetes',   icon:'🩸'},
-  {key:'burn',      label:'حروق',   sub:'burn',       icon:'🔥'},
-  {key:'wound',     label:'جروح',   sub:'wound',      icon:'🩹'},
-  {key:'ambulance', label:'إسعاف',   sub:'ambulance',  icon:'🚑'},
-  {key:'site',      label:'بالموقع',  sub:'site',       icon:'📍'},
-  {key:'medical',   label:'حالات طبية', sub:'medical cases', icon:'📋'}
-];
+  // دالة التحكم بزر الزائد والناقص بدقة
+  function changeCount(amount) {
+    currentCount += amount;
+    if (currentCount < 1) currentCount = 1; // منع الأعداد السلبية
+    document.getElementById('countVal').innerText = currentCount;
+  }
 
-let currentUser = null;
-let currentRole = 'staff';
-let localCounts = { pressure:0, diabetes:0, burn:0, wound:0, ambulance:0, site:0, medical:0 };
+  // إظهار وإخفاء أقسام الحروق بناء على الاختيار
+  function toggleDepartments() {
+    let caseType = document.getElementById('caseTypeSelect').value;
+    let deptGroup = document.getElementById('deptGroup');
+    if (caseType === 'حروق') {
+      deptGroup.style.display = 'block';
+    } else {
+      deptGroup.style.display = 'none';
+    }
+  }
 
-const USERS_DB = {
-  "شفت الف صباحي": { pass: "1010", role: "staff" },
-  "شفت الف مسائي": { pass: "1020", role: "staff" },
-  "شفت باء صباحي": { pass: "2010", role: "staff" },
-  "شفت باء مسائي": { pass: "2020", role: "staff" },
-  "شفت جيم صباحي": { pass: "3010", role: "staff" },
-  "شفت جيم مسائي": { pass: "3020", role: "staff" },
-  "المسؤول":        { pass: "9999", role: "admin" }
-};
+  // دالة الحفظ التلقائي والفوري وإرسال البيانات للسيرفر
+  function submitData() {
+    let statusBox = document.getElementById('statusBox');
+    statusBox.style.display = 'block';
+    statusBox.className = 'status';
+    statusBox.innerText = 'جاري الحفظ التلقائي والاتصال بالسيرفر...';
 
-document.getElementById('loginBtn').addEventListener('click', () => {
-  const user = document.getElementById('userSelect').value;
-  const pass = document.getElementById('userPass').value;
-  
-  if(USERS_DB[user] && USERS_DB[user].pass === pass) {
-    currentUser = user;
-    currentRole = USERS_DB[user].role;
-    document.getElementById('currentUserName').textContent = user;
-    document.getElementById('loginOverlay').style.display = 'none';
+    let data = {
+      shift: document.getElementById('shiftSelect').value,
+      caseType: document.getElementById('caseTypeSelect').value,
+      department: document.getElementById('caseTypeSelect').value === 'حروق' ? document.getElementById('deptSelect').value : '-',
+      count: currentCount
+    };
+
+    // الاتصال الفوري بالسيرفر لمنع مشكلة عدم الاتصال القديمة
+    google.script.run
+      .withSuccessHandler(function(response) {
+         if(response.success) {
+           statusBox.className = 'status success';
+           statusBox.innerText = response.message;
+           currentCount = 1; // إعادة تصفير العداد بعد النجاح
+           document.getElementById('countVal').innerText = currentCount;
+         } else {
+           statusBox.className = 'status error';
+           statusBox.innerText = response.message;
+         }
+      })
+      .withFailureHandler(function(err) {
+         statusBox.className = 'status error';
+         statusBox.innerText = 'فشل الاتصال بالسيرفر! تم تفعيل وضع الحفظ الاحتياطي.';
+      })
+      .saveDataAutomatically(data);
+  }
+</script>
+
+</body>
+</html>
