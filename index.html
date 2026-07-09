@@ -199,4 +199,419 @@
 
         .admin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(2
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .admin-box {
+            background: rgba(255,255,255,0.6);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ffeeba;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 25px;
+        }
+
+        .btn-primary:hover { background-color: #117a65; }
+
+        .btn-admin-action {
+            background-color: #d35400;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-admin-action:hover { background-color: #b34500; }
+
+        .forgot-link {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-decoration: underline;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>نظام العيادة والمخزن الطبي الذكي</h1>
+        <p>منظومة رصد الحالات الرقمية والحفظ التلقائي المؤمّن</p>
+    </header>
+
+    <div class="status-bar">
+        <div class="status-indicator">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">تم الربط مع سيرفر بنجاح ونظام الحفظ التلقائي مفعّل ✅</span>
+        </div>
+        <div id="activeUserDisplay">لم يتم تسجيل الدخول</div>
+    </div>
+
+    <div class="login-section">
+        <div class="login-grid">
+            <div class="form-group">
+                <label>الرقم الوظيفي (4 أرقام كحد أقصى):</label>
+                <input type="number" id="empId" placeholder="مثال: 1234" oninput="validateEmpId(this)" onchange="triggerAutoSave()">
+            </div>
+
+            <div class="form-group">
+                <label>رقم الهاتف المرتبط:</label>
+                <input type="tel" id="empPhone" placeholder="مثال: 99988877" onchange="triggerAutoSave()">
+            </div>
+            
+            <div class="form-group">
+                <label>الشفت الحالي:</label>
+                <select id="shiftSelect" onchange="handleShiftChange()">
+                    <option value="">-- اختر الشفت --</option>
+                    <option value="شفت الف صباحي">شفت الف صباحي</option>
+                    <option value="شفت الف مسائي">شفت الف مسائي</option>
+                    <option value="شفت باء صباحي">شفت باء صباحي</option>
+                    <option value="شفت باء مسائي">شفت باء مسائي</option>
+                    <option value="شفت جيم صباحي">شفت جيم صباحي</option>
+                    <option value="شفت جيم مسائي">شفت جيم مسائي</option>
+                    <option value="حساب مسؤول">حساب مسؤول (Admin)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>الرمز السري للشفت:</label>
+                <input type="password" id="shiftPin" placeholder="أدخل الرمز الخاص بك" onchange="triggerAutoSave()">
+                <span class="forgot-link" onclick="handleForgotPin()">نسيت الرمز السري؟</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainDashboard">
+        <div class="cases-grid">
+            
+            <div class="case-card">
+                <div class="case-title">توتال الحالات اليومية</div>
+                <div class="counter-controls">
+                    <button class="btn-counter btn-minus" onclick="updateCounter('total_daily', -1)">-</button>
+                    <span class="counter-value" id="total_daily">0</span>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('total_daily', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-title">الحالات المرضية</div>
+                <div class="counter-controls">
+                    <button class="btn-counter btn-minus" onclick="updateCounter('sick_cases', -1)">-</button>
+                    <span class="counter-value" id="sick_cases">0</span>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('sick_cases', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-title">ضغط الدم</div>
+                <div class="counter-controls">
+                    <button class="btn-counter btn-minus" onclick="updateCounter('blood_pressure', -1)">-</button>
+                    <span class="counter-value" id="blood_pressure">0</span>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('blood_pressure', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-title">صداع</div>
+                <div class="counter-controls">
+                    <button class="btn-counter btn-minus" onclick="updateCounter('headache', -1)">-</button>
+                    <span class="counter-value" id="headache">0</span>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('headache', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-title">علامات حيوية</div>
+                <div class="counter-controls">
+                    <button class="btn-counter btn-minus" onclick="updateCounter('vital_signs', -1)">-</button>
+                    <span class="counter-value" id="vital_signs">0</span>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('vital_signs', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-title">إصابات</div>
+                <div class="counter-controls">
+                    <button class="btn-counter btn-minus" onclick="updateCounter('injuries', -1)">-</button>
+                    <span class="counter-value" id="injuries">0</span>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('injuries', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-title">الحروق (Burn)</div>
+                <div class="counter-controls">
+                    <button class="btn-counter btn-minus" onclick="updateCounter('burns', -1)">-</button>
+                    <span class="counter-value" id="burns">0</span>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('burns', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-title">نقل المستشفى</div>
+                <div class="counter-controls">
+                    <button class="btn-counter btn-minus" onclick="updateCounter('hospital_transfer', -1)">-</button>
+                    <span class="counter-value" id="hospital_transfer">0</span>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('hospital_transfer', 1)">+</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="admin-panel" id="adminPanel">
+        <h3>خيارات المسؤول الكاملة (Admin Dashboard)</h3>
+        
+        <div class="admin-grid">
+            <div class="admin-box">
+                <label><b>1. التحكم بالتاريخ والبيانات السابقة:</b></label>
+                <p style="font-size: 11px; color:#555; margin-bottom: 5px;">تعديل حالات أي يوم سابق بأثر رجعي</p>
+                <input type="date" id="adminDate">
+                <button class="btn-admin-action" onclick="submitData(false)">تطبيق وعرض التاريخ المحدد</button>
+            </div>
+
+            <div class="admin-box">
+                <label><b>2. إدارة حسابات الموظفين المنسية:</b></label>
+                <input type="number" id="targetEmpId" placeholder="الرقم الوظيفي للموظف" style="margin-bottom: 5px; padding: 5px;">
+                <input type="password" id="newEmpPin" placeholder="الرمز السري الجديد" style="padding: 5px;">
+                <button class="btn-admin-action" style="background-color: #2980b9;" onclick="adminResetEmployeePin()">تحديث واعتماد رمز الموظف</button>
+            </div>
+
+            <div class="admin-box">
+                <label><b>3. استخراج التقارير المؤتمتة فورا:</b></label>
+                <p style="font-size: 11px; color:#555; margin-bottom: 5px;">توليد ملفات PDF وإرسالها تلقائياً للمسؤول</p>
+                <select id="reportType" style="padding: 5px; margin-bottom: 5px;">
+                    <option value="يومي">تقرير إغلاق يومي</option>
+                    <option value="أسبوعي">تقرير نهاية الأسبوع</option>
+                    <option value="شهري">تقرير إحصائي شهري</option>
+                </select>
+                <button class="btn-admin-action" style="background-color: #27ae60;" onclick="triggerAdminReport()">إرسال التقرير للبريد الإلكتروني</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-primary" onclick="submitData(false)">حفظ وإرسال البيانات يدوياً الآن</button>
+
+    <div class="footer-note">
+        النظام مصمم لحفظ وتوثيق مدخلات كل موظف، ورقمه الوظيفي، وهاتفه تلقائياً في قاعدة بيانات السحابة.
+    </div>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzm3OkxI5LbE2oX-n-rc9dfu19zlTvlSW2V0p5VLAIeGx5FI-Wqb2rAoRayHZHAvefT/exec';
+
+    let currentData = {
+        total_daily: 0,
+        sick_cases: 0,
+        blood_pressure: 0,
+        headache: 0,
+        vital_signs: 0,
+        injuries: 0,
+        burns: 0,
+        hospital_transfer: 0
+    };
+
+    let autoSaveTimeout;
+
+    window.onload = function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('adminDate').value = today;
+    };
+
+    function validateEmpId(input) {
+        if (input.value.length > 4) {
+            input.value = input.value.slice(0, 4);
+        }
+        updateUserDisplay();
+    }
+
+    function handleShiftChange() {
+        const shift = document.getElementById('shiftSelect').value;
+        const adminPanel = document.getElementById('adminPanel');
+        
+        if (shift === "حساب مسؤول") {
+            adminPanel.style.display = "block";
+        } else {
+            adminPanel.style.display = "none";
+        }
+        triggerAutoSave();
+    }
+
+    function updateUserDisplay() {
+        const empId = document.getElementById('empId').value;
+        const shift = document.getElementById('shiftSelect').value;
+        const display = document.getElementById('activeUserDisplay');
+
+        if(empId || shift) {
+            display.innerText = `الموظف: ${empId || '---'} | ${shift || 'لم يختر شفت'}`;
+        } else {
+            display.innerText = "لم يتم تسجيل الدخول";
+        }
+    }
+
+    function updateCounter(field, amount) {
+        const empId = document.getElementById('empId').value;
+        const phone = document.getElementById('empPhone').value;
+        const shift = document.getElementById('shiftSelect').value;
+        const pin = document.getElementById('shiftPin').value;
+
+        if (!empId || !phone || !shift || !pin) {
+            alert("يرجى إدخال (الرقم الوظيفي، رقم الهاتف، الشفت، والرمز السري) أولاً لبدء رصد البيانات!");
+            return;
+        }
+
+        if (currentData[field] + amount < 0) return; 
+        
+        currentData[field] += amount;
+        document.getElementById(field).innerText = currentData[field];
+
+        triggerAutoSave();
+    }
+
+    function triggerAutoSave() {
+        updateUserDisplay();
+        const empId = document.getElementById('empId').value;
+        const shift = document.getElementById('shiftSelect').value;
+        
+        if(!empId || !shift) return; 
+
+        const text = document.getElementById('statusText');
+        text.innerText = "جاري مزامنة وحفظ البيانات تلقائياً...";
+        text.style.color = "#d35400";
+
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(() => {
+            submitData(true);
+        }, 2000); 
+    }
+
+    function submitData(isAuto = false) {
+        const empId = document.getElementById('empId').value;
+        const phone = document.getElementById('empPhone').value;
+        const shift = document.getElementById('shiftSelect').value;
+        const pin = document.getElementById('shiftPin').value;
+
+        if (!empId || !phone || !shift || !pin) {
+            if(!isAuto) alert("الرجاء إكمال كافة بيانات الدخول ورقم الهاتف والرمز.");
+            return;
+        }
+
+        const dateTarget = document.getElementById('adminDate').value;
+
+        const payload = {
+            action: "SYNC_DATA",
+            emp_id: empId,
+            emp_phone: phone,
+            shift: shift,
+            shift_pin: pin,
+            date_target: dateTarget,
+            ...currentData,
+            timestamp: new Date().toLocaleString('ar-EG')
+        };
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            const text = document.getElementById('statusText');
+            text.innerText = "تم حفظ التغييرات وتحديث ملف قوقل شيت تلقائياً بنجاح! ✅";
+            text.style.color = "#27ae60";
+        })
+        .catch(err => {
+            console.error(err);
+            const text = document.getElementById('statusText');
+            text.innerText = "خطأ في الاتصال بالخادم، سيتم إعادة المحاولة.";
+            text.style.color = "#c0392b";
+        });
+    }
+
+    // دالة نسيان الرمز السري للموظف (ترسل إشارة تظهر للمسؤول في الشيت أو لطلب المساعدة)
+    function handleForgotPin() {
+        const empId = document.getElementById('empId').value;
+        const phone = document.getElementById('empPhone').value;
+        if(!empId || !phone) {
+            alert("يرجى كتابة رقمك الوظيفي ورقم هاتفك أولاً، ثم اضغط على نسيت الرمز ليقوم المسؤول بتعديله لك.");
+            return;
+        }
+        
+        alert(`تم إرسال طلب استرجاع للمسؤول. يرجى مراجعة المسؤول لتحديث رمزك برقم الهاتف: ${phone}`);
+        
+        // إرسال الإشعار تلقائياً إلى السيرفر ليظهر في الشيت عند المسؤول
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: "FORGOT_PIN_REQUEST", emp_id: empId, emp_phone: phone })
+        });
+    }
+
+    // دالة المسؤول لتغيير رمز موظف من لوحة التحكم مباشرة
+    function adminResetEmployeePin() {
+        const targetId = document.getElementById('targetEmpId').value;
+        const newPin = document.getElementById('newEmpPin').value;
+        const adminPin = document.getElementById('shiftPin').value;
+
+        if(!targetId || !newPin) {
+            alert("يرجى تحديد الرقم الوظيفي للموظف والرمز الجديد أولاً.");
+            return;
+        }
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({
+                action: "ADMIN_RESET_PIN",
+                admin_pin: adminPin,
+                target_emp_id: targetId,
+                new_pin: newPin
+            })
+        }).then(() => {
+            alert(`تم إرسال أمر التحديث للسيرفر بنجاح لتعيين الرمز الجديد للموظف رقم ${targetId}.`);
+        });
+    }
+
+    // دالة استخراج التقارير الخاصة بالمسؤول للبريد الإلكتروني
+    function triggerAdminReport() {
+        const rType = document.getElementById('reportType').value;
+        const adminPin = document.getElementById('shiftPin').value;
+        
+        alert(`جاري معالجة طلب تقرير [${rType}] وتوليد ملف PDF لإرساله فوراً إلى بريد المسؤول.`);
+        
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: "TRIGGER_REPORT", report_type: rType, admin_pin: adminPin })
+        });
+    }
+</script>
+
+</body>
+</html>
