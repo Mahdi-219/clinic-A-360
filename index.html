@@ -240,6 +240,7 @@
         <p>الواجهة الموحدة للشفتات والإدارة والربط التلقائي</p>
     </header>
 
+    <!-- شريط الحالة والربط الاحترافي لبيان نجاح الاتصال بالسيرفر -->
     <div class="status-bar">
         <div class="status-indicator">
             <span class="dot" id="statusDot"></span>
@@ -248,6 +249,7 @@
         <div id="activeShiftDisplay">ولم يتم اختيار شفت</div>
     </div>
 
+    <!-- اختيار الحساب / الشفت المطلوب -->
     <div class="form-group">
         <label for="shiftSelect">اختر الحساب / الشفت الحالي:</label>
         <select id="shiftSelect" onchange="handleShiftChange()">
@@ -262,9 +264,11 @@
         </select>
     </div>
 
+    <!-- لوحة إدخال وتعديل الحالات الطبية -->
     <div id="mainDashboard">
         <div class="cases-grid">
             
+            <!-- أولاً: خيار حالات طبية المضافة حديثاً -->
             <div class="case-card">
                 <div class="case-title">حالات طبية</div>
                 <div class="case-subtitle">Medical Cases</div>
@@ -275,6 +279,7 @@
                 </div>
             </div>
 
+            <!-- ثانياً: قسم حروق وبأسفلها كلمة burn -->
             <div class="case-card">
                 <div class="case-title">حروق</div>
                 <div class="case-subtitle">burn</div>
@@ -285,6 +290,7 @@
                 </div>
             </div>
 
+            <!-- ثالثاً: مواد ومستلزمات المخزن الطبي المستهلكة كمثال للتوسعة -->
             <div class="case-card">
                 <div class="case-title">المستلزمات المصروفة</div>
                 <div class="case-subtitle">Supplies Dispatched</div>
@@ -298,6 +304,7 @@
         </div>
     </div>
 
+    <!-- لوحة تحكم المسؤول (تظهر للمسؤول فقط وتسمح له بالتحكم الكامل) -->
     <div class="admin-panel" id="adminPanel">
         <h3>صلاحيات المسؤول (تحكم كامل في جميع الأيام والتعديل)</h3>
         <p style="font-size: 13px; margin-bottom: 15px; color: #856404;">
@@ -310,6 +317,7 @@
         <button class="btn-primary" style="background-color: #d35400; margin-top: 5px;" onclick="triggerAdminReport()">طلب تقرير PDF فوري على البريد الإلكتروني</button>
     </div>
 
+    <!-- زر الحفظ اليدوي الاحتياطي في حال إغلاق المتصفح فوراً -->
     <button class="btn-primary" onclick="submitData(false)">حفظ وإرسال البيانات يدوياً الآن</button>
 
     <div class="footer-note">
@@ -318,8 +326,8 @@
 </div>
 
 <script>
-    // ⚠️ ضَع هنا الرابط (Web App URL) الذي استخرجته من قوقل سكريبت بعد عمل Deploy وموافقة الصلاحيات
-    const scriptURL = 'ضع_رابط_ويب_آب_جوجل_هنا';
+    // ⚠️ تم إدخال رابط الـ Web App الخاص بك هنا بنجاح ليعمل الاتصال مباشرة
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzm3OkxI5LbE2oX-n-rc9dfu19zlTvlSW2V0p5VLAIeGx5FI-Wqb2rAoRayHZHAvefT/exec';
 
     // مخزن البيانات المؤقت بالواجهة
     let currentData = {
@@ -342,7 +350,7 @@
         const dot = document.getElementById('statusDot');
         const text = document.getElementById('statusText');
 
-        if (scriptURL === 'ضع_رابط_ويب_آب_جوجل_هنا') {
+        if (scriptURL === 'ضع_رابط_ويب_آب_جوجل_هنا' || scriptURL === '') {
             dot.className = "dot";
             text.innerText = "تنبيه: بانتظار إضافة رابط السيرفر (Google Web App URL) داخل الكود.";
             text.style.color = "#c0392b";
@@ -371,7 +379,7 @@
             } else {
                 adminPanel.style.display = "none";
             }
-            // إطلاق حفظ تلقائي لإشعار قوقل شيت بتواجد الشفت
+            // إطلق حفظ تلقائي لإشعار قوقل شيت بتواجد الشفت
             triggerAutoSave();
         } else {
             display.innerText = "ولم يتم اختيار شفت";
