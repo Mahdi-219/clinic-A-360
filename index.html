@@ -92,7 +92,7 @@
 
         .login-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
         }
 
@@ -180,7 +180,7 @@
             min-width: 35px;
         }
 
-        /* لوحة المسؤول الكاملة والمتقدمة */
+        /* لوحة المسؤول الكاملة والمتقدمة بدون رموز سرية */
         .admin-panel {
             background: #fff3cd;
             border: 1px solid #ffeeba;
@@ -199,7 +199,7 @@
 
         .admin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 15px;
             margin-bottom: 15px;
         }
@@ -240,15 +240,6 @@
         }
         .btn-admin-action:hover { background-color: #b34500; }
 
-        .forgot-link {
-            font-size: 12px;
-            color: #7f8c8d;
-            text-decoration: underline;
-            cursor: pointer;
-            display: inline-block;
-            margin-top: 5px;
-        }
-
         .footer-note {
             text-align: center;
             margin-top: 20px;
@@ -262,9 +253,10 @@
 <div class="container">
     <header>
         <h1>نظام العيادة والمخزن الطبي الذكي</h1>
-        <p>منظومة رصد الحالات الرقمية والحفظ التلقائي المؤمّن</p>
+        <p>منظومة رصد الحالات الرقمية - إرسال الملفات والتقارير مباشرة لرقم الهاتف</p>
     </header>
 
+    <!-- شريط الحالة والربط -->
     <div class="status-bar">
         <div class="status-indicator">
             <span class="dot" id="statusDot"></span>
@@ -273,6 +265,7 @@
         <div id="activeUserDisplay">لم يتم تسجيل الدخول</div>
     </div>
 
+    <!-- قسم تسجيل الدخول المبسط برقم الهاتف -->
     <div class="login-section">
         <div class="login-grid">
             <div class="form-group">
@@ -281,7 +274,7 @@
             </div>
 
             <div class="form-group">
-                <label>رقم الهاتف المرتبط:</label>
+                <label>رقم الهاتف (لإرسال الملفات والتقارير إليه):</label>
                 <input type="tel" id="empPhone" placeholder="مثال: 99988877" onchange="triggerAutoSave()">
             </div>
             
@@ -298,15 +291,10 @@
                     <option value="حساب مسؤول">حساب مسؤول (Admin)</option>
                 </select>
             </div>
-
-            <div class="form-group">
-                <label>الرمز السري للشفت:</label>
-                <input type="password" id="shiftPin" placeholder="أدخل الرمز الخاص بك" onchange="triggerAutoSave()">
-                <span class="forgot-link" onclick="handleForgotPin()">نسيت الرمز السري؟</span>
-            </div>
         </div>
     </div>
 
+    <!-- لوحة رصد الحالات -->
     <div id="mainDashboard">
         <div class="cases-grid">
             
@@ -385,45 +373,41 @@
         </div>
     </div>
 
+    <!-- لوحة تحكم المسؤول الكاملة والمتقدمة (بدون طلب رموز) -->
     <div class="admin-panel" id="adminPanel">
         <h3>خيارات المسؤول الكاملة (Admin Dashboard)</h3>
         
         <div class="admin-grid">
+            <!-- صلاحية التحكم بالأيام والتاريخ -->
             <div class="admin-box">
                 <label><b>1. التحكم بالتاريخ والبيانات السابقة:</b></label>
-                <p style="font-size: 11px; color:#555; margin-bottom: 5px;">تعديل حالات أي يوم سابق بأثر رجعي</p>
+                <p style="font-size: 11px; color:#555; margin-bottom: 5px;">مراجعة وتعديل حالات أي يوم سابق بأثر رجعي</p>
                 <input type="date" id="adminDate">
                 <button class="btn-admin-action" onclick="submitData(false)">تطبيق وعرض التاريخ المحدد</button>
             </div>
 
+            <!-- صلاحية التقارير وإرسالها المباشر للهاتف -->
             <div class="admin-box">
-                <label><b>2. إدارة حسابات الموظفين المنسية:</b></label>
-                <input type="number" id="targetEmpId" placeholder="الرقم الوظيفي للموظف" style="margin-bottom: 5px; padding: 5px;">
-                <input type="password" id="newEmpPin" placeholder="الرمز السري الجديد" style="padding: 5px;">
-                <button class="btn-admin-action" style="background-color: #2980b9;" onclick="adminResetEmployeePin()">تحديث واعتماد رمز الموظف</button>
-            </div>
-
-            <div class="admin-box">
-                <label><b>3. استخراج التقارير المؤتمتة فورا:</b></label>
-                <p style="font-size: 11px; color:#555; margin-bottom: 5px;">توليد ملفات PDF وإرسالها تلقائياً للمسؤول</p>
+                <label><b>2. استخراج التقارير وإرسالها للهاتف فوراً:</b></label>
+                <p style="font-size: 11px; color:#555; margin-bottom: 5px;">توليد ملفات وإرسالها تلقائياً لرقم هاتف المسؤول المدخل في الأعلى</p>
                 <select id="reportType" style="padding: 5px; margin-bottom: 5px;">
                     <option value="يومي">تقرير إغلاق يومي</option>
                     <option value="أسبوعي">تقرير نهاية الأسبوع</option>
                     <option value="شهري">تقرير إحصائي شهري</option>
                 </select>
-                <button class="btn-admin-action" style="background-color: #27ae60;" onclick="triggerAdminReport()">إرسال التقرير للبريد الإلكتروني</button>
+                <button class="btn-admin-action" style="background-color: #27ae60;" onclick="triggerAdminReport()">إرسال الملف للهاتف الآن</button>
             </div>
         </div>
     </div>
 
-    <button class="btn-primary" onclick="submitData(false)">حفظ وإرسال البيانات يدوياً الآن</button>
+    <button class="btn-primary" onclick="submitData(false)">حفظ وإرسال البيانات والملفات يدوياً الآن</button>
 
     <div class="footer-note">
-        النظام مصمم لحفظ وتوثيق مدخلات كل موظف، ورقمه الوظيفي، وهاتفه تلقائياً في قاعدة بيانات السحابة.
+        تم تفعيل التوجيه التلقائي للملفات؛ سيقوم النظام بإرسال النسخ والتقارير مباشرة إلى رقم الهاتف المسجل لكل شفت.
     </div>
 </div>
 
-<script>
+<script {is_self_contained=true}>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzm3OkxI5LbE2oX-n-rc9dfu19zlTvlSW2V0p5VLAIeGx5FI-Wqb2rAoRayHZHAvefT/exec';
 
     let currentData = {
@@ -479,10 +463,9 @@
         const empId = document.getElementById('empId').value;
         const phone = document.getElementById('empPhone').value;
         const shift = document.getElementById('shiftSelect').value;
-        const pin = document.getElementById('shiftPin').value;
 
-        if (!empId || !phone || !shift || !pin) {
-            alert("يرجى إدخال (الرقم الوظيفي، رقم الهاتف، الشفت، والرمز السري) أولاً لبدء رصد البيانات!");
+        if (!empId || !phone || !shift) {
+            alert("يرجى إدخال (الرقم الوظيفي، رقم الهاتف، والشفت) أولاً لبدء رصد البيانات!");
             return;
         }
 
@@ -515,10 +498,9 @@
         const empId = document.getElementById('empId').value;
         const phone = document.getElementById('empPhone').value;
         const shift = document.getElementById('shiftSelect').value;
-        const pin = document.getElementById('shiftPin').value;
 
-        if (!empId || !phone || !shift || !pin) {
-            if(!isAuto) alert("الرجاء إكمال كافة بيانات الدخول ورقم الهاتف والرمز.");
+        if (!empId || !phone || !shift) {
+            if(!isAuto) alert("الرجاء إكمال كافة بيانات الدخول (الرقم الوظيفي، رقم الهاتف، والشفت).");
             return;
         }
 
@@ -529,7 +511,6 @@
             emp_id: empId,
             emp_phone: phone,
             shift: shift,
-            shift_pin: pin,
             date_target: dateTarget,
             ...currentData,
             timestamp: new Date().toLocaleString('ar-EG')
@@ -543,72 +524,33 @@
         })
         .then(() => {
             const text = document.getElementById('statusText');
-            text.innerText = "تم حفظ التغييرات وتحديث ملف قوقل شيت تلقائياً بنجاح! ✅";
+            text.innerText = "تم حفظ التغييرات وتوجيه الملفات لرقم الهاتف المذكور تلقائياً! ✅";
             text.style.color = "#27ae60";
         })
         .catch(err => {
             console.error(err);
             const text = document.getElementById('statusText');
-            text.innerText = "خطأ في الاتصال بالخادم، سيتم إعادة المحاولة.";
+            text.innerText = "خطأ في الاتصال بالسيرفر، سيتم إعادة المحاولة.";
             text.style.color = "#c0392b";
         });
     }
 
-    // دالة نسيان الرمز السري للموظف (ترسل إشارة تظهر للمسؤول في الشيت أو لطلب المساعدة)
-    function handleForgotPin() {
-        const empId = document.getElementById('empId').value;
-        const phone = document.getElementById('empPhone').value;
-        if(!empId || !phone) {
-            alert("يرجى كتابة رقمك الوظيفي ورقم هاتفك أولاً، ثم اضغط على نسيت الرمز ليقوم المسؤول بتعديله لك.");
-            return;
-        }
-        
-        alert(`تم إرسال طلب استرجاع للمسؤول. يرجى مراجعة المسؤول لتحديث رمزك برقم الهاتف: ${phone}`);
-        
-        // إرسال الإشعار تلقائياً إلى السيرفر ليظهر في الشيت عند المسؤول
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ action: "FORGOT_PIN_REQUEST", emp_id: empId, emp_phone: phone })
-        });
-    }
-
-    // دالة المسؤول لتغيير رمز موظف من لوحة التحكم مباشرة
-    function adminResetEmployeePin() {
-        const targetId = document.getElementById('targetEmpId').value;
-        const newPin = document.getElementById('newEmpPin').value;
-        const adminPin = document.getElementById('shiftPin').value;
-
-        if(!targetId || !newPin) {
-            alert("يرجى تحديد الرقم الوظيفي للموظف والرمز الجديد أولاً.");
-            return;
-        }
-
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({
-                action: "ADMIN_RESET_PIN",
-                admin_pin: adminPin,
-                target_emp_id: targetId,
-                new_pin: newPin
-            })
-        }).then(() => {
-            alert(`تم إرسال أمر التحديث للسيرفر بنجاح لتعيين الرمز الجديد للموظف رقم ${targetId}.`);
-        });
-    }
-
-    // دالة استخراج التقارير الخاصة بالمسؤول للبريد الإلكتروني
+    // دالة استخراج التقارير وإرسالها المباشر لرقم الهاتف المدخل في خانة الهاتف فوق
     function triggerAdminReport() {
         const rType = document.getElementById('reportType').value;
-        const adminPin = document.getElementById('shiftPin').value;
+        const phone = document.getElementById('empPhone').value;
         
-        alert(`جاري معالجة طلب تقرير [${rType}] وتوليد ملف PDF لإرساله فوراً إلى بريد المسؤول.`);
+        if(!phone) {
+            alert("يرجى كتابة رقم الهاتف في الحقل المخصص بالأعلى أولاً ليتم إرسال الملف إليه.");
+            return;
+        }
+
+        alert(`جاري معالجة تقرير [${rType}] وتوليد الملف لإرساله مباشرة إلى رقم الهاتف: ${phone}`);
         
         fetch(scriptURL, {
             method: 'POST',
             mode: 'no-cors',
-            body: JSON.stringify({ action: "TRIGGER_REPORT", report_type: rType, admin_pin: adminPin })
+            body: JSON.stringify({ action: "TRIGGER_REPORT", report_type: rType, target_phone: phone })
         });
     }
 </script>
