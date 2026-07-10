@@ -393,11 +393,11 @@
    إعدادات الاتصال بالسيرفر (Google Apps Script Web App)
    استبدل الرابط أدناه برابط الـ Web App الخاص بك بعد النشر
    ========================================================= */
-const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+const API_URL = "https://script.google.com/macros/s/AKfycbxjYDPUwZ6QFrFxT9yWwkuxHZQiV-dJhmxDZ9ImEJWVC7kKOCDEe6eAm9BYHzPjzyg/exec";
 
 const CASE_KEYS = ["sick_cases", "blood_pressure", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
 
-let session = { empId: null, shift: null, isAdmin: false };
+let session = { empId: null, shift: null, isAdmin: false, token: null };
 let counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
 
 /* ---------- أدوات مساعدة عامة ---------- */
@@ -489,7 +489,8 @@ async function handleLogin() {
         if (result.status === "SUCCESS") {
             session.empId = empId;
             session.shift = shift;
-            session.isAdmin = (shift === "حساب مسؤول");
+            session.isAdmin = !!result.isAdmin; // الصلاحية تُحسم من السيرفر وليس من اختيار المستخدم فقط
+            session.token = result.token;
             enterDashboard();
         } else {
             showError("الرقم الوظيفي أو الرمز السري غير صحيح");
@@ -557,7 +558,7 @@ async function handleForgot() {
 }
 
 function logout() {
-    session = { empId: null, shift: null, isAdmin: false };
+    session = { empId: null, shift: null, isAdmin: false, token: null };
     counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
     document.getElementById("mainDashboard").style.display = "none";
     document.getElementById("adminPanel").style.display = "none";
@@ -612,6 +613,7 @@ async function saveData() {
     try {
         const now = new Date();
         const payload = {
+            token: session.token,
             date_target: now.toLocaleDateString("en-CA"),
             emp_id: session.empId,
             shift: session.shift,
@@ -643,8 +645,15 @@ async function loadMonthlyReport() {
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
     try {
-        const result = await apiGet({ action: "GET_MONTHLY_REPORT", emp_id: session.empId, admin: "1" });
-        if (!Array.isArray(result)) { showError("تعذر جلب التقرير"); return; }
+        const result = await apiGet({ action: "GET_MONTHLY_REPORT", token: session.token });
+        if (!Array.isArray(result)) {
+            if (result && result.status === "FORBIDDEN") {
+                showError("جلسة المسؤول غير صالحة، سجّل الدخول من جديد");
+            } else {
+                showError("تعذر جلب التقرير");
+            }
+            return;
+        }
         renderReportTable(result);
         document.getElementById("reportSection").style.display = "block";
     } catch (e) {
