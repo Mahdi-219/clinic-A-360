@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة العيادة والمخزن الطبي الذكي - المطور</title>
+    <title>نظام إدارة العيادة والمخزن الطبي الذكي - الحماية القصوى</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
@@ -28,7 +28,6 @@
         .dot { width: 10px; height: 10px; background-color: #7f8c8d; border-radius: 50%; display: inline-block; }
         .dot.active { background-color: var(--success-color); }
         
-        /* شاشات الحسابات والدخول */
         .auth-screen { background: #f1f2f6; padding: 25px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #dcdde1; }
         .auth-title { font-size: 18px; font-weight: bold; color: var(--primary-color); margin-bottom: 15px; border-bottom: 1px solid #dcdde1; padding-bottom: 5px; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
@@ -40,12 +39,10 @@
         .auth-links { display: flex; gap: 15px; margin-top: 10px; font-size: 13px; }
         .auth-links span { color: #2980b9; text-decoration: underline; cursor: pointer; }
 
-        /* رسائل الأخطاء والتحذيرات التفاعلية */
         .alert-message { padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; font-weight: bold; display: none; text-align: center; }
         .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 
-        /* لوحة التحكم الرئيسية */
         #mainDashboard { display: none; }
         .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
         .case-card { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
@@ -65,7 +62,6 @@
         .btn-admin-action { background-color: #d35400; color: white; border: none; padding: 10px 15px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
         .footer-note { text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6; }
 
-        /* تنسيق خاص بملف الـ PDF للطباعة */
         #pdfTemplate { padding: 30px; background: white; color: #000; }
         .pdf-header { text-align: center; border-bottom: 3px double #333; padding-bottom: 15px; margin-bottom: 20px; }
         .pdf-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -285,7 +281,7 @@
         <button class="btn-primary" style="background-color: #7f8c8d; margin-top: 5px;" onclick="location.reload()">تسجيل الخروج وتأمين الشاشة</button>
     </div>
 
-    <div class="footer-note" id="systemFooter">نظام العيادة والمخزن الطبي المحוكم - جميع الحقوق محفوظة لجهة الإدارة</div>
+    <div class="footer-note" id="systemFooter">نظام العيادة والمخزن الطبي المحوكم - جميع الحقوق محفوظة لجهة الإدارة</div>
 </div>
 
 <div id="pdfTemplate" style="display: none;">
@@ -314,8 +310,13 @@
 </div>
 
 <script>
-    // السطر 186 المعدل والمحدث ليرتبط مباشرة بسيرفر قوقل شيت لديك
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzm3OkxI5LbE2oX-n-rc9dfu19zlTvlSW2V0p5VLAIeGx5FI-Wqb2rAoRayHZHAvefT/exec';
+
+    // قاعدة بيانات محلية مؤقتة مسجلة بداخل النظام للتأكد من حظر أي أرقام عشوائية غريبة تماماً
+    const localUsers = [
+        { empId: "2020", pin: "2020", shift: "شفت الف صباحي" },
+        { empId: "3030", pin: "3030", shift: "شفت الف مسائي" }
+    ];
 
     let loggedInUser = { empId: '', shift: '' };
     let currentData = { sick_cases: 0, blood_pressure: 0, headache: 0, vital_signs: 0, injuries: 0, burns: 0, hospital_transfer: 0 };
@@ -351,7 +352,7 @@
         document.getElementById(screenId).style.display = 'block';
     }
 
-    // 1. فحص الدخول والمطابقة وإظهار الأخطاء الذكية بناءً على رد السيرفر وقاعدة البيانات
+    // فحص صارم ومغلق أمنياً لمنع الدخول العشوائي
     function handleLogin() {
         const shift = document.getElementById('loginShift').value;
         const empId = document.getElementById('loginEmpId').value;
@@ -362,24 +363,24 @@
             return; 
         }
 
-        // التحقق الحصري الفوري من حساب المسؤول
+        // 1. حساب المسؤول حصري وصارم ومغلق
         if (shift === "حساب مسؤول") {
             if (empId === "1111" && pin === "1111") {
                 activateDashboard(empId, shift, true);
-                showAlert("تم دخول المسؤول بنجاح.. أهلاً بك وعطلة سعيدة!", true);
+                showAlert("تم دخول المسؤول بنجاح.. أهلاً بك!", true);
                 return;
             } else {
-                showAlert("عذراً، الرمز السري للمسؤول غير صحيح أو الحساب محمي!");
+                showAlert("عذراً، بيانات دخول المسؤول غير صحيحة والنظام محمي!");
                 return;
             }
         }
 
-        document.getElementById('statusText').innerText = "جاري مطابقة الرموز والتحقق من قاعدة البيانات السحابية...";
+        document.getElementById('statusText').innerText = "جاري مطابقة الرموز والتحقق من قاعدة البيانات...";
         const loginBtn = document.getElementById('loginBtn');
         loginBtn.innerText = "جاري التحقق...";
         loginBtn.disabled = true;
 
-        // إرسال البيانات بشكل حقيقي للسيرفر للتحقق والمقارنة
+        // 2. الفحص السحابي الحقيقي من قوقل شيت بدون تمرير تلقائي عند الأخطاء
         fetch(scriptURL + "?action=VERIFY_LOGIN&emp_id=" + empId + "&pin=" + pin + "&shift=" + shift)
         .then(response => response.json())
         .then(data => {
@@ -394,16 +395,21 @@
             } else if (data.status === "WRONG_PIN") {
                 showAlert("عذراً، الرمز السري الذي أدخلته غير صحيح! يرجى إعادة المحاولة.");
             } else {
-                showAlert("حدث خطأ في الاتصال بالقاعدة، تم تمرير الدخول الاحتياطي.");
-                activateDashboard(empId, shift, false);
+                showAlert("قاعدة البيانات لم تتعرف على هذه المدخلات. تم رفض الدخول.");
             }
         })
         .catch(err => {
-            // حل بديل في حال ضعف الشبكة للمحافظة على سير العمل بالشفت
+            // في حال عدم استجابة السيرفر، يتم الفحص محلياً من الأرقام المعتمدة فقط، ويُمنع أي رقم عشوائي آخر
             loginBtn.innerText = "تحقق ودخول النظام";
             loginBtn.disabled = false;
-            activateDashboard(empId, shift, false);
-            showAlert("تم الدخول بالنظام الاحتياطي لضعف اتصال السيرفر ✅", true);
+
+            const matchedUser = localUsers.find(u => u.empId === empId && u.pin === pin && u.shift === shift);
+            if (matchedUser) {
+                activateDashboard(empId, shift, false);
+                showAlert("تم الدخول الآمن عبر قاعدة السستم الاحتياطية ✅", true);
+            } else {
+                showAlert("عذراً، هذا الحساب غير موجود بقاعدة البيانات والشبكة ضعيفة حالياً!");
+            }
         });
     }
 
@@ -414,7 +420,7 @@
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainDashboard').style.display = 'block';
         document.getElementById('activeUserDisplay').innerText = `المستخدم النشط: ${empId} | ${shift}`;
-        document.getElementById('statusText').innerText = "تم تأكيد الهوية وتفعيل المزامنة التلقائية الحية الحصريّة ✅";
+        document.getElementById('statusText').innerText = "تم تأكيد الهوية وتفعيل المزامنة التلقائية الحية ✅";
         document.getElementById('statusDot').classList.add('active');
         
         if(isAdmin) {
@@ -422,7 +428,6 @@
         }
     }
 
-    // 2. تسجيل الحساب بقاعدة البيانات المخصصة للرموز
     function handleRegister() {
         const empId = document.getElementById('regEmpId').value;
         const phone = document.getElementById('regPhone').value;
@@ -433,12 +438,11 @@
 
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "REGISTER_SECURE", emp_id: empId, phone: phone, pin: pin }) })
         .then(() => {
-            alert("تم حفظ واعتماد أرقامك ورمزك في قاعدة بيانات السستم بنجاح! يمكنك الدخول الآن.");
+            alert("تم حفظ واعتماد أرقامك ورمزك في قاعدة بيانات السستم بنجاح!");
             switchAuthScreen('loginScreen');
         });
     }
 
-    // 3. ضبط دورة استرجاع الرموز بمطابقة الهاتف والقاعدة
     function handleForgot() {
         const empId = document.getElementById('forgotEmpId').value;
         const phone = document.getElementById('forgotPhone').value;
@@ -448,12 +452,11 @@
 
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "FORGOT_PIN_SECURE", emp_id: empId, phone: phone, new_pin: newPin }) })
         .then(() => {
-            alert("تم إرسال طلب المطابقة والتحديث لقاعدة الحفظ والرموز السحابية.");
+            alert("تم إرسال طلب المطابقة والتحديث لقاعدة الرموز السحابية.");
             switchAuthScreen('loginScreen');
         });
     }
 
-    // 4. تغيير الرمز بالقديم والجديد مرتين
     function handleChangePin() {
         const empId = document.getElementById('changeEmpId').value;
         const oldPin = document.getElementById('changeOldPin').value;
@@ -461,7 +464,7 @@
         const newPin2 = document.getElementById('changeNewPin2').value;
 
         if(!empId || !oldPin || !newPin1 || !newPin2) { showAlert("يرجى ملء جميع الخانات!"); return; }
-        if(newPin1 !== newPin2) { showAlert("الرمز الجديد غير متطابق في الخانتين للتأكيد!"); return; }
+        if(newPin1 !== newPin2) { showAlert("الرمز الجديد غير متطابق في الخانتين لتأكيد الحفظ!"); return; }
 
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "CHANGE_PIN_SECURE", emp_id: empId, old_pin: oldPin, new_pin: newPin1 }) })
         .then(() => {
@@ -470,7 +473,6 @@
         });
     }
 
-    // حساب توتال الحالات اليومية تلقائياً بمفرده تماماً وبمعزل عن الموظف
     function calculateTotalDaily() {
         const total = currentData.sick_cases + currentData.blood_pressure + currentData.headache + 
                       currentData.vital_signs + currentData.injuries + currentData.burns + currentData.hospital_transfer;
@@ -488,7 +490,7 @@
     }
 
     function triggerAutoSave() {
-        document.getElementById('statusText').innerText = "مزامنة حية... جاري حفظ التحديثات بقاعدة البيانات تلقائياً...";
+        document.getElementById('statusText').innerText = "مزامنة حية... جاري حفظ التحديثات تلقائياً...";
         document.getElementById('statusText').style.color = "#d35400";
         clearTimeout(autoSaveTimeout);
         autoSaveTimeout = setTimeout(() => { submitData(true); }, 2000); 
@@ -510,12 +512,11 @@
 
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
         .then(() => {
-            document.getElementById('statusText').innerText = "تم تأمين البيانات والمزامنة مع قاعدة الحفظ المركزية بنجاح! ✅";
+            document.getElementById('statusText').innerText = "تم تأمين البيانات والمزامنة بنجاح! ✅";
             document.getElementById('statusText').style.color = "#27ae60";
         });
     }
 
-    // دالة توليد وطباعة ملف الـ PDF المنسق والمحمل فوراً للمسؤول
     function printToPDF() {
         const total = calculateTotalDaily();
         
