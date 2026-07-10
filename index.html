@@ -59,7 +59,6 @@
         .btn-primary { background-color: var(--accent-color); color: white; border: none; padding: 14px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 15px; }
         .btn-primary:hover { background-color: #117a65; }
         
-        /* لوحة المسؤول الفورية والجدول الشهري من 1 إلى 31 */
         .admin-panel { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; padding: 20px; margin-top: 25px; display: none; }
         .report-section { background: white; border: 1px solid #bdc3c7; padding: 20px; border-radius: 8px; margin-top: 20px; overflow-x: auto; }
         .report-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; text-align: center; }
@@ -71,7 +70,6 @@
         
         .footer-note { text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6; }
 
-        /* ✨ قالب الطباعة الاحترافي للـ PDF */
         #pdfTemplate { width: 100%; max-width: 900px; padding: 30px; background: white; color: #222; box-sizing: border-box; }
         .pdf-header { text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 15px; margin-bottom: 20px; }
         .pdf-header h2 { color: #2c3e50; font-size: 22px; margin-bottom: 5px; font-weight: bold; }
@@ -96,11 +94,9 @@
         <div id="activeUserDisplay">لم يتم تسجيل الدخول</div>
     </div>
 
-    <!-- رسائل التنبيه العلوية الذكية (تظهر بالأخضر عند نجاح الحفظ) -->
     <div class="alert-message alert-danger" id="errorMessage"></div>
     <div class="alert-message alert-success" id="successMessage"></div>
 
-    <!-- 1. شاشة تسجيل الدخول -->
     <div class="auth-screen" id="loginScreen">
         <div class="auth-title">تسجيل الدخول إلى النظام</div>
         <div class="form-grid">
@@ -132,7 +128,6 @@
         </div>
     </div>
 
-    <!-- 2. شاشة تسجيل حساب جديد -->
     <div class="auth-screen" id="registerScreen" style="display: none;">
         <div class="auth-title">تسجيل موظف جديد برقم وظيفي</div>
         <div class="form-grid">
@@ -153,7 +148,6 @@
         <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة للدخول</span></div>
     </div>
 
-    <!-- 3. شاشة استرجاع الرمز عبر الهاتف -->
     <div class="auth-screen" id="forgotScreen" style="display: none;">
         <div class="auth-title">استرجاع وتحديث الرمز الخاص عبر الهاتف</div>
         <div class="form-grid">
@@ -174,7 +168,6 @@
         <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة للدخول</span></div>
     </div>
 
-    <!-- لوحة رصد الحالات الأساسية (مكتوبة باللغتين العربية والإنجليزية كاملاً) -->
     <div id="mainDashboard">
         <div class="cases-grid">
             
@@ -260,10 +253,9 @@
 
         <button class="btn-primary" id="saveBtn" onclick="submitData(false)">💾 حفظ وإرسال البيانات فوراً بقاعدة البيانات سحابياً</button>
 
-        <!-- لوحة المسؤول الفورية والجدول المنظم من 1 إلى 31 للشهر بأكمله -->
         <div class="admin-panel" id="adminPanel">
             <h3 style="color: #2c3e50; font-size: 18px; border-bottom: 2px solid #d35400; padding-bottom: 5px;">لوحة تحكم المسؤول الإحصائية الشاملة (Admin Panel)</h3>
-            <p style="font-size: 13px; margin-top: 5px; color: #7f8c8d;">يتم جلب البيانات تلقائياً وتوزيعها على أيام الشهر من 1 إلى 31 لتجهيزها للطباعة السنوية والشهرية للملفات.</p>
+            <p style="font-size: 13px; margin-top: 5px; color: #7f8c8d;">يتم جلب البيانات تلقائياً وتوزيعها على أيام الشهر من 1 إلى 31 لتجهيزها للطباعة.</p>
             
             <div class="report-section" id="monthlyReportSection">
                 <div class="report-title" id="reportMonthTitle">جدول إحصائيات الحالات لشهر الحالي (تلقائي الحفظ والترتيب)</div>
@@ -282,7 +274,6 @@
                         </tr>
                     </thead>
                     <tbody id="monthlyTableBody">
-                        <!-- سيتم إنشاؤها تلقائياً بالكامل من اليوم 1 إلى 31 عبر الكود -->
                     </tbody>
                 </table>
             </div>
@@ -296,7 +287,6 @@
     <div class="footer-note" id="systemFooter">سستم جدول حالات العيادة - منظومة تصنيف الحالات عيادات الطوارئ الطبية</div>
 </div>
 
-<!-- 📋 قالب ملف الـ PDF المعدل والمنظم للطباعة الفورية للمسؤول للملف الورقي -->
 <div id="pdfTemplate" style="display: none; direction: rtl;">
     <div class="pdf-header">
         <h2>سستم جدول حالات العيادة</h2>
@@ -307,15 +297,11 @@
 </div>
 
 <script>
-    // رابط مشروع الـ Web App الخاص بك في Google Apps Script
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzDJhdn1JEPnve8OEtjt4Ild3ZWs_-K-voGpAkRbvCsdqQtfhixKTwQK4YPm01nYgla/exec';
 
     let loggedInUser = { empId: '', shift: '' };
     let currentData = { sick_cases: 0, blood_pressure: 0, headache: 0, vital_signs: 0, injuries: 0, burns: 0, hospital_transfer: 0 };
     
-    // مصفوفة لتخزين بيانات الـ 31 يوماً كاملة وعرضها للمسؤول فوراً
-    let backendMonthlyDatabase = {}; 
-
     function limitFourDigits(input) {
         if (input.value.length > 4) input.value = input.value.slice(0, 4);
     }
@@ -356,7 +342,6 @@
             return; 
         }
 
-        // تسجيل دخول المسؤول الفوري برقم 1111 والرمز 1111
         if (shift === "حساب مسؤول" || empId === "1111") {
             if (empId === "1111" && pin === "1111") {
                 activateDashboard(empId, "حساب مسؤول (Admin)", true);
@@ -382,7 +367,6 @@
             if (data.status === "SUCCESS") {
                 activateDashboard(empId, shift, false);
                 showStatusAlert("تم التحقق بنجاح ودخول المنظومة الطبية بالرمز الخاص بك!", true);
-                // جلب بيانات الموظف إذا وجدت لمنع الكتابة فوقها
                 fetchCurrentDayData();
             } else {
                 showStatusAlert("خطأ في الرقم الوظيفي أو الرمز السري الخاص بك! تأكد من الحساب أو قم بإنشاء حساب جديد.");
@@ -408,7 +392,7 @@
         
         if(isAdmin) {
             document.getElementById('adminPanel').style.display = 'block';
-            buildAndFetchMonthlyTable(); // بناء جدول الـ 31 يوماً فوراً للمسؤول ورؤية كل شيء أمامه
+            buildAndFetchMonthlyTable(); 
         }
     }
 
@@ -454,7 +438,6 @@
         calculateTotalDaily(); 
     }
 
-    // دالة الحفظ السحابي المؤكدة + إظهار الكتابة الخضراء عند الحفظ والنجاح الكامل
     function submitData(isAuto = false) {
         const totalDaily = calculateTotalDaily();
         const currentTodayDate = new Date().toISOString().split('T')[0];
@@ -482,8 +465,6 @@
                 saveBtn.disabled = false;
             }
             document.getElementById('statusText').innerText = "تم حفظ وتأمين كافة الحالات بملفات الجداول بنجاح! ✅";
-            
-            // ⭐ تلبية الطلب الثاني: تظهر الكتابة الخضراء الرائعة تفيد باتمام الحفظ بنجاح
             showStatusAlert(`🎉 تم الحفظ بنجاح للمنظومة الطبية! تم تأمين وتوثيق الحالات اليومية للشفت الحالي بمجموع (${totalDaily}) حالة.`, true);
         })
         .catch(err => {
@@ -509,7 +490,6 @@
                 currentData.burns = data.burns || 0;
                 currentData.hospital_transfer = data.hospital_transfer || 0;
                 
-                // تحديث العدادات على الشاشة
                 for (let key in currentData) {
                     if(document.getElementById(key)) document.getElementById(key).innerText = currentData[key];
                 }
@@ -518,19 +498,16 @@
         }).catch(e => console.log("تحميل احتياطي"));
     }
 
-    // ⭐ تلبية الطلب الثالث والسادس: بناء جدول من 1 لـ 31 يوماً وجلب بياناته فوراً أمام المسؤول
     function buildAndFetchMonthlyTable() {
         const tbody = document.getElementById('monthlyTableBody');
         tbody.innerHTML = "";
         
         const now = new Date();
         const year = now.getFullYear();
-        const month = now.getMonth() + 1; // الشهر الحالي
+        const month = now.getMonth() + 1; 
         
-        // تسمية عنوان الجدول بالشهر المعين تلقائياً
         document.getElementById('reportMonthTitle').innerText = `جدول تصنيف حالات شهر المعين: (${month} / ${year}) المنظم تلقائياً`;
 
-        // إنشاء الـ 31 صفاً بالترتيب الفوري للأيام داخل السستم
         for (let day = 1; day <= 31; day++) {
             const tr = document.createElement('tr');
             tr.id = `row_day_${day}`;
@@ -548,7 +525,6 @@
             tbody.appendChild(tr);
         }
 
-        // جلب البيانات من السيرفر لتعبئة الـ 31 يوماً فورياً أمام عيني المسؤول
         fetch(scriptURL + "?action=GET_MONTHLY_REPORT&year=" + year + "&month=" + month)
         .then(res => res.json())
         .then(monthlyData => {
@@ -558,7 +534,6 @@
                     if(recDate.getMonth() + 1 === month) {
                         const dayNum = recDate.getDate();
                         
-                        // تعبئة البيانات في صف اليوم المعين داخل الجدول
                         document.getElementById(`cell_total_${dayNum}`).innerText = record.total_daily || 0;
                         document.getElementById(`cell_sick_${dayNum}`).innerText = record.sick_cases || 0;
                         document.getElementById(`cell_bp_${dayNum}`).innerText = record.blood_pressure || 0;
@@ -572,16 +547,14 @@
             }
         })
         .catch(err => {
-            console.log("خطأ أو لا توجد سجلات سابقة، الجدول جاهز للاستقبال الحقيقي.");
+            console.log("جدول فارغ أو في انتظار استقبال الحالات الحقيقية.");
         });
     }
 
-    // طباعة تقرير جدول الشهر الـ 31 يوماً بالكامل وبأعلى جودة للملفات الورقية للمسؤول
     function printMonthlyPDF() {
         const now = new Date();
         document.getElementById('pdfMonthLabel').innerText = `بيانات وملف حالات شهر: ${now.getMonth() + 1} / ${now.getFullYear()} - مستخرج بواسطة المسؤول`;
         
-        // نسخ جدول الـ 31 يوماً الحالي بالكامل لداخل قالب الطباعة لضمان ظهور كل البيانات المرتبة
         const tableContent = document.getElementById('monthlyReportSection').innerHTML;
         document.getElementById('pdfTableContainer').innerHTML = tableContent;
 
@@ -593,7 +566,7 @@
             filename: `جدول_حالات_العيادة_الشهري_${now.getMonth()+1}.pdf`,
             image: { type: 'jpeg', quality: 0.99 },
             html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } // طباعة بالعرض ليتسع الـ 31 يوماً بوضوح تام
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } 
         };
 
         html2pdf().from(element).set(opt).save().then(() => {
