@@ -1,89 +1,193 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سستم جدول حالات العيادة</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #16a085;
-            --danger-color: #c0392b;
-            --success-color: #27ae60;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --border-color: #e0e0e0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نبض | سستم جدول حالات العيادة</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --ink: #0f2942;
+        --ink-soft: #345169;
+        --accent: #0d9488;
+        --accent-dark: #0b6b62;
+        --accent-soft: #e3f5f2;
+        --amber: #b8860b;
+        --amber-soft: #fdf3d9;
+        --danger: #c0392b;
+        --danger-soft: #fbe7e5;
+        --success: #1f8b4c;
+        --bg: #eef2f4;
+        --card: #ffffff;
+        --line: #dfe6ea;
+        --text: #22323f;
+        --muted: #708494;
+        --radius: 14px;
+        --shadow: 0 10px 30px -14px rgba(15,41,66,0.18);
+    }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 1050px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 30px; border: 1px solid var(--border-color); }
-        header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--accent-color); padding-bottom: 15px; }
-        header h1 { color: var(--primary-color); font-size: 26px; margin-bottom: 8px; font-weight: bold; }
-        header p { color: #555; font-size: 16px; }
-        
-        .status-bar { display: flex; justify-content: space-between; align-items: center; background: #edf2f7; padding: 12px 20px; border-radius: 8px; margin-bottom: 25px; font-size: 14px; font-weight: bold; }
-        .status-indicator { display: flex; align-items: center; gap: 8px; }
-        .dot { width: 10px; height: 10px; background-color: #7f8c8d; border-radius: 50%; display: inline-block; }
-        .dot.active { background-color: var(--success-color); }
-        
-        .auth-screen { background: #f1f2f6; padding: 25px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #dcdde1; }
-        .auth-title { font-size: 18px; font-weight: bold; color: var(--primary-color); margin-bottom: 15px; border-bottom: 1px solid #dcdde1; padding-bottom: 5px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .form-group { margin-bottom: 10px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--primary-color); font-size: 14px; }
-        select, input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 15px; background-color: #fff; outline: none; }
-        
-        .auth-links { display: flex; gap: 15px; margin-top: 10px; font-size: 13px; }
-        .auth-links span { color: #2980b9; text-decoration: underline; cursor: pointer; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+        font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+        background:
+            radial-gradient(1200px 500px at 15% -10%, #dff3f0 0%, transparent 60%),
+            radial-gradient(900px 500px at 100% 0%, #e7edf3 0%, transparent 55%),
+            var(--bg);
+        color: var(--text);
+        padding: 28px 16px;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    h1, h2, .display-font { font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif; }
 
-        .alert-message { padding: 15px; border-radius: 6px; margin-bottom: 20px; font-size: 15px; font-weight: bold; display: none; text-align: center; }
-        .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .container {
+        width: 100%;
+        max-width: 1080px;
+        background: var(--card);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        padding: 34px;
+        border: 1px solid var(--line);
+    }
 
-        #mainDashboard { display: none; }
-        .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
-        .case-card { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .case-card.total-card { background-color: #e8f8f5; border: 2px solid var(--accent-color); }
-        .case-title { font-size: 15px; font-weight: bold; color: var(--primary-color); margin-bottom: 5px; }
-        .case-subtitle { font-size: 12px; color: #7f8c8d; margin-bottom: 10px; font-style: italic; }
-        
-        .counter-controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .btn-counter { width: 38px; height: 38px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-minus { background-color: #fce4e4; color: var(--danger-color); }
-        .btn-plus { background-color: #e8f8f5; color: var(--accent-color); }
-        .counter-value { font-size: 22px; font-weight: bold; min-width: 35px; }
+    /* ===== الترويسة + النبضة (العنصر المميز) ===== */
+    header { text-align: center; margin-bottom: 6px; }
+    .brand-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
+    .brand-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
+    header h1 { color: var(--ink); font-size: 27px; font-weight: 700; letter-spacing: -0.2px; }
+    header p { color: var(--muted); font-size: 14.5px; margin-top: 4px; }
 
-        .btn-primary { background-color: var(--accent-color); color: white; border: none; padding: 14px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 15px; }
-        .btn-primary:hover { background-color: #117a65; }
-        
-        .admin-panel { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; padding: 20px; margin-top: 25px; display: none; }
-        .report-section { background: white; border: 1px solid #bdc3c7; padding: 20px; border-radius: 8px; margin-top: 20px; overflow-x: auto; }
-        .report-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; text-align: center; }
-        
-        .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 900px; }
-        .monthly-table th, .monthly-table td { border: 1px solid #bdc3c7; padding: 8px 10px; text-align: center; font-size: 13px; }
-        .monthly-table th { background-color: #2c3e50; color: white; font-weight: bold; }
-        .monthly-table tr:nth-child(even) { background-color: #f9f9f9; }
-        
-        .footer-note { text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6; }
+    .pulse-wrap { width: 100%; height: 34px; margin: 18px 0 22px; overflow: hidden; }
+    .pulse-wrap svg { width: 200%; height: 100%; animation: pulse-scroll 7s linear infinite; }
+    @media (prefers-reduced-motion: reduce) { .pulse-wrap svg { animation: none; } }
+    @keyframes pulse-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-        #pdfTemplate { width: 100%; max-width: 900px; padding: 30px; background: white; color: #222; box-sizing: border-box; }
-        .pdf-header { text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 15px; margin-bottom: 20px; }
-        .pdf-header h2 { color: #2c3e50; font-size: 22px; margin-bottom: 5px; font-weight: bold; }
-        .pdf-header p { color: #555; font-size: 14px; }
-    </style>
+    /* ===== شريط الحالة ===== */
+    .status-bar {
+        display: flex; justify-content: space-between; align-items: center;
+        background: #f5f8f9; padding: 12px 20px; border-radius: 10px;
+        margin-bottom: 24px; font-size: 13.5px; font-weight: 600; border: 1px solid var(--line);
+    }
+    .status-indicator { display: flex; align-items: center; gap: 8px; color: var(--ink-soft); }
+    .dot { width: 9px; height: 9px; background-color: #b7c2ca; border-radius: 50%; display: inline-block; transition: background-color .25s; }
+    .dot.active { background-color: var(--success); box-shadow: 0 0 0 4px rgba(31,139,76,0.15); }
+    #activeUserDisplay { color: var(--ink); }
+
+    /* ===== شاشات الدخول ===== */
+    .auth-screen { background: #f7f9fa; padding: 26px; border-radius: var(--radius); margin-bottom: 24px; border: 1px solid var(--line); }
+    .auth-title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+    .auth-title::before { content: ''; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; display: inline-block; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 6px; }
+    .form-group { margin-bottom: 10px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--ink-soft); font-size: 13.5px; }
+    select, input {
+        width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 9px;
+        font-size: 15px; background-color: #fff; outline: none; color: var(--text);
+        font-family: inherit; transition: border-color .15s, box-shadow .15s;
+    }
+    select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    .auth-links { display: flex; gap: 18px; margin-top: 12px; font-size: 13px; }
+    .auth-links span { color: var(--accent-dark); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .auth-links span:hover { color: var(--ink); }
+
+    /* ===== تنبيهات ===== */
+    .alert-message { padding: 14px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14.5px; font-weight: 600; text-align: center; border: 1px solid transparent; }
+    .alert-danger { background-color: var(--danger-soft); color: #7d241a; border-color: #f2c4bd; }
+    .alert-success { background-color: var(--accent-soft); color: var(--accent-dark); border-color: #b9e6df; }
+
+    /* ===== لوحة التحكم ===== */
+    #mainDashboard { display: none; }
+    .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-top: 8px; }
+    .case-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; text-align: center; transition: transform .15s, box-shadow .15s; }
+    .case-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .case-card.total-card { background: linear-gradient(160deg, var(--accent-soft), #fff); border: 1.5px solid #b9e6df; }
+    .case-title { font-size: 14.5px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+    .case-subtitle { font-size: 11.5px; color: var(--muted); margin-bottom: 12px; font-style: italic; letter-spacing: .2px; }
+
+    .counter-controls { display: flex; align-items: center; justify-content: center; gap: 14px; }
+    .btn-counter {
+        width: 36px; height: 36px; border-radius: 50%; border: none; font-size: 19px; font-weight: 700;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .1s, background-color .15s;
+    }
+    .btn-counter:active { transform: scale(0.9); }
+    .btn-counter:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-minus { background-color: var(--danger-soft); color: var(--danger); }
+    .btn-minus:hover:not(:disabled) { background-color: #f6d2cc; }
+    .btn-plus { background-color: var(--accent-soft); color: var(--accent-dark); }
+    .btn-plus:hover:not(:disabled) { background-color: #cdeee8; }
+    .counter-value { font-size: 21px; font-weight: 700; min-width: 32px; color: var(--ink); }
+
+    .btn-primary {
+        background-color: var(--accent); color: white; border: none; padding: 14px 20px; font-size: 15.5px;
+        font-weight: 700; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 16px;
+        font-family: inherit; transition: background-color .15s, transform .1s;
+    }
+    .btn-primary:hover:not(:disabled) { background-color: var(--accent-dark); }
+    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
+    .btn-primary:disabled { background-color: #a9b7bf; cursor: not-allowed; }
+
+    .btn-secondary {
+        background-color: #fff; color: var(--ink-soft); border: 1.5px solid var(--line); padding: 11px 18px;
+        font-size: 14px; font-weight: 700; border-radius: 10px; cursor: pointer; margin-top: 10px; font-family: inherit;
+    }
+    .btn-secondary:hover { border-color: var(--ink-soft); color: var(--ink); }
+
+    .btn-admin { background-color: var(--amber); }
+    .btn-admin:hover:not(:disabled) { background-color: #96690a; }
+
+    /* ===== لوحة المسؤول ===== */
+    .admin-panel { background: var(--amber-soft); border: 1px solid #f0dfa0; border-radius: var(--radius); padding: 22px; margin-top: 26px; display: none; }
+    .report-section { background: white; border: 1px solid var(--line); padding: 20px; border-radius: var(--radius); margin-top: 18px; overflow-x: auto; }
+    .report-title { font-size: 16.5px; font-weight: 700; color: var(--ink); margin-bottom: 14px; text-align: center; }
+
+    .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 900px; }
+    .monthly-table th, .monthly-table td { border: 1px solid var(--line); padding: 9px 10px; text-align: center; font-size: 13px; }
+    .monthly-table th { background-color: var(--ink); color: white; font-weight: 700; }
+    .monthly-table tr:nth-child(even) { background-color: #f7f9fa; }
+    .empty-row td { padding: 24px; color: var(--muted); font-style: italic; }
+
+    .footer-note { text-align: center; margin-top: 24px; font-size: 12px; color: var(--muted); }
+
+    .loader { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.5); border-top: 2px solid #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #pdfTemplate { width: 100%; max-width: 900px; padding: 30px; background: white; color: #222; box-sizing: border-box; }
+    .pdf-header { text-align: center; border-bottom: 3px solid var(--ink); padding-bottom: 15px; margin-bottom: 20px; }
+    .pdf-header h2 { color: var(--ink); font-size: 22px; margin-bottom: 5px; font-weight: 700; }
+    .pdf-header p { color: #555; font-size: 14px; }
+
+    @media (max-width: 480px) {
+        .container { padding: 22px 16px; }
+        header h1 { font-size: 22px; }
+    }
+
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+</style>
 </head>
 <body>
 
 <div class="container" id="appContainer">
-    <div id="systemHeader">
-        <header>
-            <h1>سستم جدول حالات العيادة</h1>
-            <p>منظومة تصنيف الحالات عيادات الطوارئ الطبية</p>
-        </header>
+    <header>
+        <div class="brand-row">
+            <span class="brand-dot"></span>
+            <span style="font-size:12.5px; font-weight:700; color:var(--accent-dark); letter-spacing:.3px;">نظام طوارئ داخلي</span>
+        </div>
+        <h1>سستم جدول حالات العيادة</h1>
+        <p>منظومة تصنيف وتوثيق الحالات — عيادات الطوارئ الطبية</p>
+    </header>
+
+    <div class="pulse-wrap" aria-hidden="true">
+        <svg viewBox="0 0 600 40" preserveAspectRatio="none">
+            <path d="M0 20 H150 L165 20 L175 5 L190 35 L200 20 L215 20 L225 12 L235 20 H300
+                     M300 20 H450 L465 20 L475 5 L490 35 L500 20 L515 20 L525 12 L535 20 H600"
+                  fill="none" stroke="#0d9488" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" opacity="0.75"/>
+        </svg>
     </div>
 
     <div class="status-bar">
@@ -94,14 +198,15 @@
         <div id="activeUserDisplay">لم يتم تسجيل الدخول</div>
     </div>
 
-    <div class="alert-message alert-danger" id="errorMessage"></div>
-    <div class="alert-message alert-success" id="successMessage"></div>
+    <div class="alert-message alert-danger" id="errorMessage" role="alert" style="display:none;"></div>
+    <div class="alert-message alert-success" id="successMessage" role="status" style="display:none;"></div>
 
+    <!-- شاشة تسجيل الدخول -->
     <div class="auth-screen" id="loginScreen">
         <div class="auth-title">تسجيل الدخول إلى النظام</div>
         <div class="form-grid">
             <div class="form-group">
-                <label>اختر الشفت الحالي / Shift:</label>
+                <label for="loginShift">اختر الشفت الحالي / Shift</label>
                 <select id="loginShift">
                     <option value="شفت الف صباحي">شفت الف صباحي (A-Morning)</option>
                     <option value="شفت الف مسائي">شفت الف مسائي (A-Evening)</option>
@@ -113,11 +218,11 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>الرقم الوظيفي / Emp ID:</label>
-                <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this)">
+                <label for="loginEmpId">الرقم الوظيفي / Emp ID</label>
+                <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this)" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label>الرمز السري / Password:</label>
+                <label for="loginPin">الرمز السري / Password</label>
                 <input type="password" id="loginPin" placeholder="******">
             </div>
         </div>
@@ -128,54 +233,56 @@
         </div>
     </div>
 
+    <!-- شاشة إنشاء حساب -->
     <div class="auth-screen" id="registerScreen" style="display: none;">
         <div class="auth-title">تسجيل موظف جديد برقم وظيفي</div>
         <div class="form-grid">
             <div class="form-group">
-                <label>الرقم الوظيفي (4 أرقام max):</label>
-                <input type="number" id="regEmpId" placeholder="1234" oninput="limitFourDigits(this)">
+                <label for="regEmpId">الرقم الوظيفي (4 أرقام)</label>
+                <input type="number" id="regEmpId" placeholder="1234" oninput="limitFourDigits(this)" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label>رقم الهاتف للتأكيد والتواصل:</label>
+                <label for="regPhone">رقم الهاتف للتأكيد والتواصل</label>
                 <input type="tel" id="regPhone" placeholder="99988877">
             </div>
             <div class="form-group">
-                <label>اختر الرمز السري:</label>
+                <label for="regPin">اختر الرمز السري</label>
                 <input type="password" id="regPin" placeholder="******">
             </div>
         </div>
-        <button class="btn-primary" style="background-color: #27ae60;" onclick="handleRegister()">اعتماد وحفظ الحساب الجديد</button>
+        <button class="btn-primary" id="registerBtn" onclick="handleRegister()">اعتماد وحفظ الحساب الجديد</button>
         <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة للدخول</span></div>
     </div>
 
+    <!-- شاشة استرجاع الرمز -->
     <div class="auth-screen" id="forgotScreen" style="display: none;">
         <div class="auth-title">استرجاع وتحديث الرمز الخاص عبر الهاتف</div>
         <div class="form-grid">
             <div class="form-group">
-                <label>الرقم الوظيفي الخاص بك:</label>
-                <input type="number" id="forgotEmpId" placeholder="1234" oninput="limitFourDigits(this)">
+                <label for="forgotEmpId">الرقم الوظيفي الخاص بك</label>
+                <input type="number" id="forgotEmpId" placeholder="1234" oninput="limitFourDigits(this)" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label>رقم الهاتف المسجل بالمنظومة:</label>
+                <label for="forgotPhone">رقم الهاتف المسجل بالمنظومة</label>
                 <input type="tel" id="forgotPhone" placeholder="99988877">
             </div>
             <div class="form-group">
-                <label>أدخل الرمز السري الجديد:</label>
+                <label for="forgotNewPin">أدخل الرمز السري الجديد</label>
                 <input type="password" id="forgotNewPin" placeholder="******">
             </div>
         </div>
-        <button class="btn-primary" style="background-color: #e67e22;" onclick="handleForgot()">تحديث الرمز بالهاتف والتحقق</button>
+        <button class="btn-primary btn-admin" id="forgotBtn" onclick="handleForgot()">تحديث الرمز بالهاتف والتحقق</button>
         <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة للدخول</span></div>
     </div>
 
+    <!-- لوحة التحكم الرئيسية -->
     <div id="mainDashboard">
         <div class="cases-grid">
-            
             <div class="case-card total-card">
-                <div class="case-title" style="color: var(--accent-color);">توتال الحالات اليومية</div>
+                <div class="case-title" style="color: var(--accent-dark);">توتال الحالات اليومية</div>
                 <div class="case-subtitle">Total Daily Cases</div>
                 <div class="counter-controls">
-                    <span class="counter-value" id="total_daily" style="font-size: 28px; color: var(--accent-color);">0</span>
+                    <span class="counter-value" id="total_daily" style="font-size: 30px; color: var(--accent-dark);">0</span>
                 </div>
             </div>
 
@@ -183,9 +290,9 @@
                 <div class="case-title">حالات طبية</div>
                 <div class="case-subtitle">Medical Cases</div>
                 <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('sick_cases', -1)">-</button>
+                    <button class="btn-counter btn-minus" onclick="updateCounter('sick_cases', -1)" aria-label="إنقاص">−</button>
                     <span class="counter-value" id="sick_cases">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('sick_cases', 1)">+</button>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('sick_cases', 1)" aria-label="زيادة">+</button>
                 </div>
             </div>
 
@@ -193,9 +300,9 @@
                 <div class="case-title">ضغط الدم</div>
                 <div class="case-subtitle">Blood Pressure</div>
                 <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('blood_pressure', -1)">-</button>
+                    <button class="btn-counter btn-minus" onclick="updateCounter('blood_pressure', -1)" aria-label="إنقاص">−</button>
                     <span class="counter-value" id="blood_pressure">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('blood_pressure', 1)">+</button>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('blood_pressure', 1)" aria-label="زيادة">+</button>
                 </div>
             </div>
 
@@ -203,9 +310,9 @@
                 <div class="case-title">صداع</div>
                 <div class="case-subtitle">Headache</div>
                 <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('headache', -1)">-</button>
+                    <button class="btn-counter btn-minus" onclick="updateCounter('headache', -1)" aria-label="إنقاص">−</button>
                     <span class="counter-value" id="headache">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('headache', 1)">+</button>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('headache', 1)" aria-label="زيادة">+</button>
                 </div>
             </div>
 
@@ -213,9 +320,9 @@
                 <div class="case-title">علامات حيوية</div>
                 <div class="case-subtitle">Vital Signs</div>
                 <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('vital_signs', -1)">-</button>
+                    <button class="btn-counter btn-minus" onclick="updateCounter('vital_signs', -1)" aria-label="إنقاص">−</button>
                     <span class="counter-value" id="vital_signs">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('vital_signs', 1)">+</button>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('vital_signs', 1)" aria-label="زيادة">+</button>
                 </div>
             </div>
 
@@ -223,9 +330,9 @@
                 <div class="case-title">إصابات</div>
                 <div class="case-subtitle">Injuries</div>
                 <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('injuries', -1)">-</button>
+                    <button class="btn-counter btn-minus" onclick="updateCounter('injuries', -1)" aria-label="إنقاص">−</button>
                     <span class="counter-value" id="injuries">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('injuries', 1)">+</button>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('injuries', 1)" aria-label="زيادة">+</button>
                 </div>
             </div>
 
@@ -233,9 +340,9 @@
                 <div class="case-title">حروق</div>
                 <div class="case-subtitle">Burns</div>
                 <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('burns', -1)">-</button>
+                    <button class="btn-counter btn-minus" onclick="updateCounter('burns', -1)" aria-label="إنقاص">−</button>
                     <span class="counter-value" id="burns">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('burns', 1)">+</button>
+                    <button class="btn-counter btn-plus" onclick="updateCounter('burns', 1)" aria-label="زيادة">+</button>
                 </div>
             </div>
 
@@ -243,6 +350,349 @@
                 <div class="case-title">نقل المستشفى</div>
                 <div class="case-subtitle">Hospital Transfer</div>
                 <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('hospital_transfer', -1)">-</button>
+                    <button class="btn-counter btn-minus" onclick="updateCounter('hospital_transfer', -1)" aria-label="إنقاص">−</button>
                     <span class="counter-value" id="hospital_transfer">0</span>
-                    <button class="btn-
+                    <button class="btn-counter btn-plus" onclick="updateCounter('hospital_transfer', 1)" aria-label="زيادة">+</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-primary" id="saveBtn" onclick="saveData()">حفظ وتوثيق بيانات اليوم</button>
+        <button class="btn-secondary" onclick="logout()">تسجيل الخروج</button>
+
+        <!-- لوحة المسؤول -->
+        <div class="admin-panel" id="adminPanel">
+            <div class="auth-title" style="border:none;">لوحة تحكم المسؤول</div>
+            <button class="btn-primary btn-admin" onclick="loadMonthlyReport()">جلب التقرير الشهري الكامل</button>
+
+            <div class="report-section" id="reportSection" style="display:none;">
+                <div class="report-title">التقرير الشهري لكل الشفتات</div>
+                <table class="monthly-table" id="reportTable">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th><th>الرقم الوظيفي</th><th>الشفت</th><th>الإجمالي</th>
+                            <th>حالات طبية</th><th>ضغط الدم</th><th>صداع</th><th>علامات حيوية</th>
+                            <th>إصابات</th><th>حروق</th><th>نقل مستشفى</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
+                <button class="btn-secondary" onclick="exportReportPDF()">تصدير التقرير PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">جميع البيانات تُحفظ وتُوثّق آليًا لحظة الضغط على زر الحفظ</div>
+</div>
+
+<!-- قالب مخفي يُستخدم فقط عند تصدير PDF -->
+<div id="pdfTemplate" style="display:none;"></div>
+
+<script>
+/* =========================================================
+   إعدادات الاتصال بالسيرفر (Google Apps Script Web App)
+   استبدل الرابط أدناه برابط الـ Web App الخاص بك بعد النشر
+   ========================================================= */
+const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+const CASE_KEYS = ["sick_cases", "blood_pressure", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
+
+let session = { empId: null, shift: null, isAdmin: false };
+let counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
+
+/* ---------- أدوات مساعدة عامة ---------- */
+
+function limitFourDigits(input) {
+    if (input.value.length > 4) input.value = input.value.slice(0, 4);
+}
+
+function showError(msg) {
+    const el = document.getElementById("errorMessage");
+    document.getElementById("successMessage").style.display = "none";
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = "none"; }, 5000);
+}
+
+function showSuccess(msg) {
+    const el = document.getElementById("successMessage");
+    document.getElementById("errorMessage").style.display = "none";
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = "none"; }, 5000);
+}
+
+function setBusy(buttonEl, busy, originalText) {
+    if (busy) {
+        buttonEl.disabled = true;
+        buttonEl.dataset.originalText = originalText;
+        buttonEl.innerHTML = '<span class="loader"></span>' + originalText;
+    } else {
+        buttonEl.disabled = false;
+        buttonEl.textContent = buttonEl.dataset.originalText || originalText;
+    }
+}
+
+function switchAuthScreen(screenId) {
+    ["loginScreen", "registerScreen", "forgotScreen"].forEach(id => {
+        document.getElementById(id).style.display = (id === screenId) ? "block" : "none";
+    });
+    document.getElementById("errorMessage").style.display = "none";
+    document.getElementById("successMessage").style.display = "none";
+}
+
+/* تشفير أحادي الاتجاه (SHA-256) من جهة العميل قبل إرسال الرمز السري.
+   هذا لا يغني عن HTTPS ولا عن الحماية على السيرفر، لكنه يمنع
+   وصول الرمز كنص صريح عبر الشبكة أو ظهوره في سجلات الطلبات */
+async function hashPin(pin) {
+    const enc = new TextEncoder().encode(pin);
+    const buf = await crypto.subtle.digest("SHA-256", enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* ---------- طلبات الشبكة ---------- */
+
+async function apiPost(action, payload) {
+    const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // يتجنب preflight مع Apps Script
+        body: JSON.stringify({ action, ...payload })
+    });
+    return res.json();
+}
+
+async function apiGet(params) {
+    const url = new URL(API_URL);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    const res = await fetch(url.toString());
+    return res.json();
+}
+
+/* ---------- تسجيل الدخول / التسجيل / استرجاع الرمز ---------- */
+
+async function handleLogin() {
+    const shift = document.getElementById("loginShift").value;
+    const empId = document.getElementById("loginEmpId").value.trim();
+    const pin = document.getElementById("loginPin").value.trim();
+    const btn = document.getElementById("loginBtn");
+
+    if (!empId || !pin) { showError("الرجاء إدخال الرقم الوظيفي والرمز السري"); return; }
+    if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
+
+    setBusy(btn, true, "تسجيل الدخول وتأكيد الهوية");
+    try {
+        const pinHash = await hashPin(pin);
+        const result = await apiPost("VERIFY_LOGIN", { emp_id: empId, pin_hash: pinHash });
+
+        if (result.status === "SUCCESS") {
+            session.empId = empId;
+            session.shift = shift;
+            session.isAdmin = (shift === "حساب مسؤول");
+            enterDashboard();
+        } else {
+            showError("الرقم الوظيفي أو الرمز السري غير صحيح");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر، تحقق من رابط API");
+    } finally {
+        setBusy(btn, false, "تسجيل الدخول وتأكيد الهوية");
+    }
+}
+
+async function handleRegister() {
+    const empId = document.getElementById("regEmpId").value.trim();
+    const phone = document.getElementById("regPhone").value.trim();
+    const pin = document.getElementById("regPin").value.trim();
+    const btn = document.getElementById("registerBtn");
+
+    if (!empId || !phone || !pin) { showError("الرجاء تعبئة جميع الحقول"); return; }
+    if (empId.length !== 4) { showError("الرقم الوظيفي يجب أن يكون 4 أرقام"); return; }
+
+    setBusy(btn, true, "اعتماد وحفظ الحساب الجديد");
+    try {
+        const pinHash = await hashPin(pin);
+        const result = await apiPost("REGISTER_SECURE", { emp_id: empId, phone, pin_hash: pinHash });
+
+        if (result.status === "SUCCESS") {
+            showSuccess("تم إنشاء الحساب بنجاح، يمكنك تسجيل الدخول الآن");
+            switchAuthScreen("loginScreen");
+        } else if (result.status === "EXISTS") {
+            showError("هذا الرقم الوظيفي مسجل مسبقًا");
+        } else {
+            showError("تعذر إنشاء الحساب، حاول مجددًا");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر");
+    } finally {
+        setBusy(btn, false, "اعتماد وحفظ الحساب الجديد");
+    }
+}
+
+async function handleForgot() {
+    const empId = document.getElementById("forgotEmpId").value.trim();
+    const phone = document.getElementById("forgotPhone").value.trim();
+    const newPin = document.getElementById("forgotNewPin").value.trim();
+    const btn = document.getElementById("forgotBtn");
+
+    if (!empId || !phone || !newPin) { showError("الرجاء تعبئة جميع الحقول"); return; }
+
+    setBusy(btn, true, "تحديث الرمز بالهاتف والتحقق");
+    try {
+        const newPinHash = await hashPin(newPin);
+        const result = await apiPost("FORGOT_PIN_SECURE", { emp_id: empId, phone, new_pin_hash: newPinHash });
+
+        if (result.status === "SUCCESS") {
+            showSuccess("تم تحديث الرمز السري بنجاح");
+            switchAuthScreen("loginScreen");
+        } else {
+            showError("لم يتم العثور على حساب مطابق لهذه البيانات");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر");
+    } finally {
+        setBusy(btn, false, "تحديث الرمز بالهاتف والتحقق");
+    }
+}
+
+function logout() {
+    session = { empId: null, shift: null, isAdmin: false };
+    counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
+    document.getElementById("mainDashboard").style.display = "none";
+    document.getElementById("adminPanel").style.display = "none";
+    document.getElementById("reportSection").style.display = "none";
+    document.getElementById("statusDot").classList.remove("active");
+    document.getElementById("statusText").textContent = "بانتظار تسجيل الدخول...";
+    document.getElementById("activeUserDisplay").textContent = "لم يتم تسجيل الدخول";
+    document.getElementById("loginEmpId").value = "";
+    document.getElementById("loginPin").value = "";
+    switchAuthScreen("loginScreen");
+}
+
+/* ---------- لوحة التحكم والعدادات ---------- */
+
+function enterDashboard() {
+    ["loginScreen", "registerScreen", "forgotScreen"].forEach(id => {
+        document.getElementById(id).style.display = "none";
+    });
+    document.getElementById("mainDashboard").style.display = "block";
+    document.getElementById("statusDot").classList.add("active");
+    document.getElementById("statusText").textContent = "تم تسجيل الدخول بنجاح";
+    document.getElementById("activeUserDisplay").textContent =
+        session.isAdmin ? "مسؤول النظام" : `الموظف رقم ${session.empId} — ${session.shift}`;
+
+    document.getElementById("adminPanel").style.display = session.isAdmin ? "block" : "none";
+    document.getElementById("saveBtn").style.display = session.isAdmin ? "none" : "block";
+
+    updateTotal();
+}
+
+function updateCounter(key, delta) {
+    counters[key] = Math.max(0, counters[key] + delta);
+    document.getElementById(key).textContent = counters[key];
+    updateTotal();
+}
+
+function updateTotal() {
+    const total = CASE_KEYS.reduce((sum, k) => sum + counters[k], 0);
+    document.getElementById("total_daily").textContent = total;
+}
+
+/* ---------- حفظ البيانات اليومية ---------- */
+
+async function saveData() {
+    const btn = document.getElementById("saveBtn");
+    const total = CASE_KEYS.reduce((sum, k) => sum + counters[k], 0);
+
+    if (total === 0) { showError("لا يمكن حفظ يوم بدون أي حالات مسجلة"); return; }
+    if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
+
+    setBusy(btn, true, "حفظ وتوثيق بيانات اليوم");
+    try {
+        const now = new Date();
+        const payload = {
+            date_target: now.toLocaleDateString("en-CA"),
+            emp_id: session.empId,
+            shift: session.shift,
+            total_daily: total,
+            timestamp: now.toISOString(),
+            ...counters
+        };
+        const result = await apiPost("SYNC_DATA", payload);
+
+        if (result.status === "SUCCESS") {
+            showSuccess("تم حفظ وتوثيق بيانات اليوم بنجاح");
+            counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
+            CASE_KEYS.forEach(k => document.getElementById(k).textContent = "0");
+            updateTotal();
+        } else {
+            showError("فشل الحفظ، حاول مرة أخرى");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
+    } finally {
+        setBusy(btn, false, "حفظ وتوثيق بيانات اليوم");
+    }
+}
+
+/* ---------- تقرير المسؤول ---------- */
+
+async function loadMonthlyReport() {
+    if (!session.isAdmin) { showError("هذه الميزة للمسؤول فقط"); return; }
+    if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
+
+    try {
+        const result = await apiGet({ action: "GET_MONTHLY_REPORT", emp_id: session.empId, admin: "1" });
+        if (!Array.isArray(result)) { showError("تعذر جلب التقرير"); return; }
+        renderReportTable(result);
+        document.getElementById("reportSection").style.display = "block";
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء جلب التقرير");
+    }
+}
+
+function renderReportTable(rows) {
+    const body = document.getElementById("reportTableBody");
+    body.innerHTML = "";
+
+    if (!rows.length) {
+        body.innerHTML = `<tr class="empty-row"><td colspan="11">لا توجد بيانات مسجلة بعد لهذا الشهر</td></tr>`;
+        return;
+    }
+
+    rows.forEach(r => {
+        const tr = document.createElement("tr");
+        [r.date, r.emp_id, r.shift, r.total_daily, r.sick_cases, r.blood_pressure,
+         r.headache, r.vital_signs, r.injuries, r.burns, r.hospital_transfer].forEach(val => {
+            const td = document.createElement("td");
+            td.textContent = val;
+            tr.appendChild(td);
+        });
+        body.appendChild(tr);
+    });
+}
+
+/* ---------- تصدير PDF ---------- */
+
+function exportReportPDF() {
+    const table = document.getElementById("reportTable").outerHTML;
+    const tpl = document.getElementById("pdfTemplate");
+    tpl.innerHTML = `
+        <div class="pdf-header">
+            <h2>التقرير الشهري لحالات العيادة</h2>
+            <p>تاريخ الإصدار: ${new Date().toLocaleDateString("ar-EG")}</p>
+        </div>
+        ${table}
+    `;
+    tpl.style.display = "block";
+    html2pdf().from(tpl).set({
+        margin: 10,
+        filename: `تقرير-شهري-${Date.now()}.pdf`,
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }
+    }).save().then(() => { tpl.style.display = "none"; });
+}
+</script>
+</body>
+</html>
