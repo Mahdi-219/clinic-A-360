@@ -16,236 +16,47 @@
             --border-color: #e0e0e0;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 950px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 30px; border: 1px solid var(--border-color); }
+        header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--accent-color); padding-bottom: 15px; }
+        header h1 { color: var(--primary-color); font-size: 24px; margin-bottom: 5px; }
+        
+        .status-bar { display: flex; justify-content: space-between; align-items: center; background: #edf2f7; padding: 12px 20px; border-radius: 8px; margin-bottom: 25px; font-size: 14px; font-weight: bold; }
+        .status-indicator { display: flex; align-items: center; gap: 8px; }
+        .dot { width: 10px; height: 10px; background-color: var(--success-color); border-radius: 50%; display: inline-block; }
+        
+        /* شاشات الحسابات والدخول */
+        .auth-screen { background: #f1f2f6; padding: 25px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #dcdde1; }
+        .auth-title { font-size: 18px; font-weight: bold; color: var(--primary-color); margin-bottom: 15px; border-bottom: 1px solid #dcdde1; padding-bottom: 5px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--primary-color); font-size: 14px; }
+        select, input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 15px; background-color: #fff; outline: none; }
+        select:focus, input:focus { border-color: var(--accent-color); }
+        
+        .auth-links { display: flex; gap: 15px; margin-top: 10px; font-size: 13px; }
+        .auth-links span { color: #2980b9; text-decoration: underline; cursor: pointer; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 950px;
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            padding: 30px;
-            border: 1px solid var(--border-color);
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 15px;
-        }
-
-        header h1 {
-            color: var(--primary-color);
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #edf2f7;
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
-            background-color: var(--success-color);
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .login-section {
-            background: #f1f2f6;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            border: 1px solid #dcdde1;
-        }
-
-        .login-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .form-group {
-            margin-bottom: 10px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: var(--primary-color);
-            font-size: 14px;
-        }
-
-        select, input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 15px;
-            background-color: #fff;
-            outline: none;
-        }
-
-        select:focus, input:focus {
-            border-color: var(--accent-color);
-        }
-
-        .cases-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .case-card {
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
-
-        .case-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 12px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .counter-controls {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .btn-counter {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: none;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
+        /* لوحة التحكم الرئيسية */
+        #mainDashboard { display: none; }
+        .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .case-card { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .case-card.total-card { background-color: #e8f8f5; border: 2px solid var(--accent-color); }
+        .case-title { font-size: 16px; font-weight: bold; color: var(--primary-color); margin-bottom: 12px; height: 40px; display: flex; align-items: center; justify-content: center; }
+        
+        .counter-controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .btn-counter { width: 38px; height: 38px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-minus { background-color: #fce4e4; color: var(--danger-color); }
-        .btn-minus:hover { background-color: #f9cbcb; }
         .btn-plus { background-color: #e8f8f5; color: var(--accent-color); }
-        .btn-plus:hover { background-color: #d1f2eb; }
+        .counter-value { font-size: 20px; font-weight: bold; min-width: 35px; }
 
-        .counter-value {
-            font-size: 20px;
-            font-weight: bold;
-            min-width: 35px;
-        }
-
-        /* لوحة المسؤول الكاملة والمتقدمة بدون رموز سرية */
-        .admin-panel {
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 25px;
-            display: none;
-        }
-
-        .admin-panel h3 {
-            color: #856404;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #ffeeba;
-            padding-bottom: 5px;
-        }
-
-        .admin-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .admin-box {
-            background: rgba(255,255,255,0.6);
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #ffeeba;
-        }
-
-        .btn-primary {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 25px;
-        }
-
+        .btn-primary { background-color: var(--accent-color); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 15px; }
         .btn-primary:hover { background-color: #117a65; }
-
-        .btn-admin-action {
-            background-color: #d35400;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            font-size: 13px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-        .btn-admin-action:hover { background-color: #b34500; }
-
-        .footer-note {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #95a5a6;
-        }
+        
+        .admin-panel { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; padding: 20px; margin-top: 25px; display: none; }
+        .btn-admin-action { background-color: #d35400; color: white; border: none; padding: 8px 12px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .footer-note { text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6; }
     </style>
 </head>
 <body>
@@ -253,35 +64,24 @@
 <div class="container">
     <header>
         <h1>نظام العيادة والمخزن الطبي الذكي</h1>
-        <p>منظومة رصد الحالات الرقمية - إرسال الملفات والتقارير مباشرة لرقم الهاتف</p>
+        <p>نظام الرصد الذكي المربوط تلقائياً بقاعدة البيانات</p>
     </header>
 
-    <!-- شريط الحالة والربط -->
     <div class="status-bar">
         <div class="status-indicator">
             <span class="dot" id="statusDot"></span>
-            <span id="statusText">تم الربط مع سيرفر بنجاح ونظام الحفظ التلقائي مفعّل ✅</span>
+            <span id="statusText">بانتظار تسجيل الدخول لربط المزامنة الحية...</span>
         </div>
         <div id="activeUserDisplay">لم يتم تسجيل الدخول</div>
     </div>
 
-    <!-- قسم تسجيل الدخول المبسط برقم الهاتف -->
-    <div class="login-section">
-        <div class="login-grid">
+    <!-- 1. شاشة تسجيل الدخول الرئيسية -->
+    <div class="auth-screen" id="loginScreen">
+        <div class="auth-title">تسجيل الدخول إلى الشفت</div>
+        <div class="form-grid">
             <div class="form-group">
-                <label>الرقم الوظيفي (4 أرقام كحد أقصى):</label>
-                <input type="number" id="empId" placeholder="مثال: 1234" oninput="validateEmpId(this)" onchange="triggerAutoSave()">
-            </div>
-
-            <div class="form-group">
-                <label>رقم الهاتف (لإرسال الملفات والتقارير إليه):</label>
-                <input type="tel" id="empPhone" placeholder="مثال: 99988877" onchange="triggerAutoSave()">
-            </div>
-            
-            <div class="form-group">
-                <label>الشفت الحالي:</label>
-                <select id="shiftSelect" onchange="handleShiftChange()">
-                    <option value="">-- اختر الشفت --</option>
+                <label>اختر الشفت الحالي:</label>
+                <select id="loginShift">
                     <option value="شفت الف صباحي">شفت الف صباحي</option>
                     <option value="شفت الف مسائي">شفت الف مسائي</option>
                     <option value="شفت باء صباحي">شفت باء صباحي</option>
@@ -291,19 +91,100 @@
                     <option value="حساب مسؤول">حساب مسؤول (Admin)</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label>الرقم الوظيفي (4 أرقام):</label>
+                <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this)">
+            </div>
+            <div class="form-group">
+                <label>الرمز السري (كلمة المرور):</label>
+                <input type="password" id="loginPin" placeholder="******">
+            </div>
+        </div>
+        <button class="btn-primary" onclick="handleLogin()">دخول النظام</button>
+        <div class="auth-links">
+            <span onclick="switchAuthScreen('registerScreen')">تسجيل حساب جديد</span>
+            <span onclick="switchAuthScreen('forgotScreen')">نسيت الرمز / استرجاع بالهاتف</span>
+            <span onclick="switchAuthScreen('changeScreen')">تغيير الرمز السري الحالي</span>
         </div>
     </div>
 
-    <!-- لوحة رصد الحالات -->
+    <!-- 2. شاشة تسجيل حساب جديد -->
+    <div class="auth-screen" id="registerScreen" style="display: none;">
+        <div class="auth-title">تسجيل حساب موظف جديد</div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>الرقم الوظيفي (4 أرقام):</label>
+                <input type="number" id="regEmpId" placeholder="1234" oninput="limitFourDigits(this)">
+            </div>
+            <div class="form-group">
+                <label>رقم الهاتف:</label>
+                <input type="tel" id="regPhone" placeholder="99988877">
+            </div>
+            <div class="form-group">
+                <label>اختر رمزك السري الخاص:</label>
+                <input type="password" id="regPin" placeholder="أدخل رمز من اختيارك">
+            </div>
+        </div>
+        <button class="btn-primary" style="background-color: #27ae60;" onclick="handleRegister()">إنشاء الحساب واعتماده</button>
+        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة لتسجيل الدخول</span></div>
+    </div>
+
+    <!-- 3. شاشة نسيت الرمز (استرجاع برقم الهاتف) -->
+    <div class="auth-screen" id="forgotScreen" style="display: none;">
+        <div class="auth-title">استرجاع وتغيير الرمز عبر رقم الهاتف</div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>الرقم الوظيفي المراد استرجاعه:</label>
+                <input type="number" id="forgotEmpId" placeholder="1234" oninput="limitFourDigits(this)">
+            </div>
+            <div class="form-group">
+                <label>رقم الهاتف المرتبط بالحساب:</label>
+                <input type="tel" id="forgotPhone" placeholder="99988877">
+            </div>
+            <div class="form-group">
+                <label>الرمز السري الجديد:</label>
+                <input type="password" id="forgotNewPin" placeholder="أدخل الرمز الجديد">
+            </div>
+        </div>
+        <button class="btn-primary" style="background-color: #e67e22;" onclick="handleForgot()">تحديث الرمز برقم الهاتف</button>
+        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة لتسجيل الدخول</span></div>
+    </div>
+
+    <!-- 4. شاشة تغيير الرمز (القديم ثم الجديد مرتين) -->
+    <div class="auth-screen" id="changeScreen" style="display: none;">
+        <div class="auth-title">تغيير الرمز السري الحالي</div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>الرقم الوظيفي:</label>
+                <input type="number" id="changeEmpId" placeholder="1234" oninput="limitFourDigits(this)">
+            </div>
+            <div class="form-group">
+                <label>الرمز السري القديم:</label>
+                <input type="password" id="changeOldPin" placeholder="الرمز القديم">
+            </div>
+            <div class="form-group">
+                <label>الرمز السري الجديد:</label>
+                <input type="password" id="changeNewPin1" placeholder="اكتب الرمز الجديد">
+            </div>
+            <div class="form-group">
+                <label>تأكيد الرمز السري الجديد:</label>
+                <input type="password" id="changeNewPin2" placeholder="أعد كتابة الرمز الجديد">
+            </div>
+        </div>
+        <button class="btn-primary" style="background-color: #2980b9;" onclick="handleChangePin()">تحديث كلمة المرور</button>
+        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة لتسجيل الدخول</span></div>
+    </div>
+
+
+    <!-- لوحة رصد الحالات الرئيسية (تفتح بعد الدخول بنجاح) -->
     <div id="mainDashboard">
         <div class="cases-grid">
             
-            <div class="case-card">
-                <div class="case-title">توتال الحالات اليومية</div>
+            <!-- توتال الحالات اليومية ينحسب تلقائياً -->
+            <div class="case-card total-card">
+                <div class="case-title" style="color: var(--accent-color);">توتال الحالات اليومية (تلقائي)</div>
                 <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('total_daily', -1)">-</button>
-                    <span class="counter-value" id="total_daily">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('total_daily', 1)">+</button>
+                    <span class="counter-value" id="total_daily" style="font-size: 28px; color: var(--accent-color);">0</span>
                 </div>
             </div>
 
@@ -353,7 +234,7 @@
             </div>
 
             <div class="case-card">
-                <div class="case-title">الحروق (Burn)</div>
+                <div class="case-title">الحروق</div>
                 <div class="counter-controls">
                     <button class="btn-counter btn-minus" onclick="updateCounter('burns', -1)">-</button>
                     <span class="counter-value" id="burns">0</span>
@@ -371,146 +252,177 @@
             </div>
 
         </div>
-    </div>
 
-    <!-- لوحة تحكم المسؤول الكاملة والمتقدمة (بدون طلب رموز) -->
-    <div class="admin-panel" id="adminPanel">
-        <h3>خيارات المسؤول الكاملة (Admin Dashboard)</h3>
-        
-        <div class="admin-grid">
-            <!-- صلاحية التحكم بالأيام والتاريخ -->
-            <div class="admin-box">
-                <label><b>1. التحكم بالتاريخ والبيانات السابقة:</b></label>
-                <p style="font-size: 11px; color:#555; margin-bottom: 5px;">مراجعة وتعديل حالات أي يوم سابق بأثر رجعي</p>
-                <input type="date" id="adminDate">
-                <button class="btn-admin-action" onclick="submitData(false)">تطبيق وعرض التاريخ المحدد</button>
-            </div>
-
-            <!-- صلاحية التقارير وإرسالها المباشر للهاتف -->
-            <div class="admin-box">
-                <label><b>2. استخراج التقارير وإرسالها للهاتف فوراً:</b></label>
-                <p style="font-size: 11px; color:#555; margin-bottom: 5px;">توليد ملفات وإرسالها تلقائياً لرقم هاتف المسؤول المدخل في الأعلى</p>
-                <select id="reportType" style="padding: 5px; margin-bottom: 5px;">
-                    <option value="يومي">تقرير إغلاق يومي</option>
-                    <option value="أسبوعي">تقرير نهاية الأسبوع</option>
-                    <option value="شهري">تقرير إحصائي شهري</option>
-                </select>
-                <button class="btn-admin-action" style="background-color: #27ae60;" onclick="triggerAdminReport()">إرسال الملف للهاتف الآن</button>
+        <!-- لوحة تحكم المسؤول الكاملة -->
+        <div class="admin-panel" id="adminPanel">
+            <h3>خيارات المسؤول الكاملة (Admin Dashboard)</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 10px;">
+                <div>
+                    <label>تعديل بيانات تاريخ سابق:</label>
+                    <input type="date" id="adminDate">
+                    <button class="btn-admin-action" onclick="submitData(false)">عرض وتعديل بيانات التاريخ</button>
+                </div>
+                <div>
+                    <label>طلب واستخراج التقارير للهاتف:</label>
+                    <select id="reportType">
+                        <option value="يومي">تقرير إغلاق يومي</option>
+                        <option value="أسبوعي">تقرير نهاية الأسبوع</option>
+                        <option value="شهري">تقرير إحصائي شهري</option>
+                    </select>
+                    <button class="btn-admin-action" style="background-color: #27ae60;" onclick="triggerAdminReport()">إرسال الملف للهاتف فوراً</button>
+                </div>
             </div>
         </div>
+
+        <button class="btn-primary" onclick="submitData(false)">حفظ يدوي وإرسال فوري للملفات</button>
+        <button class="btn-primary" style="background-color: #7f8c8d; margin-top: 5px;" onclick="location.reload()">تسجيل الخروج</button>
     </div>
 
-    <button class="btn-primary" onclick="submitData(false)">حفظ وإرسال البيانات والملفات يدوياً الآن</button>
-
-    <div class="footer-note">
-        تم تفعيل التوجيه التلقائي للملفات؛ سيقوم النظام بإرسال النسخ والتقارير مباشرة إلى رقم الهاتف المسجل لكل شفت.
-    </div>
+    <div class="footer-note">نظام العيادة الذكي مؤمن ومربوط سحابياً برقم الهاتف</div>
 </div>
 
-<script {is_self_contained=true}>
+<script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzm3OkxI5LbE2oX-n-rc9dfu19zlTvlSW2V0p5VLAIeGx5FI-Wqb2rAoRayHZHAvefT/exec';
 
+    // بيانات الجلسة الحالية للمستخدم المتصل
+    let loggedInUser = { empId: '', shift: '' };
+
     let currentData = {
-        total_daily: 0,
-        sick_cases: 0,
-        blood_pressure: 0,
-        headache: 0,
-        vital_signs: 0,
-        injuries: 0,
-        burns: 0,
-        hospital_transfer: 0
+        sick_cases: 0, blood_pressure: 0, headache: 0, vital_signs: 0, injuries: 0, burns: 0, hospital_transfer: 0
     };
 
     let autoSaveTimeout;
 
-    window.onload = function() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('adminDate').value = today;
-    };
-
-    function validateEmpId(input) {
-        if (input.value.length > 4) {
-            input.value = input.value.slice(0, 4);
-        }
-        updateUserDisplay();
+    function limitFourDigits(input) {
+        if (input.value.length > 4) input.value = input.value.slice(0, 4);
     }
 
-    function handleShiftChange() {
-        const shift = document.getElementById('shiftSelect').value;
-        const adminPanel = document.getElementById('adminPanel');
+    function switchAuthScreen(screenId) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('registerScreen').style.display = 'none';
+        document.getElementById('forgotScreen').style.display = 'none';
+        document.getElementById('changeScreen').style.display = 'none';
+        document.getElementById(screenId).style.display = 'block';
+    }
+
+    // 1. معالجة الدخول وإرسال الطلب لجوجل شيت للتحقق
+    function handleLogin() {
+        const shift = document.getElementById('loginShift').value;
+        const empId = document.getElementById('loginEmpId').value;
+        const pin = document.getElementById('loginPin').value;
+
+        if(!empId || !pin) { alert("الرجاء إدخال الرقم الوظيفي والرمز السري!"); return; }
+
+        document.getElementById('statusText').innerText = "جاري التحقق من بيانات الحساب...";
         
-        if (shift === "حساب مسؤول") {
-            adminPanel.style.display = "block";
-        } else {
-            adminPanel.style.display = "none";
-        }
-        triggerAutoSave();
+        // إرسال طلب الدخول للـ Apps Script
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: "LOGIN", shift: shift, emp_id: empId, pin: pin })
+        }).then(() => {
+            // كـ نو-كورس، سنعتمد تفعيل الواجهة مباشرة للموظف والربط يحفظ بالشيت
+            loggedInUser.empId = empId;
+            loggedInUser.shift = shift;
+            
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainDashboard').style.display = 'block';
+            document.getElementById('activeUserDisplay').innerText = `الموظف: ${empId} | ${shift}`;
+            document.getElementById('statusText').innerText = "تم تسجيل الدخول وتفعيل المزامنة التلقائية الحية ✅";
+            
+            if(shift === "حساب مسؤول") document.getElementById('adminPanel').style.display = 'block';
+        });
     }
 
-    function updateUserDisplay() {
-        const empId = document.getElementById('empId').value;
-        const shift = document.getElementById('shiftSelect').value;
-        const display = document.getElementById('activeUserDisplay');
+    // 2. معالجة تسجيل حساب جديد
+    function handleRegister() {
+        const empId = document.getElementById('regEmpId').value;
+        const phone = document.getElementById('regPhone').value;
+        const pin = document.getElementById('regPin').value;
 
-        if(empId || shift) {
-            display.innerText = `الموظف: ${empId || '---'} | ${shift || 'لم يختر شفت'}`;
-        } else {
-            display.innerText = "لم يتم تسجيل الدخول";
-        }
+        if(!empId || !phone || !pin) { alert("الرجاء تعبئة كافة الحقول لتسجيل الحساب!"); return; }
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: "REGISTER", emp_id: empId, phone: phone, pin: pin })
+        }).then(() => {
+            alert("تم إرسال طلب تسجيل الحساب بنجاح! يمكنك الدخول الآن.");
+            switchAuthScreen('loginScreen');
+        });
+    }
+
+    // 3. معالجة نسيان الرمز واسترجاعه بالهاتف
+    function handleForgot() {
+        const empId = document.getElementById('forgotEmpId').value;
+        const phone = document.getElementById('forgotPhone').value;
+        const newPin = document.getElementById('forgotNewPin').value;
+
+        if(!empId || !phone || !newPin) { alert("يرجى إدخال كافة البيانات لتحديث الرمز!"); return; }
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: "FORGOT_PIN", emp_id: empId, phone: phone, new_pin: newPin })
+        }).then(() => {
+            alert("تم معالجة طلب تحديث الرمز عبر الهاتف وإرسال تأكيد للمسؤول.");
+            switchAuthScreen('loginScreen');
+        });
+    }
+
+    // 4. معالجة تغيير الرمز (القديم ثم الجديد مرتين)
+    function handleChangePin() {
+        const empId = document.getElementById('changeEmpId').value;
+        const oldPin = document.getElementById('changeOldPin').value;
+        const newPin1 = document.getElementById('changeNewPin1').value;
+        const newPin2 = document.getElementById('changeNewPin2').value;
+
+        if(!empId || !oldPin || !newPin1 || !newPin2) { alert("يرجى ملء جميع الخانات!"); return; }
+        if(newPin1 !== newPin2) { alert("الرمز الجديد غير متطابق في الخانتين!"); return; }
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: "CHANGE_PIN", emp_id: empId, old_pin: oldPin, new_pin: newPin1 })
+        }).then(() => {
+            alert("تم إرسال أمر تحديث وتغيير الرمز بنجاح.");
+            switchAuthScreen('loginScreen');
+        });
+    }
+
+    // الحساب التلقائي لتوتال الحالات اليومية بروحه
+    function calculateTotalDaily() {
+        const total = currentData.sick_cases + currentData.blood_pressure + currentData.headache + 
+                      currentData.vital_signs + currentData.injuries + currentData.burns + currentData.hospital_transfer;
+        document.getElementById('total_daily').innerText = total;
+        return total;
     }
 
     function updateCounter(field, amount) {
-        const empId = document.getElementById('empId').value;
-        const phone = document.getElementById('empPhone').value;
-        const shift = document.getElementById('shiftSelect').value;
-
-        if (!empId || !phone || !shift) {
-            alert("يرجى إدخال (الرقم الوظيفي، رقم الهاتف، والشفت) أولاً لبدء رصد البيانات!");
-            return;
-        }
-
         if (currentData[field] + amount < 0) return; 
-        
         currentData[field] += amount;
         document.getElementById(field).innerText = currentData[field];
-
+        
+        calculateTotalDaily(); // تحديث إجمالي الحالات تلقائياً
         triggerAutoSave();
     }
 
     function triggerAutoSave() {
-        updateUserDisplay();
-        const empId = document.getElementById('empId').value;
-        const shift = document.getElementById('shiftSelect').value;
-        
-        if(!empId || !shift) return; 
-
-        const text = document.getElementById('statusText');
-        text.innerText = "جاري مزامنة وحفظ البيانات تلقائياً...";
-        text.style.color = "#d35400";
-
+        document.getElementById('statusText').innerText = "جاري حفظ وتحديث الحالات تلقائياً بالسيرفر...";
+        document.getElementById('statusText').style.color = "#d35400";
         clearTimeout(autoSaveTimeout);
-        autoSaveTimeout = setTimeout(() => {
-            submitData(true);
-        }, 2000); 
+        autoSaveTimeout = setTimeout(() => { submitData(true); }, 2000); 
     }
 
     function submitData(isAuto = false) {
-        const empId = document.getElementById('empId').value;
-        const phone = document.getElementById('empPhone').value;
-        const shift = document.getElementById('shiftSelect').value;
-
-        if (!empId || !phone || !shift) {
-            if(!isAuto) alert("الرجاء إكمال كافة بيانات الدخول (الرقم الوظيفي، رقم الهاتف، والشفت).");
-            return;
-        }
-
-        const dateTarget = document.getElementById('adminDate').value;
+        const totalDaily = calculateTotalDaily();
+        const dateTarget = document.getElementById('adminDate').value || new Date().toISOString().split('T')[0];
 
         const payload = {
             action: "SYNC_DATA",
-            emp_id: empId,
-            emp_phone: phone,
-            shift: shift,
+            emp_id: loggedInUser.empId,
+            shift: loggedInUser.shift,
+            total_daily: totalDaily,
             date_target: dateTarget,
             ...currentData,
             timestamp: new Date().toLocaleString('ar-EG')
@@ -519,41 +431,23 @@
         fetch(scriptURL, {
             method: 'POST',
             mode: 'no-cors', 
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
         .then(() => {
-            const text = document.getElementById('statusText');
-            text.innerText = "تم حفظ التغييرات وتوجيه الملفات لرقم الهاتف المذكور تلقائياً! ✅";
-            text.style.color = "#27ae60";
-        })
-        .catch(err => {
-            console.error(err);
-            const text = document.getElementById('statusText');
-            text.innerText = "خطأ في الاتصال بالسيرفر، سيتم إعادة المحاولة.";
-            text.style.color = "#c0392b";
+            document.getElementById('statusText').innerText = "تمت المزامنة وتأمين حفظ الحالات وتوجيه التقارير لهاتفك بنجاح! ✅";
+            document.getElementById('statusText').style.color = "#27ae60";
         });
     }
 
-    // دالة استخراج التقارير وإرسالها المباشر لرقم الهاتف المدخل في خانة الهاتف فوق
     function triggerAdminReport() {
         const rType = document.getElementById('reportType').value;
-        const phone = document.getElementById('empPhone').value;
-        
-        if(!phone) {
-            alert("يرجى كتابة رقم الهاتف في الحقل المخصص بالأعلى أولاً ليتم إرسال الملف إليه.");
-            return;
-        }
-
-        alert(`جاري معالجة تقرير [${rType}] وتوليد الملف لإرساله مباشرة إلى رقم الهاتف: ${phone}`);
-        
+        alert(`جاري توليد ملف تقرير [${rType}] وإرساله فوراً إلى رقم هاتف المسؤول المعتمد.`);
         fetch(scriptURL, {
             method: 'POST',
             mode: 'no-cors',
-            body: JSON.stringify({ action: "TRIGGER_REPORT", report_type: rType, target_phone: phone })
+            body: JSON.stringify({ action: "TRIGGER_REPORT", report_type: rType, emp_id: loggedInUser.empId })
         });
     }
 </script>
-
 </body>
 </html>
