@@ -180,8 +180,8 @@
             </div>
 
             <div class="case-card">
-                <div class="case-title">الحالات المرضية</div>
-                <div class="case-subtitle">Sick Cases</div>
+                <div class="case-title">حالات طبية</div>
+                <div class="case-subtitle">Medical Cases</div>
                 <div class="counter-controls">
                     <button class="btn-counter btn-minus" onclick="updateCounter('sick_cases', -1)">-</button>
                     <span class="counter-value" id="sick_cases">0</span>
@@ -230,7 +230,7 @@
             </div>
 
             <div class="case-card">
-                <div class="case-title">الحروق</div>
+                <div class="case-title">حروق</div>
                 <div class="case-subtitle">Burns</div>
                 <div class="counter-controls">
                     <button class="btn-counter btn-minus" onclick="updateCounter('burns', -1)">-</button>
@@ -245,175 +245,4 @@
                 <div class="counter-controls">
                     <button class="btn-counter btn-minus" onclick="updateCounter('hospital_transfer', -1)">-</button>
                     <span class="counter-value" id="hospital_transfer">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('hospital_transfer', 1)">+</button>
-                </div>
-            </div>
-
-        </div>
-
-        <button class="btn-primary" id="saveBtn" onclick="submitData(false)">💾 حفظ وإرسال البيانات فوراً بقاعدة البيانات سحابياً</button>
-
-        <div class="admin-panel" id="adminPanel">
-            <h3 style="color: #2c3e50; font-size: 18px; border-bottom: 2px solid #d35400; padding-bottom: 5px;">لوحة تحكم المسؤول الإحصائية الشاملة (Admin Panel)</h3>
-            <p style="font-size: 13px; margin-top: 5px; color: #7f8c8d;">يتم جلب البيانات تلقائياً وتوزيعها على أيام الشهر من 1 إلى 31 لتجهيزها للطباعة السنوية والشهرية للملفات.</p>
-            
-            <div class="report-section" id="monthlyReportSection">
-                <div class="report-title" id="reportMonthTitle">جدول إحصائيات الحالات لشهر الحالي (تلقائي الحفظ والترتيب)</div>
-                <table class="monthly-table" id="monthlyDataTable">
-                    <thead>
-                        <tr>
-                            <th>اليوم / Day</th>
-                            <th>إجمالي الحالات<br><small>Total Cases</small></th>
-                            <th>الحالات المرضية<br><small>Sick Cases</small></th>
-                            <th>ضغط الدم<br><small>Blood Pressure</small></th>
-                            <th>صداع<br><small>Headache</small></th>
-                            <th>علامات حيوية<br><small>Vital Signs</small></th>
-                            <th>إصابات<br><small>Injuries</small></th>
-                            <th>الحروق<br><small>Burns</small></th>
-                            <th>نقل المستشفى<br><small>Hospital Transfer</small></th>
-                        </tr>
-                    </thead>
-                    <tbody id="monthlyTableBody">
-                    </tbody>
-                </table>
-            </div>
-            
-            <button class="btn-primary" style="background-color: #27ae60; margin-top: 15px;" onclick="printMonthlyPDF()">🖨️ طباعة جدول الشهر الحالي بالكامل PDF للملف الرسمي</button>
-        </div>
-
-        <button class="btn-primary" style="background-color: #7f8c8d; margin-top: 15px;" onclick="location.reload()">تسجيل الخروج وتأمين الشاشة</button>
-    </div>
-
-    <div class="footer-note" id="systemFooter">سستم جدول حالات العيادة - منظومة تصنيف الحالات عيادات الطوارئ الطبية</div>
-</div>
-
-<div id="pdfTemplate" style="display: none; direction: rtl;">
-    <div class="pdf-header">
-        <h2>سستم جدول حالات العيادة</h2>
-        <h3>منظومة تصنيف الحالات عيادات الطوارئ الطبية</h3>
-        <p id="pdfMonthLabel" style="margin-top: 5px; font-weight: bold; color: #2c3e50;"></p>
-    </div>
-    <div id="pdfTableContainer"></div>
-</div>
-
-<script>
-    // الرابط السحابي الجديد والمعتمد والمفعل لديك بنجاح
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxvCq1QjBt8Pr-2d-0Td5btKVlqjU4qm3hph5qLamBfF1PkLdfRPghKBt4aVpvMJdpp/exec';
-
-    let loggedInUser = { empId: '', shift: '' };
-    let currentData = { sick_cases: 0, blood_pressure: 0, headache: 0, vital_signs: 0, injuries: 0, burns: 0, hospital_transfer: 0 };
-    
-    function limitFourDigits(input) {
-        if (input.value.length > 4) input.value = input.value.slice(0, 4);
-    }
-
-    function showStatusAlert(msg, isSuccess = false) {
-        const errDiv = document.getElementById('errorMessage');
-        const succDiv = document.getElementById('successMessage');
-        errDiv.style.display = 'none';
-        succDiv.style.display = 'none';
-
-        if(isSuccess) {
-            succDiv.innerText = msg;
-            succDiv.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-            errDiv.innerText = msg;
-            errDiv.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }
-
-    function switchAuthScreen(screenId) {
-        document.getElementById('errorMessage').style.display = 'none';
-        document.getElementById('successMessage').style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('registerScreen').style.display = 'none';
-        document.getElementById('forgotScreen').style.display = 'none';
-        document.getElementById(screenId).style.display = 'block';
-    }
-
-    function handleLogin() {
-        const shift = document.getElementById('loginShift').value;
-        const empId = document.getElementById('loginEmpId').value;
-        const pin = document.getElementById('loginPin').value;
-
-        if(!empId || !pin) { 
-            showStatusAlert("الرجاء إدخل الرقم الوظيفي والرمز السري الخاص بك أولاً!"); 
-            return; 
-        }
-
-        if (shift === "حساب مسؤول" || empId === "1111") {
-            if (empId === "1111" && pin === "1111") {
-                activateDashboard(empId, "حساب مسؤول (Admin)", true);
-                showStatusAlert("تم دخول المسؤول بنجاح.. جاري جلب كافة بيانات الشهر وحالات الأيام الحالية من السيرفر فوراً!", true);
-                return;
-            } else {
-                showStatusAlert("بيانات دخول المسؤول غير صحيحة. تم رفض الدخول لحماية النظام.");
-                return;
-            }
-        }
-
-        document.getElementById('statusText').innerText = "جاري مطابقة الهوية والرمز الخاص بقاعدة البيانات...";
-        const loginBtn = document.getElementById('loginBtn');
-        loginBtn.innerText = "جاري الفحص السحابي...";
-        loginBtn.disabled = true;
-
-        fetch(scriptURL + "?action=VERIFY_LOGIN&emp_id=" + empId + "&pin=" + pin + "&shift=" + shift)
-        .then(response => response.json())
-        .then(data => {
-            loginBtn.innerText = "تسجيل الدخول وتأكيد الهوية";
-            loginBtn.disabled = false;
-
-            if (data.status === "SUCCESS") {
-                activateDashboard(empId, shift, false);
-                showStatusAlert("تم التحقق بنجاح ودخول المنظومة الطبية بالرمز الخاص بك!", true);
-                fetchCurrentDayData();
-            } else {
-                showStatusAlert("خطأ في الرقم الوظيفي أو الرمز السري الخاص بك! تأكد من الحساب أو قم بإنشاء حساب جديد.");
-            }
-        })
-        .catch(err => {
-            loginBtn.innerText = "تسجيل الدخول وتأكيد الهوية";
-            loginBtn.disabled = false;
-            showStatusAlert("تعذر الاتصال بالسيرفر، ولكن تم فتح المنظومة احتياطياً للطوارئ.");
-            activateDashboard(empId, shift, false);
-        });
-    }
-
-    function activateDashboard(empId, shift, isAdmin) {
-        loggedInUser.empId = empId;
-        loggedInUser.shift = shift;
-        
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainDashboard').style.display = 'block';
-        document.getElementById('activeUserDisplay').innerText = `المستخدم: ${empId} | ${shift}`;
-        document.getElementById('statusText').innerText = "متصل بقاعدة البيانات السحابية الحية آمن ✅";
-        document.getElementById('statusDot').classList.add('active');
-        
-        if(isAdmin) {
-            document.getElementById('adminPanel').style.display = 'block';
-            buildAndFetchMonthlyTable(); 
-        }
-    }
-
-    function handleRegister() {
-        const empId = document.getElementById('regEmpId').value;
-        const phone = document.getElementById('regPhone').value;
-        const pin = document.getElementById('regPin').value;
-
-        if(!empId || !phone || !pin) { showStatusAlert("الرجاء تعبئة كافة الحقول لحفظ وبناء الحساب!"); return; }
-
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "REGISTER_SECURE", emp_id: empId, phone: phone, pin: pin }) })
-        .then(() => {
-            alert("تم إرسال طلب اعتماد الحساب في السيرفر بنجاح! يمكنك الآن تسجيل الدخول.");
-            switchAuthScreen('loginScreen');
-        });
-    }
-
-    function handleForgot() {
-        const empId = document.getElementById('forgotEmpId').value;
-        const phone = document.getElementById('forgotPhone').value;
-        const newPin = document.getElementById('forgotNewPin').value;
-
-        if(!empId || !phone || !new
+                    <button class="btn-
