@@ -90,8 +90,9 @@
     <div class="alert-message alert-danger" id="errorMessage"></div>
     <div class="alert-message alert-success" id="successMessage"></div>
 
+    <!-- 1. شاشة تسجيل الدخول الرئيسية -->
     <div class="auth-screen" id="loginScreen">
-        <div class="auth-title">تسجيل الدخول المحوكم إلى الشفت</div>
+        <div class="auth-title">تسجيل الدخول المحوكم إلى الشفت بالرمز الخاص</div>
         <div class="form-grid">
             <div class="form-group">
                 <label>اختر الشفت الحالي:</label>
@@ -106,7 +107,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>الرقم الوظيفي (4 أرقام):</label>
+                <label>الرقم الوظيفي الخاص بك (4 أرقام):</label>
                 <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this)">
             </div>
             <div class="form-group">
@@ -116,34 +117,36 @@
         </div>
         <button class="btn-primary" id="loginBtn" onclick="handleLogin()">تحقق ودخول النظام</button>
         <div class="auth-links">
-            <span onclick="switchAuthScreen('registerScreen')">تسجيل حساب جديد</span>
+            <span onclick="switchAuthScreen('registerScreen')">تسجيل حساب جديد بالرمز الخاص</span>
             <span onclick="switchAuthScreen('forgotScreen')">نسيت الرمز / استرجاع بالهاتف</span>
             <span onclick="switchAuthScreen('changeScreen')">تغيير الرمز السري الحالي</span>
         </div>
     </div>
 
+    <!-- 2. شاشة تسجيل حساب جديد -->
     <div class="auth-screen" id="registerScreen" style="display: none;">
-        <div class="auth-title">تسجيل واعتماد حساب موظف جديد في القاعدة</div>
+        <div class="auth-title">تسجيل واعتماد حساب موظف جديد برمز خاص</div>
         <div class="form-grid">
             <div class="form-group">
-                <label>الرقم الوظيفي (4 أرقام):</label>
+                <label>الرقم الوظيفي الخاص بك (4 أرقام):</label>
                 <input type="number" id="regEmpId" placeholder="1234" oninput="limitFourDigits(this)">
             </div>
             <div class="form-group">
-                <label>رقم الهاتف المرتبط بالدورة:</label>
+                <label>رقم الهاتف للتأكيد المستقبلي:</label>
                 <input type="tel" id="regPhone" placeholder="99988877">
             </div>
             <div class="form-group">
                 <label>اختر الرمز السري الخاص بك:</label>
-                <input type="password" id="regPin" placeholder="أدخل الرمز">
+                <input type="password" id="regPin" placeholder="أدخل رمزك السري الخاص">
             </div>
         </div>
-        <button class="btn-primary" style="background-color: #27ae60;" onclick="handleRegister()">حفظ واعتماد في قاعدة البيانات</button>
+        <button class="btn-primary" style="background-color: #27ae60;" onclick="handleRegister()">حفظ واعتماد حسابي في السستم</button>
         <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة لتسجيل الدخول</span></div>
     </div>
 
+    <!-- 3. شاشة استرجاع الرمز -->
     <div class="auth-screen" id="forgotScreen" style="display: none;">
-        <div class="auth-title">إعادة ضبط الرمز عبر الهاتف المعتمد</div>
+        <div class="auth-title">إعادة ضبط الرمز الخاص عبر الهاتف المعتمد</div>
         <div class="form-grid">
             <div class="form-group">
                 <label>الرقم الوظيفي:</label>
@@ -154,7 +157,7 @@
                 <input type="tel" id="forgotPhone" placeholder="99988877">
             </div>
             <div class="form-group">
-                <label>الرمز السري الجديد:</label>
+                <label>الرمز السري الخاص الجديد:</label>
                 <input type="password" id="forgotNewPin" placeholder="أدخل الرمز الجديد">
             </div>
         </div>
@@ -162,8 +165,9 @@
         <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة لتسجيل الدخول</span></div>
     </div>
 
+    <!-- 4. شاشة تغيير الرمز -->
     <div class="auth-screen" id="changeScreen" style="display: none;">
-        <div class="auth-title">تغيير الرمز السري للموظف</div>
+        <div class="auth-title">تغيير الرمز السري الخاص بالموظف</div>
         <div class="form-grid">
             <div class="form-group">
                 <label>الرقم الوظيفي الخاص بك:</label>
@@ -186,7 +190,7 @@
         <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة لتسجيل الدخول</span></div>
     </div>
 
-
+    <!-- لوحة رصد الحالات الرئيسية -->
     <div id="mainDashboard">
         <div class="cases-grid">
             
@@ -262,6 +266,7 @@
 
         </div>
 
+        <!-- لوحة تحكم المسؤول الفورية -->
         <div class="admin-panel" id="adminPanel">
             <h3>خيارات المسؤول الفورية (Admin Dashboard)</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 10px;">
@@ -310,13 +315,8 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzm3OkxI5LbE2oX-n-rc9dfu19zlTvlSW2V0p5VLAIeGx5FI-Wqb2rAoRayHZHAvefT/exec';
-
-    // قاعدة بيانات محلية مؤقتة مسجلة بداخل النظام للتأكد من حظر أي أرقام عشوائية غريبة تماماً
-    const localUsers = [
-        { empId: "2020", pin: "2020", shift: "شفت الف صباحي" },
-        { empId: "3030", pin: "3030", shift: "شفت الف مسائي" }
-    ];
+    // الرابط الفعلي المباشر الخاص بقاعدة البيانات الخاصة بك
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzDJhdn1JEPnve8OEtjt4Ild3ZWs_-K-voGpAkRbvCsdqQtfhixKTwQK4YPm01nYgla/exec';
 
     let loggedInUser = { empId: '', shift: '' };
     let currentData = { sick_cases: 0, blood_pressure: 0, headache: 0, vital_signs: 0, injuries: 0, burns: 0, hospital_transfer: 0 };
@@ -352,64 +352,58 @@
         document.getElementById(screenId).style.display = 'block';
     }
 
-    // فحص صارم ومغلق أمنياً لمنع الدخول العشوائي
     function handleLogin() {
         const shift = document.getElementById('loginShift').value;
         const empId = document.getElementById('loginEmpId').value;
         const pin = document.getElementById('loginPin').value;
 
         if(!empId || !pin) { 
-            showAlert("الرجاء إدخال الرقم الوظيفي والرمز السري أولاً!"); 
+            showAlert("الرجاء إدخال الرقم الوظيفي والرمز السري الخاص بك أولاً!"); 
             return; 
         }
 
-        // 1. حساب المسؤول حصري وصارم ومغلق
+        // حساب المسؤول المباشر (Admin) المثبت محلياً للطوارئ والصيانة
         if (shift === "حساب مسؤول") {
             if (empId === "1111" && pin === "1111") {
                 activateDashboard(empId, shift, true);
                 showAlert("تم دخول المسؤول بنجاح.. أهلاً بك!", true);
                 return;
             } else {
-                showAlert("عذراً، بيانات دخول المسؤول غير صحيحة والنظام محمي!");
+                showAlert("بيانات دخول المسؤول غير صحيحة. تم رفض الدخول لحماية النظام.");
                 return;
             }
         }
 
-        document.getElementById('statusText').innerText = "جاري مطابقة الرموز والتحقق من قاعدة البيانات...";
+        document.getElementById('statusText').innerText = "جاري مطابقة الرمز الخاص والتحقق من الحساب...";
         const loginBtn = document.getElementById('loginBtn');
-        loginBtn.innerText = "جاري التحقق...";
+        loginBtn.innerText = "جاري الفحص...";
         loginBtn.disabled = true;
 
-        // 2. الفحص السحابي الحقيقي من قوقل شيت بدون تمرير تلقائي عند الأخطاء
+        // فحص سحابي مباشر متناسق مع السيرفر
         fetch(scriptURL + "?action=VERIFY_LOGIN&emp_id=" + empId + "&pin=" + pin + "&shift=" + shift)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error('Network error');
+            return response.json();
+        })
         .then(data => {
             loginBtn.innerText = "تحقق ودخول النظام";
             loginBtn.disabled = false;
 
             if (data.status === "SUCCESS") {
                 activateDashboard(empId, shift, false);
-                showAlert("تم التحقق من الهوية ودخول الشفت بنجاح!", true);
+                showAlert("تم التحقق بنجاح ودخول النظام بالرمز الخاص بك!", true);
             } else if (data.status === "USER_NOT_FOUND") {
-                showAlert("عذراً، هذا الحساب أو الرقم الوظيفي غير مسجل في النظام!");
+                showAlert("عذراً، هذا الحساب غير موجود بقاعدة البيانات. يرجى إنشاء حساب جديد.");
             } else if (data.status === "WRONG_PIN") {
-                showAlert("عذراً، الرمز السري الذي أدخلته غير صحيح! يرجى إعادة المحاولة.");
+                showAlert("خطأ: الرمز السري الذي أدخلته غير صحيح الخاص بهذا الرقم الوظيفي!");
             } else {
-                showAlert("قاعدة البيانات لم تتعرف على هذه المدخلات. تم رفض الدخول.");
+                showAlert("عذراً، لم يتم التعرف على المدخلات. تم رفض الدخول وعزل العملية.");
             }
         })
         .catch(err => {
-            // في حال عدم استجابة السيرفر، يتم الفحص محلياً من الأرقام المعتمدة فقط، ويُمنع أي رقم عشوائي آخر
             loginBtn.innerText = "تحقق ودخول النظام";
             loginBtn.disabled = false;
-
-            const matchedUser = localUsers.find(u => u.empId === empId && u.pin === pin && u.shift === shift);
-            if (matchedUser) {
-                activateDashboard(empId, shift, false);
-                showAlert("تم الدخول الآمن عبر قاعدة السستم الاحتياطية ✅", true);
-            } else {
-                showAlert("عذراً، هذا الحساب غير موجود بقاعدة البيانات والشبكة ضعيفة حالياً!");
-            }
+            showAlert("عذراً، هذا الحساب غير موجود بقاعدة البيانات والشبكة ضعيفة حالياً!");
         });
     }
 
@@ -433,12 +427,12 @@
         const phone = document.getElementById('regPhone').value;
         const pin = document.getElementById('regPin').value;
 
-        if(!empId || !phone || !pin) { showAlert("الرجاء تعبئة كافة الحقول لحفظ الرمز بالقاعدة!"); return; }
+        if(!empId || !phone || !pin) { showAlert("الرجاء تعبئة كافة الحقول لحفظ الحساب بالقاعدة!"); return; }
         if(empId === "1111") { showAlert("غير مسموح بحجز الرقم الوظيفي للمسؤول!"); return; }
 
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "REGISTER_SECURE", emp_id: empId, phone: phone, pin: pin }) })
         .then(() => {
-            alert("تم حفظ واعتماد أرقامك ورمزك في قاعدة بيانات السستم بنجاح!");
+            alert("تم إرسال طلب الاعتماد لقاعدة البيانات بنجاح! يمكنك الآن تجربة تسجيل الدخول برمزك.");
             switchAuthScreen('loginScreen');
         });
     }
@@ -452,7 +446,7 @@
 
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "FORGOT_PIN_SECURE", emp_id: empId, phone: phone, new_pin: newPin }) })
         .then(() => {
-            alert("تم إرسال طلب المطابقة والتحديث لقاعدة الرموز السحابية.");
+            alert("تم إرسال طلب إعادة تعيين الرمز وجاري معالجته سحابياً.");
             switchAuthScreen('loginScreen');
         });
     }
@@ -468,7 +462,7 @@
 
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "CHANGE_PIN_SECURE", emp_id: empId, old_pin: oldPin, new_pin: newPin1 }) })
         .then(() => {
-            alert("تم إرسال أمر التحديث والتغيير لقاعدة الرموز بنجاح.");
+            alert("تم إرسال طلب تحديث الرمز الخاص بنجاح للسيرفر.");
             switchAuthScreen('loginScreen');
         });
     }
@@ -484,7 +478,6 @@
         if (currentData[field] + amount < 0) return; 
         currentData[field] += amount;
         document.getElementById(field).innerText = currentData[field];
-        
         calculateTotalDaily(); 
         triggerAutoSave();
     }
@@ -519,7 +512,6 @@
 
     function printToPDF() {
         const total = calculateTotalDaily();
-        
         document.getElementById('pdfMeta').innerText = `المسؤول المصدّر للتقرير: ${loggedInUser.empId} | الشفت: ${loggedInUser.shift} | تاريخ ووقت الطباعة: ${new Date().toLocaleString('ar-EG')}`;
         document.getElementById('pdf_total').innerText = total;
         document.getElementById('pdf_sick').innerText = currentData.sick_cases;
@@ -534,11 +526,11 @@
         element.style.display = 'block';
 
         const opt = {
-            margin:       10,
-            filename:     `تقرير_احصائيات_العيادة_${loggedInUser.empId}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            margin: 10,
+            filename: `تقرير_احصائيات_العيادة_${loggedInUser.empId}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
         html2pdf().from(element).set(opt).save().then(() => {
