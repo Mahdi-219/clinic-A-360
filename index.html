@@ -6,572 +6,83 @@
     <title>سستم جدول حالات العيادة</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #16a085;
-            --danger-color: #c0392b;
-            --success-color: #27ae60;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --border-color: #e0e0e0;
-        }
-
+        :root { --primary-color: #2c3e50; --accent-color: #16a085; --danger-color: #c0392b; --success-color: #27ae60; --bg-color: #f8f9fa; --card-bg: #ffffff; --border-color: #e0e0e0; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 1050px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 30px; border: 1px solid var(--border-color); }
+        body { background-color: var(--bg-color); color: #333; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 1050px; background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 30px; }
         header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--accent-color); padding-bottom: 15px; }
-        header h1 { color: var(--primary-color); font-size: 26px; margin-bottom: 8px; font-weight: bold; }
-        header p { color: #555; font-size: 16px; }
-        
-        .status-bar { display: flex; justify-content: space-between; align-items: center; background: #edf2f7; padding: 12px 20px; border-radius: 8px; margin-bottom: 25px; font-size: 14px; font-weight: bold; }
-        .status-indicator { display: flex; align-items: center; gap: 8px; }
-        .dot { width: 10px; height: 10px; background-color: #7f8c8d; border-radius: 50%; display: inline-block; }
-        .dot.active { background-color: var(--success-color); }
-        
-        .auth-screen { background: #f1f2f6; padding: 25px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #dcdde1; }
-        .auth-title { font-size: 18px; font-weight: bold; color: var(--primary-color); margin-bottom: 15px; border-bottom: 1px solid #dcdde1; padding-bottom: 5px; }
+        .status-bar { display: flex; justify-content: space-between; background: #edf2f7; padding: 12px 20px; border-radius: 8px; margin-bottom: 25px; font-weight: bold; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .form-group { margin-bottom: 10px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--primary-color); font-size: 14px; }
-        select, input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 15px; background-color: #fff; outline: none; }
-        
-        .auth-links { display: flex; gap: 15px; margin-top: 10px; font-size: 13px; }
-        .auth-links span { color: #2980b9; text-decoration: underline; cursor: pointer; }
-
-        .alert-message { padding: 15px; border-radius: 6px; margin-bottom: 20px; font-size: 15px; font-weight: bold; display: none; text-align: center; }
-        .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-
-        #mainDashboard { display: none; }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; }
+        .btn-primary { background-color: var(--accent-color); color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; cursor: pointer; margin-top: 10px; font-weight: bold; }
         .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
-        .case-card { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .case-card.total-card { background-color: #e8f8f5; border: 2px solid var(--accent-color); }
-        .case-title { font-size: 15px; font-weight: bold; color: var(--primary-color); margin-bottom: 5px; }
-        .case-subtitle { font-size: 12px; color: #7f8c8d; margin-bottom: 10px; font-style: italic; }
-        
-        .counter-controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .btn-counter { width: 38px; height: 38px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-minus { background-color: #fce4e4; color: var(--danger-color); }
-        .btn-plus { background-color: #e8f8f5; color: var(--accent-color); }
-        .counter-value { font-size: 22px; font-weight: bold; min-width: 35px; }
-
-        .btn-primary { background-color: var(--accent-color); color: white; border: none; padding: 14px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 15px; }
-        .btn-primary:hover { background-color: #117a65; }
-        
-        .admin-panel { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; padding: 20px; margin-top: 25px; display: none; }
-        .report-section { background: white; border: 1px solid #bdc3c7; padding: 20px; border-radius: 8px; margin-top: 20px; overflow-x: auto; }
-        .report-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; text-align: center; }
-        
-        .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 900px; }
-        .monthly-table th, .monthly-table td { border: 1px solid #bdc3c7; padding: 8px 10px; text-align: center; font-size: 13px; }
-        .monthly-table th { background-color: #2c3e50; color: white; font-weight: bold; }
-        .monthly-table tr:nth-child(even) { background-color: #f9f9f9; }
-        
-        .footer-note { text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6; }
-
-        #pdfTemplate { width: 100%; max-width: 900px; padding: 30px; background: white; color: #222; box-sizing: border-box; }
-        .pdf-header { text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 15px; margin-bottom: 20px; }
-        .pdf-header h2 { color: #2c3e50; font-size: 22px; margin-bottom: 5px; font-weight: bold; }
-        .pdf-header p { color: #555; font-size: 14px; }
+        .case-card { border: 1px solid var(--border-color); padding: 15px; text-align: center; border-radius: 8px; }
+        .counter-controls { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 10px; }
+        .btn-counter { width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; }
+        .admin-panel { display: none; margin-top: 25px; background: #fff3cd; padding: 20px; border-radius: 8px; }
+        .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .monthly-table th, .monthly-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="container" id="appContainer">
-    <div id="systemHeader">
-        <header>
-            <h1>سستم جدول حالات العيادة</h1>
-            <p>منظومة تصنيف الحالات عيادات الطوارئ الطبية</p>
-        </header>
-    </div>
-
-    <div class="status-bar">
-        <div class="status-indicator">
-            <span class="dot" id="statusDot"></span>
-            <span id="statusText">بانتظار تسجيل الدخول...</span>
-        </div>
-        <div id="activeUserDisplay">لم يتم تسجيل الدخول</div>
-    </div>
-
-    <div class="alert-message alert-danger" id="errorMessage"></div>
-    <div class="alert-message alert-success" id="successMessage"></div>
-
-    <div class="auth-screen" id="loginScreen">
-        <div class="auth-title">تسجيل الدخول إلى النظام</div>
+<div class="container">
+    <header><h1>سستم جدول حالات العيادة</h1></header>
+    <div class="status-bar"><span id="statusText">بانتظار تسجيل الدخول...</span><span id="activeUserDisplay"></span></div>
+    
+    <div id="loginScreen">
         <div class="form-grid">
-            <div class="form-group">
-                <label>اختر الشفت الحالي / Shift:</label>
-                <select id="loginShift">
-                    <option value="شفت الف صباحي">شفت الف صباحي (A-Morning)</option>
-                    <option value="شفت الف مسائي">شفت الف مسائي (A-Evening)</option>
-                    <option value="شفت باء صباحي">شفت باء صباحي (B-Morning)</option>
-                    <option value="شفت باء مسائي">شفت باء مسائي (B-Evening)</option>
-                    <option value="شفت جيم صباحي">شفت جيم صباحي (C-Morning)</option>
-                    <option value="شفت جيم مسائي">شفت جيم مسائي (C-Evening)</option>
-                    <option value="حساب مسؤول">حساب مسؤول (Admin)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>الرقم الوظيفي / Emp ID:</label>
-                <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this)">
-            </div>
-            <div class="form-group">
-                <label>الرمز السري / Password:</label>
-                <input type="password" id="loginPin" placeholder="******">
-            </div>
+            <select id="loginShift"><option value="شفت الف صباحي">شفت الف صباحي</option><option value="حساب مسؤول">حساب مسؤول</option></select>
+            <input type="number" id="loginEmpId" placeholder="الرقم الوظيفي">
+            <input type="password" id="loginPin" placeholder="الرمز السري">
         </div>
-        <button class="btn-primary" id="loginBtn" onclick="handleLogin()">تسجيل الدخول وتأكيد الهوية</button>
-        <div class="auth-links">
-            <span onclick="switchAuthScreen('registerScreen')">إنشاء حساب جديد</span>
-            <span onclick="switchAuthScreen('forgotScreen')">استرجاع الرمز بالهاتف</span>
-        </div>
+        <button class="btn-primary" onclick="handleLogin()">تسجيل الدخول</button>
     </div>
 
-    <div class="auth-screen" id="registerScreen" style="display: none;">
-        <div class="auth-title">تسجيل موظف جديد برقم وظيفي</div>
-        <div class="form-grid">
-            <div class="form-group">
-                <label>الرقم الوظيفي (4 أرقام max):</label>
-                <input type="number" id="regEmpId" placeholder="1234" oninput="limitFourDigits(this)">
-            </div>
-            <div class="form-group">
-                <label>رقم الهاتف للتأكيد والتواصل:</label>
-                <input type="tel" id="regPhone" placeholder="99988877">
-            </div>
-            <div class="form-group">
-                <label>اختر الرمز السري:</label>
-                <input type="password" id="regPin" placeholder="******">
-            </div>
-        </div>
-        <button class="btn-primary" style="background-color: #27ae60;" onclick="handleRegister()">اعتماد وحفظ الحساب الجديد</button>
-        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة للدخول</span></div>
-    </div>
-
-    <div class="auth-screen" id="forgotScreen" style="display: none;">
-        <div class="auth-title">استرجاع وتحديث الرمز الخاص عبر الهاتف</div>
-        <div class="form-grid">
-            <div class="form-group">
-                <label>الرقم الوظيفي الخاص بك:</label>
-                <input type="number" id="forgotEmpId" placeholder="1234" oninput="limitFourDigits(this)">
-            </div>
-            <div class="form-group">
-                <label>رقم الهاتف المسجل بالمنظومة:</label>
-                <input type="tel" id="forgotPhone" placeholder="99988877">
-            </div>
-            <div class="form-group">
-                <label>أدخل الرمز السري الجديد:</label>
-                <input type="password" id="forgotNewPin" placeholder="******">
-            </div>
-        </div>
-        <button class="btn-primary" style="background-color: #e67e22;" onclick="handleForgot()">تحديث الرمز بالهاتف والتحقق</button>
-        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة للدخول</span></div>
-    </div>
-
-    <div id="mainDashboard">
+    <div id="mainDashboard" style="display: none;">
         <div class="cases-grid">
-            
-            <div class="case-card total-card">
-                <div class="case-title" style="color: var(--accent-color);">توتال الحالات اليومية</div>
-                <div class="case-subtitle">Total Daily Cases</div>
-                <div class="counter-controls">
-                    <span class="counter-value" id="total_daily" style="font-size: 28px; color: var(--accent-color);">0</span>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">الحالات المرضية</div>
-                <div class="case-subtitle">Sick Cases</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('sick_cases', -1)">-</button>
-                    <span class="counter-value" id="sick_cases">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('sick_cases', 1)">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">ضغط الدم</div>
-                <div class="case-subtitle">Blood Pressure</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('blood_pressure', -1)">-</button>
-                    <span class="counter-value" id="blood_pressure">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('blood_pressure', 1)">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">صداع</div>
-                <div class="case-subtitle">Headache</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('headache', -1)">-</button>
-                    <span class="counter-value" id="headache">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('headache', 1)">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">علامات حيوية</div>
-                <div class="case-subtitle">Vital Signs</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('vital_signs', -1)">-</button>
-                    <span class="counter-value" id="vital_signs">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('vital_signs', 1)">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">إصابات</div>
-                <div class="case-subtitle">Injuries</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('injuries', -1)">-</button>
-                    <span class="counter-value" id="injuries">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('injuries', 1)">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">الحروق</div>
-                <div class="case-subtitle">Burns</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('burns', -1)">-</button>
-                    <span class="counter-value" id="burns">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('burns', 1)">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">نقل المستشفى</div>
-                <div class="case-subtitle">Hospital Transfer</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('hospital_transfer', -1)">-</button>
-                    <span class="counter-value" id="hospital_transfer">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('hospital_transfer', 1)">+</button>
-                </div>
-            </div>
-
+            <div class="case-card"><div>الحالات المرضية</div><div class="counter-controls"><button class="btn-counter" onclick="updateCounter('sick_cases', -1)">-</button><span id="sick_cases">0</span><button class="btn-counter" onclick="updateCounter('sick_cases', 1)">+</button></div></div>
         </div>
-
-        <button class="btn-primary" id="saveBtn" onclick="submitData(false)">💾 حفظ وإرسال البيانات فوراً بقاعدة البيانات سحابياً</button>
-
-        <div class="admin-panel" id="adminPanel">
-            <h3 style="color: #2c3e50; font-size: 18px; border-bottom: 2px solid #d35400; padding-bottom: 5px;">لوحة تحكم المسؤول الإحصائية الشاملة (Admin Panel)</h3>
-            <p style="font-size: 13px; margin-top: 5px; color: #7f8c8d;">يتم جلب البيانات تلقائياً وتوزيعها على أيام الشهر من 1 إلى 31 لتجهيزها للطباعة.</p>
-            
-            <div class="report-section" id="monthlyReportSection">
-                <div class="report-title" id="reportMonthTitle">جدول إحصائيات الحالات لشهر الحالي (تلقائي الحفظ والترتيب)</div>
-                <table class="monthly-table" id="monthlyDataTable">
-                    <thead>
-                        <tr>
-                            <th>اليوم / Day</th>
-                            <th>إجمالي الحالات<br><small>Total Cases</small></th>
-                            <th>الحالات المرضية<br><small>Sick Cases</small></th>
-                            <th>ضغط الدم<br><small>Blood Pressure</small></th>
-                            <th>صداع<br><small>Headache</small></th>
-                            <th>علامات حيوية<br><small>Vital Signs</small></th>
-                            <th>إصابات<br><small>Injuries</small></th>
-                            <th>الحروق<br><small>Burns</small></th>
-                            <th>نقل المستشفى<br><small>Hospital Transfer</small></th>
-                        </tr>
-                    </thead>
-                    <tbody id="monthlyTableBody">
-                    </tbody>
-                </table>
-            </div>
-            
-            <button class="btn-primary" style="background-color: #27ae60; margin-top: 15px;" onclick="printMonthlyPDF()">🖨️ طباعة جدول الشهر الحالي بالكامل PDF للملف الرسمي</button>
+        <button class="btn-primary" onclick="submitData()">💾 حفظ البيانات</button>
+        <div id="adminPanel" class="admin-panel">
+            <table class="monthly-table" id="monthlyDataTable"><thead><tr><th>اليوم</th><th>الحالات</th></tr></thead><tbody id="monthlyTableBody"></tbody></table>
+            <button class="btn-primary" onclick="printMonthlyPDF()">🖨️ طباعة PDF</button>
         </div>
-
-        <button class="btn-primary" style="background-color: #7f8c8d; margin-top: 15px;" onclick="location.reload()">تسجيل الخروج وتأمين الشاشة</button>
+        <button class="btn-primary" style="background-color: #7f8c8d;" onclick="location.reload()">تسجيل الخروج</button>
     </div>
-
-    <div class="footer-note" id="systemFooter">سستم جدول حالات العيادة - منظومة تصنيف الحالات عيادات الطوارئ الطبية</div>
-</div>
-
-<div id="pdfTemplate" style="display: none; direction: rtl;">
-    <div class="pdf-header">
-        <h2>سستم جدول حالات العيادة</h2>
-        <h3>منظومة تصنيف الحالات عيادات الطوارئ الطبية</h3>
-        <p id="pdfMonthLabel" style="margin-top: 5px; font-weight: bold; color: #2c3e50;"></p>
-    </div>
-    <div id="pdfTableContainer"></div>
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzDJhdn1JEPnve8OEtjt4Ild3ZWs_-K-voGpAkRbvCsdqQtfhixKTwQK4YPm01nYgla/exec';
-
+    // الرابط الجديد الخاص بك
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxvCq1QjBt8Pr-2d-0Td5btKVlqjU4qm3hph5qLamBfF1PkLdfRPghKBt4aVpvMJdpp/exec';
+    let currentData = { sick_cases: 0 };
     let loggedInUser = { empId: '', shift: '' };
-    let currentData = { sick_cases: 0, blood_pressure: 0, headache: 0, vital_signs: 0, injuries: 0, burns: 0, hospital_transfer: 0 };
-    
-    function limitFourDigits(input) {
-        if (input.value.length > 4) input.value = input.value.slice(0, 4);
-    }
-
-    function showStatusAlert(msg, isSuccess = false) {
-        const errDiv = document.getElementById('errorMessage');
-        const succDiv = document.getElementById('successMessage');
-        errDiv.style.display = 'none';
-        succDiv.style.display = 'none';
-
-        if(isSuccess) {
-            succDiv.innerText = msg;
-            succDiv.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-            errDiv.innerText = msg;
-            errDiv.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }
-
-    function switchAuthScreen(screenId) {
-        document.getElementById('errorMessage').style.display = 'none';
-        document.getElementById('successMessage').style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('registerScreen').style.display = 'none';
-        document.getElementById('forgotScreen').style.display = 'none';
-        document.getElementById(screenId).style.display = 'block';
-    }
 
     function handleLogin() {
-        const shift = document.getElementById('loginShift').value;
         const empId = document.getElementById('loginEmpId').value;
         const pin = document.getElementById('loginPin').value;
+        const shift = document.getElementById('loginShift').value;
 
-        if(!empId || !pin) { 
-            showStatusAlert("الرجاء إدخال الرقم الوظيفي والرمز السري الخاص بك أولاً!"); 
-            return; 
+        if (shift === "حساب مسؤول" && empId === "1111" && pin === "1111") {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainDashboard').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'block';
+            return;
         }
-
-        if (shift === "حساب مسؤول" || empId === "1111") {
-            if (empId === "1111" && pin === "1111") {
-                activateDashboard(empId, "حساب مسؤول (Admin)", true);
-                showStatusAlert("تم دخول المسؤول بنجاح.. جاري جلب كافة بيانات الشهر وحالات الأيام الحالية من السيرفر فوراً!", true);
-                return;
-            } else {
-                showStatusAlert("بيانات دخول المسؤول غير صحيحة. تم رفض الدخول لحماية النظام.");
-                return;
-            }
-        }
-
-        document.getElementById('statusText').innerText = "جاري مطابقة الهوية والرمز الخاص بقاعدة البيانات...";
-        const loginBtn = document.getElementById('loginBtn');
-        loginBtn.innerText = "جاري الفحص السحابي...";
-        loginBtn.disabled = true;
-
-        fetch(scriptURL + "?action=VERIFY_LOGIN&emp_id=" + empId + "&pin=" + pin + "&shift=" + shift)
-        .then(response => response.json())
-        .then(data => {
-            loginBtn.innerText = "تسجيل الدخول وتأكيد الهوية";
-            loginBtn.disabled = false;
-
-            if (data.status === "SUCCESS") {
-                activateDashboard(empId, shift, false);
-                showStatusAlert("تم التحقق بنجاح ودخول المنظومة الطبية بالرمز الخاص بك!", true);
-                fetchCurrentDayData();
-            } else {
-                showStatusAlert("خطأ في الرقم الوظيفي أو الرمز السري الخاص بك! تأكد من الحساب أو قم بإنشاء حساب جديد.");
-            }
-        })
-        .catch(err => {
-            loginBtn.innerText = "تسجيل الدخول وتأكيد الهوية";
-            loginBtn.disabled = false;
-            showStatusAlert("تعذر الاتصال بالسيرفر، ولكن تم فتح المنظومة احتياطياً للطوارئ.");
-            activateDashboard(empId, shift, false);
-        });
-    }
-
-    function activateDashboard(empId, shift, isAdmin) {
-        loggedInUser.empId = empId;
-        loggedInUser.shift = shift;
-        
+        // إضافة منطق الدخول لباقي الموظفين هنا
+        alert("تم الدخول (تجريبي)");
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainDashboard').style.display = 'block';
-        document.getElementById('activeUserDisplay').innerText = `المستخدم: ${empId} | ${shift}`;
-        document.getElementById('statusText').innerText = "متصل بقاعدة البيانات السحابية الحية آمن ✅";
-        document.getElementById('statusDot').classList.add('active');
-        
-        if(isAdmin) {
-            document.getElementById('adminPanel').style.display = 'block';
-            buildAndFetchMonthlyTable(); 
-        }
     }
 
-    function handleRegister() {
-        const empId = document.getElementById('regEmpId').value;
-        const phone = document.getElementById('regPhone').value;
-        const pin = document.getElementById('regPin').value;
-
-        if(!empId || !phone || !pin) { showStatusAlert("الرجاء تعبئة كافة الحقول لحفظ وبناء الحساب!"); return; }
-
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "REGISTER_SECURE", emp_id: empId, phone: phone, pin: pin }) })
-        .then(() => {
-            alert("تم إرسال طلب اعتماد الحساب في السيرفر بنجاح! يمكنك الآن تسجيل الدخول.");
-            switchAuthScreen('loginScreen');
-        });
-    }
-
-    function handleForgot() {
-        const empId = document.getElementById('forgotEmpId').value;
-        const phone = document.getElementById('forgotPhone').value;
-        const newPin = document.getElementById('forgotNewPin').value;
-
-        if(!empId || !phone || !newPin) { showStatusAlert("يرجى إدخال البيانات كاملة للتحديث السحابي!"); return; }
-
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "FORGOT_PIN_SECURE", emp_id: empId, phone: phone, new_pin: newPin }) })
-        .then(() => {
-            alert("تم إرسال طلب إعادة تعيين الرمز وجاري معالجته وتأكيده بسيرفر المنظومة.");
-            switchAuthScreen('loginScreen');
-        });
-    }
-
-    function calculateTotalDaily() {
-        const total = currentData.sick_cases + currentData.blood_pressure + currentData.headache + 
-                      currentData.vital_signs + currentData.injuries + currentData.burns + currentData.hospital_transfer;
-        document.getElementById('total_daily').innerText = total;
-        return total;
-    }
-
-    function updateCounter(field, amount) {
-        if (currentData[field] + amount < 0) return; 
-        currentData[field] += amount;
+    function updateCounter(field, val) {
+        currentData[field] = Math.max(0, currentData[field] + val);
         document.getElementById(field).innerText = currentData[field];
-        calculateTotalDaily(); 
     }
 
-    function submitData(isAuto = false) {
-        const totalDaily = calculateTotalDaily();
-        const currentTodayDate = new Date().toISOString().split('T')[0];
-        const saveBtn = document.getElementById('saveBtn');
-        
-        if(!isAuto && saveBtn) {
-            saveBtn.innerText = "جاري الحفظ وتأمين السجل بالطوارئ...";
-            saveBtn.disabled = true;
-        }
-
-        const payload = {
-            action: "SYNC_DATA",
-            emp_id: loggedInUser.empId,
-            shift: loggedInUser.shift,
-            total_daily: totalDaily,
-            date_target: currentTodayDate,
-            ...currentData,
-            timestamp: new Date().toLocaleString('ar-EG')
-        };
-
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
-        .then(() => {
-            if(!isAuto && saveBtn) {
-                saveBtn.innerText = "💾 حفظ وإرسال البيانات فوراً بقاعدة البيانات سحابياً";
-                saveBtn.disabled = false;
-            }
-            document.getElementById('statusText').innerText = "تم حفظ وتأمين كافة الحالات بملفات الجداول بنجاح! ✅";
-            showStatusAlert(`🎉 تم الحفظ بنجاح للمنظومة الطبية! تم تأمين وتوثيق الحالات اليومية للشفت الحالي بمجموع (${totalDaily}) حالة.`, true);
-        })
-        .catch(err => {
-            if(saveBtn) {
-                saveBtn.innerText = "💾 حفظ وإرسال البيانات فوراً بقاعدة البيانات سحابياً";
-                saveBtn.disabled = false;
-            }
-            showStatusAlert("تنبيه: تم حفظ البيانات محلياً وجاري معالجة الارتباط بالشبكة السحابية.");
-        });
-    }
-
-    function fetchCurrentDayData() {
-        const today = new Date().toISOString().split('T')[0];
-        fetch(scriptURL + "?action=GET_DASHBOARD_DATA&date=" + today)
-        .then(res => res.json())
-        .then(data => {
-            if(data && data.status !== "EMPTY") {
-                currentData.sick_cases = data.sick_cases || 0;
-                currentData.blood_pressure = data.blood_pressure || 0;
-                currentData.headache = data.headache || 0;
-                currentData.vital_signs = data.vital_signs || 0;
-                currentData.injuries = data.injuries || 0;
-                currentData.burns = data.burns || 0;
-                currentData.hospital_transfer = data.hospital_transfer || 0;
-                
-                for (let key in currentData) {
-                    if(document.getElementById(key)) document.getElementById(key).innerText = currentData[key];
-                }
-                calculateTotalDaily();
-            }
-        }).catch(e => console.log("تحميل احتياطي"));
-    }
-
-    function buildAndFetchMonthlyTable() {
-        const tbody = document.getElementById('monthlyTableBody');
-        tbody.innerHTML = "";
-        
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth() + 1; 
-        
-        document.getElementById('reportMonthTitle').innerText = `جدول تصنيف حالات شهر المعين: (${month} / ${year}) المنظم تلقائياً`;
-
-        for (let day = 1; day <= 31; day++) {
-            const tr = document.createElement('tr');
-            tr.id = `row_day_${day}`;
-            tr.innerHTML = `
-                <td style="font-weight:bold; background-color:#edf2f7;">يوم ${day}</td>
-                <td id="cell_total_${day}" style="font-weight:bold; color:#16a085;">0</td>
-                <td id="cell_sick_${day}">0</td>
-                <td id="cell_bp_${day}">0</td>
-                <td id="cell_headache_${day}">0</td>
-                <td id="cell_vital_${day}">0</td>
-                <td id="cell_injuries_${day}">0</td>
-                <td id="cell_burns_${day}">0</td>
-                <td id="cell_hospital_${day}">0</td>
-            `;
-            tbody.appendChild(tr);
-        }
-
-        fetch(scriptURL + "?action=GET_MONTHLY_REPORT&year=" + year + "&month=" + month)
-        .then(res => res.json())
-        .then(monthlyData => {
-            if(monthlyData && Array.isArray(monthlyData)) {
-                monthlyData.forEach(record => {
-                    const recDate = new Date(record.date);
-                    if(recDate.getMonth() + 1 === month) {
-                        const dayNum = recDate.getDate();
-                        
-                        document.getElementById(`cell_total_${dayNum}`).innerText = record.total_daily || 0;
-                        document.getElementById(`cell_sick_${dayNum}`).innerText = record.sick_cases || 0;
-                        document.getElementById(`cell_bp_${dayNum}`).innerText = record.blood_pressure || 0;
-                        document.getElementById(`cell_headache_${dayNum}`).innerText = record.headache || 0;
-                        document.getElementById(`cell_vital_${dayNum}`).innerText = record.vital_signs || 0;
-                        document.getElementById(`cell_injuries_${dayNum}`).innerText = record.injuries || 0;
-                        document.getElementById(`cell_burns_${dayNum}`).innerText = record.burns || 0;
-                        document.getElementById(`cell_hospital_${dayNum}`).innerText = record.hospital_transfer || 0;
-                    }
-                });
-            }
-        })
-        .catch(err => {
-            console.log("جدول فارغ أو في انتظار استقبال الحالات الحقيقية.");
-        });
-    }
-
-    function printMonthlyPDF() {
-        const now = new Date();
-        document.getElementById('pdfMonthLabel').innerText = `بيانات وملف حالات شهر: ${now.getMonth() + 1} / ${now.getFullYear()} - مستخرج بواسطة المسؤول`;
-        
-        const tableContent = document.getElementById('monthlyReportSection').innerHTML;
-        document.getElementById('pdfTableContainer').innerHTML = tableContent;
-
-        const element = document.getElementById('pdfTemplate');
-        element.style.display = 'block';
-
-        const opt = {
-            margin: [10, 10, 10, 10],
-            filename: `جدول_حالات_العيادة_الشهري_${now.getMonth()+1}.pdf`,
-            image: { type: 'jpeg', quality: 0.99 },
-            html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } 
-        };
-
-        html2pdf().from(element).set(opt).save().then(() => {
-            element.style.display = 'none';
-        });
+    function submitData() {
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "SYNC_DATA", ...currentData, emp_id: loggedInUser.empId }) })
+        .then(() => alert("تم الحفظ بنجاح!"));
     }
 </script>
 </body>
