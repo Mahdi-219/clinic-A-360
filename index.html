@@ -40,6 +40,11 @@
         .auth-links { display: flex; gap: 15px; margin-top: 10px; font-size: 13px; }
         .auth-links span { color: #2980b9; text-decoration: underline; cursor: pointer; }
 
+        /* رسائل الأخطاء والتحذيرات التفاعلية */
+        .alert-message { padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; font-weight: bold; display: none; text-align: center; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
         /* لوحة التحكم الرئيسية */
         #mainDashboard { display: none; }
         .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
@@ -86,6 +91,9 @@
         <div id="activeUserDisplay">لم يتم تسجيل الدخول</div>
     </div>
 
+    <div class="alert-message alert-danger" id="errorMessage"></div>
+    <div class="alert-message alert-success" id="successMessage"></div>
+
     <div class="auth-screen" id="loginScreen">
         <div class="auth-title">تسجيل الدخول المحوكم إلى الشفت</div>
         <div class="form-grid">
@@ -110,7 +118,7 @@
                 <input type="password" id="loginPin" placeholder="******">
             </div>
         </div>
-        <button class="btn-primary" onclick="handleLogin()">تحقق ودخول النظام</button>
+        <button class="btn-primary" id="loginBtn" onclick="handleLogin()">تحقق ودخول النظام</button>
         <div class="auth-links">
             <span onclick="switchAuthScreen('registerScreen')">تسجيل حساب جديد</span>
             <span onclick="switchAuthScreen('forgotScreen')">نسيت الرمز / استرجاع بالهاتف</span>
@@ -277,7 +285,7 @@
         <button class="btn-primary" style="background-color: #7f8c8d; margin-top: 5px;" onclick="location.reload()">تسجيل الخروج وتأمين الشاشة</button>
     </div>
 
-    <div class="footer-note" id="systemFooter">نظام العيادة والمخزن الطبي المحوكم - جميع الحقوق محفوظة لجهة الإدارة</div>
+    <div class="footer-note" id="systemFooter">نظام العيادة والمخزن الطبي المحוكم - جميع الحقوق محفوظة لجهة الإدارة</div>
 </div>
 
 <div id="pdfTemplate" style="display: none;">
@@ -306,6 +314,7 @@
 </div>
 
 <script>
+    // السطر 186 المعدل والمحدث ليرتبط مباشرة بسيرفر قوقل شيت لديك
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzm3OkxI5LbE2oX-n-rc9dfu19zlTvlSW2V0p5VLAIeGx5FI-Wqb2rAoRayHZHAvefT/exec';
 
     let loggedInUser = { empId: '', shift: '' };
@@ -316,7 +325,25 @@
         if (input.value.length > 4) input.value = input.value.slice(0, 4);
     }
 
+    function showAlert(msg, isSuccess = false) {
+        const errDiv = document.getElementById('errorMessage');
+        const succDiv = document.getElementById('successMessage');
+        
+        errDiv.style.display = 'none';
+        succDiv.style.display = 'none';
+
+        if(isSuccess) {
+            succDiv.innerText = msg;
+            succDiv.style.display = 'block';
+        } else {
+            errDiv.innerText = msg;
+            errDiv.style.display = 'block';
+        }
+    }
+
     function switchAuthScreen(screenId) {
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('successMessage').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('registerScreen').style.display = 'none';
         document.getElementById('forgotScreen').style.display = 'none';
@@ -324,35 +351,59 @@
         document.getElementById(screenId).style.display = 'block';
     }
 
-    // 1. فحص الدخول والمطابقة مع قاعدة البيانات المغلقة وصلاحيات المسؤول 1111
+    // 1. فحص الدخول والمطابقة وإظهار الأخطاء الذكية بناءً على رد السيرفر وقاعدة البيانات
     function handleLogin() {
         const shift = document.getElementById('loginShift').value;
         const empId = document.getElementById('loginEmpId').value;
         const pin = document.getElementById('loginPin').value;
 
-        if(!empId || !pin) { alert("الرجاء إدخال الرقم الوظيفي والرمز السري!"); return; }
+        if(!empId || !pin) { 
+            showAlert("الرجاء إدخال الرقم الوظيفي والرمز السري أولاً!"); 
+            return; 
+        }
 
-        // التحقق الحصري من حساب المسؤول
+        // التحقق الحصري الفوري من حساب المسؤول
         if (shift === "حساب مسؤول") {
             if (empId === "1111" && pin === "1111") {
                 activateDashboard(empId, shift, true);
+                showAlert("تم دخول المسؤول بنجاح.. أهلاً بك وعطلة سعيدة!", true);
                 return;
             } else {
-                alert("خطأ! بيانات دخول المسؤول غير صحيحة ومحاطة بالحظر أمنياً.");
+                showAlert("عذراً، الرمز السري للمسؤول غير صحيح أو الحساب محمي!");
                 return;
             }
         }
 
-        // للموظفين العاديين: يتم إرسال طلب فحص لقاعدة البيانات للتأكد من حفظ الرقم مسبقاً
         document.getElementById('statusText').innerText = "جاري مطابقة الرموز والتحقق من قاعدة البيانات السحابية...";
-        
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ action: "VERIFY_LOGIN", shift: shift, emp_id: empId, pin: pin })
-        }).then(() => {
-            // تفعيل حوكمة الواجهة وحفظ السجل
+        const loginBtn = document.getElementById('loginBtn');
+        loginBtn.innerText = "جاري التحقق...";
+        loginBtn.disabled = true;
+
+        // إرسال البيانات بشكل حقيقي للسيرفر للتحقق والمقارنة
+        fetch(scriptURL + "?action=VERIFY_LOGIN&emp_id=" + empId + "&pin=" + pin + "&shift=" + shift)
+        .then(response => response.json())
+        .then(data => {
+            loginBtn.innerText = "تحقق ودخول النظام";
+            loginBtn.disabled = false;
+
+            if (data.status === "SUCCESS") {
+                activateDashboard(empId, shift, false);
+                showAlert("تم التحقق من الهوية ودخول الشفت بنجاح!", true);
+            } else if (data.status === "USER_NOT_FOUND") {
+                showAlert("عذراً، هذا الحساب أو الرقم الوظيفي غير مسجل في النظام!");
+            } else if (data.status === "WRONG_PIN") {
+                showAlert("عذراً، الرمز السري الذي أدخلته غير صحيح! يرجى إعادة المحاولة.");
+            } else {
+                showAlert("حدث خطأ في الاتصال بالقاعدة، تم تمرير الدخول الاحتياطي.");
+                activateDashboard(empId, shift, false);
+            }
+        })
+        .catch(err => {
+            // حل بديل في حال ضعف الشبكة للمحافظة على سير العمل بالشفت
+            loginBtn.innerText = "تحقق ودخول النظام";
+            loginBtn.disabled = false;
             activateDashboard(empId, shift, false);
+            showAlert("تم الدخول بالنظام الاحتياطي لضعف اتصال السيرفر ✅", true);
         });
     }
 
@@ -377,8 +428,8 @@
         const phone = document.getElementById('regPhone').value;
         const pin = document.getElementById('regPin').value;
 
-        if(!empId || !phone || !pin) { alert("الرجاء تعبئة كافة الحقول لحفظ الرمز بالقاعدة!"); return; }
-        if(empId === "1111") { alert("غير مسموح بحجز الرقم الوظيفي للمسؤول!"); return; }
+        if(!empId || !phone || !pin) { showAlert("الرجاء تعبئة كافة الحقول لحفظ الرمز بالقاعدة!"); return; }
+        if(empId === "1111") { showAlert("غير مسموح بحجز الرقم الوظيفي للمسؤول!"); return; }
 
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "REGISTER_SECURE", emp_id: empId, phone: phone, pin: pin }) })
         .then(() => {
@@ -393,7 +444,7 @@
         const phone = document.getElementById('forgotPhone').value;
         const newPin = document.getElementById('forgotNewPin').value;
 
-        if(!empId || !phone || !newPin) { alert("يرجى إدخال البيانات كاملة للمطابقة!"); return; }
+        if(!empId || !phone || !newPin) { showAlert("يرجى إدخال البيانات كاملة للمطابقة!"); return; }
 
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "FORGOT_PIN_SECURE", emp_id: empId, phone: phone, new_pin: newPin }) })
         .then(() => {
@@ -409,8 +460,8 @@
         const newPin1 = document.getElementById('changeNewPin1').value;
         const newPin2 = document.getElementById('changeNewPin2').value;
 
-        if(!empId || !oldPin || !newPin1 || !newPin2) { alert("يرجى ملء جميع الخانات!"); return; }
-        if(newPin1 !== newPin2) { alert("الرمز الجديد غير متطابق في الخانتين للتأكيد!"); return; }
+        if(!empId || !oldPin || !newPin1 || !newPin2) { showAlert("يرجى ملء جميع الخانات!"); return; }
+        if(newPin1 !== newPin2) { showAlert("الرمز الجديد غير متطابق في الخانتين للتأكيد!"); return; }
 
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "CHANGE_PIN_SECURE", emp_id: empId, old_pin: oldPin, new_pin: newPin1 }) })
         .then(() => {
@@ -460,15 +511,14 @@
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
         .then(() => {
             document.getElementById('statusText').innerText = "تم تأمين البيانات والمزامنة مع قاعدة الحفظ المركزية بنجاح! ✅";
-            document.getElementById('statusText').style.color = var(--success-color);
+            document.getElementById('statusText').style.color = "#27ae60";
         });
     }
 
-    // ثانياً: دالة توليد وطباعة ملف الـ PDF المنسق والمحمل فوراً للمسؤول
+    // دالة توليد وطباعة ملف الـ PDF المنسق والمحمل فوراً للمسؤول
     function printToPDF() {
         const total = calculateTotalDaily();
         
-        // تعبئة البيانات داخل القالب المخفي للطباعة
         document.getElementById('pdfMeta').innerText = `المسؤول المصدّر للتقرير: ${loggedInUser.empId} | الشفت: ${loggedInUser.shift} | تاريخ ووقت الطباعة: ${new Date().toLocaleString('ar-EG')}`;
         document.getElementById('pdf_total').innerText = total;
         document.getElementById('pdf_sick').innerText = currentData.sick_cases;
@@ -480,9 +530,8 @@
         document.getElementById('pdf_hospital').innerText = currentData.hospital_transfer;
 
         const element = document.getElementById('pdfTemplate');
-        element.style.display = 'block'; // إظهاره مؤقتاً للمكتبة ليتم قراءته
+        element.style.display = 'block';
 
-        // خيارات إعداد وتنسيق الـ PDF للطباعة
         const opt = {
             margin:       10,
             filename:     `تقرير_احصائيات_العيادة_${loggedInUser.empId}.pdf`,
@@ -491,9 +540,8 @@
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // تشغيل أمر الطباعة والتحميل الفوري
         html2pdf().from(element).set(opt).save().then(() => {
-            element.style.display = 'none'; // إعادة إخفائه بعد انتهاء الطباعة بنجاح
+            element.style.display = 'none';
         });
     }
 </script>
