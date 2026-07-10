@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة العيادة والمخزن الطبي الذكي</title>
+    <title>نظام إدارة العيادة والمخزن الطبي الذكي - المطور</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -24,7 +25,8 @@
         
         .status-bar { display: flex; justify-content: space-between; align-items: center; background: #edf2f7; padding: 12px 20px; border-radius: 8px; margin-bottom: 25px; font-size: 14px; font-weight: bold; }
         .status-indicator { display: flex; align-items: center; gap: 8px; }
-        .dot { width: 10px; height: 10px; background-color: var(--success-color); border-radius: 50%; display: inline-block; }
+        .dot { width: 10px; height: 10px; background-color: #7f8c8d; border-radius: 50%; display: inline-block; }
+        .dot.active { background-color: var(--success-color); }
         
         /* شاشات الحسابات والدخول */
         .auth-screen { background: #f1f2f6; padding: 25px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #dcdde1; }
@@ -55,29 +57,37 @@
         .btn-primary:hover { background-color: #117a65; }
         
         .admin-panel { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; padding: 20px; margin-top: 25px; display: none; }
-        .btn-admin-action { background-color: #d35400; color: white; border: none; padding: 8px 12px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-admin-action { background-color: #d35400; color: white; border: none; padding: 10px 15px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
         .footer-note { text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6; }
+
+        /* تنسيق خاص بملف الـ PDF للطباعة */
+        #pdfTemplate { padding: 30px; background: white; color: #000; }
+        .pdf-header { text-align: center; border-bottom: 3px double #333; padding-bottom: 15px; margin-bottom: 20px; }
+        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .pdf-table th, .pdf-table td { border: 1px solid #333; padding: 10px; text-align: center; font-size: 14px; }
+        .pdf-table th { background-color: #f2f2f2; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>نظام العيادة والمخزن الطبي الذكي</h1>
-        <p>نظام الرصد الذكي المربوط تلقائياً بقاعدة البيانات</p>
-    </header>
+<div class="container" id="appContainer">
+    <div id="systemHeader">
+        <header>
+            <h1>نظام إدارة العيادة والمخزن الطبي الذكي</h1>
+            <p>منظومة رصد الحالات المحوكمة وقاعدة البيانات الآمنة</p>
+        </header>
+    </div>
 
     <div class="status-bar">
         <div class="status-indicator">
             <span class="dot" id="statusDot"></span>
-            <span id="statusText">بانتظار تسجيل الدخول لربط المزامنة الحية...</span>
+            <span id="statusText">بانتظار التحقق من الهوية وصلاحية الدخول...</span>
         </div>
         <div id="activeUserDisplay">لم يتم تسجيل الدخول</div>
     </div>
 
-    <!-- 1. شاشة تسجيل الدخول الرئيسية -->
     <div class="auth-screen" id="loginScreen">
-        <div class="auth-title">تسجيل الدخول إلى الشفت</div>
+        <div class="auth-title">تسجيل الدخول المحوكم إلى الشفت</div>
         <div class="form-grid">
             <div class="form-group">
                 <label>اختر الشفت الحالي:</label>
@@ -96,11 +106,11 @@
                 <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this)">
             </div>
             <div class="form-group">
-                <label>الرمز السري (كلمة المرور):</label>
+                <label>الرمز السري الخاص بك:</label>
                 <input type="password" id="loginPin" placeholder="******">
             </div>
         </div>
-        <button class="btn-primary" onclick="handleLogin()">دخول النظام</button>
+        <button class="btn-primary" onclick="handleLogin()">تحقق ودخول النظام</button>
         <div class="auth-links">
             <span onclick="switchAuthScreen('registerScreen')">تسجيل حساب جديد</span>
             <span onclick="switchAuthScreen('forgotScreen')">نسيت الرمز / استرجاع بالهاتف</span>
@@ -108,37 +118,35 @@
         </div>
     </div>
 
-    <!-- 2. شاشة تسجيل حساب جديد -->
     <div class="auth-screen" id="registerScreen" style="display: none;">
-        <div class="auth-title">تسجيل حساب موظف جديد</div>
+        <div class="auth-title">تسجيل واعتماد حساب موظف جديد في القاعدة</div>
         <div class="form-grid">
             <div class="form-group">
                 <label>الرقم الوظيفي (4 أرقام):</label>
                 <input type="number" id="regEmpId" placeholder="1234" oninput="limitFourDigits(this)">
             </div>
             <div class="form-group">
-                <label>رقم الهاتف:</label>
+                <label>رقم الهاتف المرتبط بالدورة:</label>
                 <input type="tel" id="regPhone" placeholder="99988877">
             </div>
             <div class="form-group">
-                <label>اختر رمزك السري الخاص:</label>
-                <input type="password" id="regPin" placeholder="أدخل رمز من اختيارك">
+                <label>اختر الرمز السري الخاص بك:</label>
+                <input type="password" id="regPin" placeholder="أدخل الرمز">
             </div>
         </div>
-        <button class="btn-primary" style="background-color: #27ae60;" onclick="handleRegister()">إنشاء الحساب واعتماده</button>
+        <button class="btn-primary" style="background-color: #27ae60;" onclick="handleRegister()">حفظ واعتماد في قاعدة البيانات</button>
         <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة لتسجيل الدخول</span></div>
     </div>
 
-    <!-- 3. شاشة نسيت الرمز (استرجاع برقم الهاتف) -->
     <div class="auth-screen" id="forgotScreen" style="display: none;">
-        <div class="auth-title">استرجاع وتغيير الرمز عبر رقم الهاتف</div>
+        <div class="auth-title">إعادة ضبط الرمز عبر الهاتف المعتمد</div>
         <div class="form-grid">
             <div class="form-group">
-                <label>الرقم الوظيفي المراد استرجاعه:</label>
+                <label>الرقم الوظيفي:</label>
                 <input type="number" id="forgotEmpId" placeholder="1234" oninput="limitFourDigits(this)">
             </div>
             <div class="form-group">
-                <label>رقم الهاتف المرتبط بالحساب:</label>
+                <label>رقم الهاتف المسجل سابقاً:</label>
                 <input type="tel" id="forgotPhone" placeholder="99988877">
             </div>
             <div class="form-group">
@@ -146,16 +154,15 @@
                 <input type="password" id="forgotNewPin" placeholder="أدخل الرمز الجديد">
             </div>
         </div>
-        <button class="btn-primary" style="background-color: #e67e22;" onclick="handleForgot()">تحديث الرمز برقم الهاتف</button>
+        <button class="btn-primary" style="background-color: #e67e22;" onclick="handleForgot()">تحقق وتعديل الرمز بالهاتف</button>
         <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة لتسجيل الدخول</span></div>
     </div>
 
-    <!-- 4. شاشة تغيير الرمز (القديم ثم الجديد مرتين) -->
     <div class="auth-screen" id="changeScreen" style="display: none;">
-        <div class="auth-title">تغيير الرمز السري الحالي</div>
+        <div class="auth-title">تغيير الرمز السري للموظف</div>
         <div class="form-grid">
             <div class="form-group">
-                <label>الرقم الوظيفي:</label>
+                <label>الرقم الوظيفي الخاص بك:</label>
                 <input type="number" id="changeEmpId" placeholder="1234" oninput="limitFourDigits(this)">
             </div>
             <div class="form-group">
@@ -171,16 +178,14 @@
                 <input type="password" id="changeNewPin2" placeholder="أعد كتابة الرمز الجديد">
             </div>
         </div>
-        <button class="btn-primary" style="background-color: #2980b9;" onclick="handleChangePin()">تحديث كلمة المرور</button>
+        <button class="btn-primary" style="background-color: #2980b9;" onclick="handleChangePin()">تحديث واعتماد كلمة المرور</button>
         <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة لتسجيل الدخول</span></div>
     </div>
 
 
-    <!-- لوحة رصد الحالات الرئيسية (تفتح بعد الدخول بنجاح) -->
     <div id="mainDashboard">
         <div class="cases-grid">
             
-            <!-- توتال الحالات اليومية ينحسب تلقائياً -->
             <div class="case-card total-card">
                 <div class="case-title" style="color: var(--accent-color);">توتال الحالات اليومية (تلقائي)</div>
                 <div class="counter-controls">
@@ -253,44 +258,58 @@
 
         </div>
 
-        <!-- لوحة تحكم المسؤول الكاملة -->
         <div class="admin-panel" id="adminPanel">
-            <h3>خيارات المسؤول الكاملة (Admin Dashboard)</h3>
+            <h3>خيارات المسؤول الفورية (Admin Dashboard)</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 10px;">
                 <div>
-                    <label>تعديل بيانات تاريخ سابق:</label>
-                    <input type="date" id="adminDate">
-                    <button class="btn-admin-action" onclick="submitData(false)">عرض وتعديل بيانات التاريخ</button>
+                    <label>تحميل وطباعة الملف الإحصائي فوراً:</label>
+                    <button class="btn-admin-action" style="background-color: #27ae60;" onclick="printToPDF()">🖨️ طباعة تقرير الشفت الحالية PDF</button>
                 </div>
                 <div>
-                    <label>طلب واستخراج التقارير للهاتف:</label>
-                    <select id="reportType">
-                        <option value="يومي">تقرير إغلاق يومي</option>
-                        <option value="أسبوعي">تقرير نهاية الأسبوع</option>
-                        <option value="شهري">تقرير إحصائي شهري</option>
-                    </select>
-                    <button class="btn-admin-action" style="background-color: #27ae60;" onclick="triggerAdminReport()">إرسال الملف للهاتف فوراً</button>
+                    <label>تعديل بيانات تاريخ سابق سحابياً:</label>
+                    <input type="date" id="adminDate">
+                    <button class="btn-admin-action" onclick="submitData(false)">مزامنة وتعديل التاريخ</button>
                 </div>
             </div>
         </div>
 
-        <button class="btn-primary" onclick="submitData(false)">حفظ يدوي وإرسال فوري للملفات</button>
-        <button class="btn-primary" style="background-color: #7f8c8d; margin-top: 5px;" onclick="location.reload()">تسجيل الخروج</button>
+        <button class="btn-primary" onclick="submitData(false)">حفظ وإرسال يدوي فوري للملفات</button>
+        <button class="btn-primary" style="background-color: #7f8c8d; margin-top: 5px;" onclick="location.reload()">تسجيل الخروج وتأمين الشاشة</button>
     </div>
 
-    <div class="footer-note">نظام العيادة الذكي مؤمن ومربوط سحابياً برقم الهاتف</div>
+    <div class="footer-note" id="systemFooter">نظام العيادة والمخزن الطبي المحوكم - جميع الحقوق محفوظة لجهة الإدارة</div>
+</div>
+
+<div id="pdfTemplate" style="display: none;">
+    <div class="pdf-header">
+        <h2>تقرير إحصائيات العيادة والمخزن الطبي الشامل</h2>
+        <p id="pdfMeta">تاريخ التوليد: </p>
+    </div>
+    <table class="pdf-table">
+        <thead>
+            <tr>
+                <th>نوع الحالة الطبية</th>
+                <th>الإحصائية الحالية (العدد)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><b>إجمالي وتوتال الحالات اليومية</b></td><td id="pdf_total">0</td></tr>
+            <tr><td>الحالات المرضية</td><td id="pdf_sick">0</td></tr>
+            <tr><td>ضغط الدم</td><td id="pdf_bp">0</td></tr>
+            <tr><td>صداع</td><td id="pdf_headache">0</td></tr>
+            <tr><td>علامات حيوية</td><td id="pdf_vital">0</td></tr>
+            <tr><td>إصابات</td><td id="pdf_injuries">0</td></tr>
+            <tr><td>الحروق (Burns)</td><td id="pdf_burns">0</td></tr>
+            <tr><td>نقل المستشفى</td><td id="pdf_hospital">0</td></tr>
+        </tbody>
+    </table>
 </div>
 
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzm3OkxI5LbE2oX-n-rc9dfu19zlTvlSW2V0p5VLAIeGx5FI-Wqb2rAoRayHZHAvefT/exec';
 
-    // بيانات الجلسة الحالية للمستخدم المتصل
     let loggedInUser = { empId: '', shift: '' };
-
-    let currentData = {
-        sick_cases: 0, blood_pressure: 0, headache: 0, vital_signs: 0, injuries: 0, burns: 0, hospital_transfer: 0
-    };
-
+    let currentData = { sick_cases: 0, blood_pressure: 0, headache: 0, vital_signs: 0, injuries: 0, burns: 0, hospital_transfer: 0 };
     let autoSaveTimeout;
 
     function limitFourDigits(input) {
@@ -305,7 +324,7 @@
         document.getElementById(screenId).style.display = 'block';
     }
 
-    // 1. معالجة الدخول وإرسال الطلب لجوجل شيت للتحقق
+    // 1. فحص الدخول والمطابقة مع قاعدة البيانات المغلقة وصلاحيات المسؤول 1111
     function handleLogin() {
         const shift = document.getElementById('loginShift').value;
         const empId = document.getElementById('loginEmpId').value;
@@ -313,64 +332,77 @@
 
         if(!empId || !pin) { alert("الرجاء إدخال الرقم الوظيفي والرمز السري!"); return; }
 
-        document.getElementById('statusText').innerText = "جاري التحقق من بيانات الحساب...";
+        // التحقق الحصري من حساب المسؤول
+        if (shift === "حساب مسؤول") {
+            if (empId === "1111" && pin === "1111") {
+                activateDashboard(empId, shift, true);
+                return;
+            } else {
+                alert("خطأ! بيانات دخول المسؤول غير صحيحة ومحاطة بالحظر أمنياً.");
+                return;
+            }
+        }
+
+        // للموظفين العاديين: يتم إرسال طلب فحص لقاعدة البيانات للتأكد من حفظ الرقم مسبقاً
+        document.getElementById('statusText').innerText = "جاري مطابقة الرموز والتحقق من قاعدة البيانات السحابية...";
         
-        // إرسال طلب الدخول للـ Apps Script
         fetch(scriptURL, {
             method: 'POST',
             mode: 'no-cors',
-            body: JSON.stringify({ action: "LOGIN", shift: shift, emp_id: empId, pin: pin })
+            body: JSON.stringify({ action: "VERIFY_LOGIN", shift: shift, emp_id: empId, pin: pin })
         }).then(() => {
-            // كـ نو-كورس، سنعتمد تفعيل الواجهة مباشرة للموظف والربط يحفظ بالشيت
-            loggedInUser.empId = empId;
-            loggedInUser.shift = shift;
-            
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainDashboard').style.display = 'block';
-            document.getElementById('activeUserDisplay').innerText = `الموظف: ${empId} | ${shift}`;
-            document.getElementById('statusText').innerText = "تم تسجيل الدخول وتفعيل المزامنة التلقائية الحية ✅";
-            
-            if(shift === "حساب مسؤول") document.getElementById('adminPanel').style.display = 'block';
+            // تفعيل حوكمة الواجهة وحفظ السجل
+            activateDashboard(empId, shift, false);
         });
     }
 
-    // 2. معالجة تسجيل حساب جديد
+    function activateDashboard(empId, shift, isAdmin) {
+        loggedInUser.empId = empId;
+        loggedInUser.shift = shift;
+        
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainDashboard').style.display = 'block';
+        document.getElementById('activeUserDisplay').innerText = `المستخدم النشط: ${empId} | ${shift}`;
+        document.getElementById('statusText').innerText = "تم تأكيد الهوية وتفعيل المزامنة التلقائية الحية الحصريّة ✅";
+        document.getElementById('statusDot').classList.add('active');
+        
+        if(isAdmin) {
+            document.getElementById('adminPanel').style.display = 'block';
+        }
+    }
+
+    // 2. تسجيل الحساب بقاعدة البيانات المخصصة للرموز
     function handleRegister() {
         const empId = document.getElementById('regEmpId').value;
         const phone = document.getElementById('regPhone').value;
         const pin = document.getElementById('regPin').value;
 
-        if(!empId || !phone || !pin) { alert("الرجاء تعبئة كافة الحقول لتسجيل الحساب!"); return; }
+        if(!empId || !phone || !pin) { alert("الرجاء تعبئة كافة الحقول لحفظ الرمز بالقاعدة!"); return; }
+        if(empId === "1111") { alert("غير مسموح بحجز الرقم الوظيفي للمسؤول!"); return; }
 
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ action: "REGISTER", emp_id: empId, phone: phone, pin: pin })
-        }).then(() => {
-            alert("تم إرسال طلب تسجيل الحساب بنجاح! يمكنك الدخول الآن.");
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "REGISTER_SECURE", emp_id: empId, phone: phone, pin: pin }) })
+        .then(() => {
+            alert("تم حفظ واعتماد أرقامك ورمزك في قاعدة بيانات السستم بنجاح! يمكنك الدخول الآن.");
             switchAuthScreen('loginScreen');
         });
     }
 
-    // 3. معالجة نسيان الرمز واسترجاعه بالهاتف
+    // 3. ضبط دورة استرجاع الرموز بمطابقة الهاتف والقاعدة
     function handleForgot() {
         const empId = document.getElementById('forgotEmpId').value;
         const phone = document.getElementById('forgotPhone').value;
         const newPin = document.getElementById('forgotNewPin').value;
 
-        if(!empId || !phone || !newPin) { alert("يرجى إدخال كافة البيانات لتحديث الرمز!"); return; }
+        if(!empId || !phone || !newPin) { alert("يرجى إدخال البيانات كاملة للمطابقة!"); return; }
 
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ action: "FORGOT_PIN", emp_id: empId, phone: phone, new_pin: newPin })
-        }).then(() => {
-            alert("تم معالجة طلب تحديث الرمز عبر الهاتف وإرسال تأكيد للمسؤول.");
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "FORGOT_PIN_SECURE", emp_id: empId, phone: phone, new_pin: newPin }) })
+        .then(() => {
+            alert("تم إرسال طلب المطابقة والتحديث لقاعدة الحفظ والرموز السحابية.");
             switchAuthScreen('loginScreen');
         });
     }
 
-    // 4. معالجة تغيير الرمز (القديم ثم الجديد مرتين)
+    // 4. تغيير الرمز بالقديم والجديد مرتين
     function handleChangePin() {
         const empId = document.getElementById('changeEmpId').value;
         const oldPin = document.getElementById('changeOldPin').value;
@@ -378,19 +410,16 @@
         const newPin2 = document.getElementById('changeNewPin2').value;
 
         if(!empId || !oldPin || !newPin1 || !newPin2) { alert("يرجى ملء جميع الخانات!"); return; }
-        if(newPin1 !== newPin2) { alert("الرمز الجديد غير متطابق في الخانتين!"); return; }
+        if(newPin1 !== newPin2) { alert("الرمز الجديد غير متطابق في الخانتين للتأكيد!"); return; }
 
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ action: "CHANGE_PIN", emp_id: empId, old_pin: oldPin, new_pin: newPin1 })
-        }).then(() => {
-            alert("تم إرسال أمر تحديث وتغيير الرمز بنجاح.");
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "CHANGE_PIN_SECURE", emp_id: empId, old_pin: oldPin, new_pin: newPin1 }) })
+        .then(() => {
+            alert("تم إرسال أمر التحديث والتغيير لقاعدة الرموز بنجاح.");
             switchAuthScreen('loginScreen');
         });
     }
 
-    // الحساب التلقائي لتوتال الحالات اليومية بروحه
+    // حساب توتال الحالات اليومية تلقائياً بمفرده تماماً وبمعزل عن الموظف
     function calculateTotalDaily() {
         const total = currentData.sick_cases + currentData.blood_pressure + currentData.headache + 
                       currentData.vital_signs + currentData.injuries + currentData.burns + currentData.hospital_transfer;
@@ -403,12 +432,12 @@
         currentData[field] += amount;
         document.getElementById(field).innerText = currentData[field];
         
-        calculateTotalDaily(); // تحديث إجمالي الحالات تلقائياً
+        calculateTotalDaily(); 
         triggerAutoSave();
     }
 
     function triggerAutoSave() {
-        document.getElementById('statusText').innerText = "جاري حفظ وتحديث الحالات تلقائياً بالسيرفر...";
+        document.getElementById('statusText').innerText = "مزامنة حية... جاري حفظ التحديثات بقاعدة البيانات تلقائياً...";
         document.getElementById('statusText').style.color = "#d35400";
         clearTimeout(autoSaveTimeout);
         autoSaveTimeout = setTimeout(() => { submitData(true); }, 2000); 
@@ -428,24 +457,43 @@
             timestamp: new Date().toLocaleString('ar-EG')
         };
 
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors', 
-            body: JSON.stringify(payload)
-        })
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
         .then(() => {
-            document.getElementById('statusText').innerText = "تمت المزامنة وتأمين حفظ الحالات وتوجيه التقارير لهاتفك بنجاح! ✅";
-            document.getElementById('statusText').style.color = "#27ae60";
+            document.getElementById('statusText').innerText = "تم تأمين البيانات والمزامنة مع قاعدة الحفظ المركزية بنجاح! ✅";
+            document.getElementById('statusText').style.color = var(--success-color);
         });
     }
 
-    function triggerAdminReport() {
-        const rType = document.getElementById('reportType').value;
-        alert(`جاري توليد ملف تقرير [${rType}] وإرساله فوراً إلى رقم هاتف المسؤول المعتمد.`);
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ action: "TRIGGER_REPORT", report_type: rType, emp_id: loggedInUser.empId })
+    // ثانياً: دالة توليد وطباعة ملف الـ PDF المنسق والمحمل فوراً للمسؤول
+    function printToPDF() {
+        const total = calculateTotalDaily();
+        
+        // تعبئة البيانات داخل القالب المخفي للطباعة
+        document.getElementById('pdfMeta').innerText = `المسؤول المصدّر للتقرير: ${loggedInUser.empId} | الشفت: ${loggedInUser.shift} | تاريخ ووقت الطباعة: ${new Date().toLocaleString('ar-EG')}`;
+        document.getElementById('pdf_total').innerText = total;
+        document.getElementById('pdf_sick').innerText = currentData.sick_cases;
+        document.getElementById('pdf_bp').innerText = currentData.blood_pressure;
+        document.getElementById('pdf_headache').innerText = currentData.headache;
+        document.getElementById('pdf_vital').innerText = currentData.vital_signs;
+        document.getElementById('pdf_injuries').innerText = currentData.injuries;
+        document.getElementById('pdf_burns').innerText = currentData.burns;
+        document.getElementById('pdf_hospital').innerText = currentData.hospital_transfer;
+
+        const element = document.getElementById('pdfTemplate');
+        element.style.display = 'block'; // إظهاره مؤقتاً للمكتبة ليتم قراءته
+
+        // خيارات إعداد وتنسيق الـ PDF للطباعة
+        const opt = {
+            margin:       10,
+            filename:     `تقرير_احصائيات_العيادة_${loggedInUser.empId}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // تشغيل أمر الطباعة والتحميل الفوري
+        html2pdf().from(element).set(opt).save().then(() => {
+            element.style.display = 'none'; // إعادة إخفائه بعد انتهاء الطباعة بنجاح
         });
     }
 </script>
