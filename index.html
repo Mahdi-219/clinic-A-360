@@ -173,10 +173,6 @@
     .loader { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.5); border-top: 2px solid #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    #pdfTemplate {
-        position: fixed; top: 0; left: -10000px; z-index: -1;
-        width: 900px; padding: 30px; background: white; color: #222; box-sizing: border-box;
-    }
     .pdf-header { text-align: center; border-bottom: 3px solid var(--ink); padding-bottom: 15px; margin-bottom: 20px; }
     .pdf-header h2 { color: var(--ink); font-size: 22px; margin-bottom: 5px; font-weight: 700; }
     .pdf-header p { color: #555; font-size: 14px; }
@@ -187,6 +183,9 @@
     }
 
     :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+    /* أثناء التقاط صورة PDF، نخفي زر التصدير حتى لا يظهر داخل الملف الناتج */
+    .pdf-exporting #reportSection .btn-secondary { display: none !important; }
 </style>
 </head>
 <body>
@@ -408,9 +407,6 @@
 
     <div class="footer-note">جميع البيانات تُحفظ وتُوثّق آليًا لحظة الضغط على زر الحفظ</div>
 </div>
-
-<!-- قالب مخفي يُستخدم فقط عند تصدير PDF -->
-<div id="pdfTemplate"></div>
 
 <script>
 /* =========================================================
@@ -740,30 +736,34 @@ function renderReportTable(rows) {
 async function exportReportPDF(btn) {
     if (btn) setBusy(btn, true, "تصدير التقرير PDF");
 
-    const table = document.getElementById("reportTable").outerHTML;
-    const tpl = document.getElementById("pdfTemplate");
-    tpl.innerHTML = `
-        <div class="pdf-header">
-            <h2>التقرير الشهري لحالات العيادة</h2>
-            <p>تاريخ الإصدار: ${new Date().toLocaleDateString("ar-EG")}</p>
-        </div>
-        ${table}
-    `;
+    const reportSection = document.getElementById("reportSection");
 
-    // لازم ننتظر تحميل الخط العربي واكتمال الرسم فعليًا، وإلا يطلع PDF فاضي
-    if (document.fonts && document.fonts.ready) {
-        try { await document.fonts.ready; } catch (e) {}
-    }
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    // نضيف سطر تاريخ الإصدار مؤقتًا فوق الجدول الظاهر فعليًا، ونحذفه بعد الالتقاط
+    const tempDate = document.createElement("p");
+    tempDate.id = "tempPdfDate";
+    tempDate.style.cssText = "text-align:center; color:#555; font-size:13px; margin-bottom:14px;";
+    tempDate.textContent = "تاريخ الإصدار: " + new Date().toLocaleDateString("ar-EG");
+    reportSection.insertBefore(tempDate, reportSection.firstChild);
+
+    // نخفي زر التصدير نفسه أثناء الالتقاط حتى لا يظهر داخل الـ PDF
+    document.body.classList.add("pdf-exporting");
 
     try {
-        await html2pdf().from(tpl).set({
+        // لازم ننتظر تحميل الخط العربي واكتمال الرسم فعليًا، وإلا يطلع PDF فاضي
+        if (document.fonts && document.fonts.ready) {
+            try { await document.fonts.ready; } catch (e) {}
+        }
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+        await html2pdf().from(reportSection).set({
             margin: 10,
             filename: `تقرير-شهري-${Date.now()}.pdf`,
-            html2canvas: { scale: 2, useCORS: true, windowWidth: tpl.scrollWidth || 900 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
             jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }
         }).save();
     } finally {
+        tempDate.remove();
+        document.body.classList.remove("pdf-exporting");
         if (btn) setBusy(btn, false, "تصدير التقرير PDF");
     }
 }
