@@ -1,0 +1,17 @@
+{
+  "name": "سستم جدول حالات العيادة",
+  "short_name": "حالات العيادة",
+  "description": "منظومة تصنيف وتوثيق حالات عيادات الطوارئ الطبية",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef2f4",
+  "theme_color": "#0d9488",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
