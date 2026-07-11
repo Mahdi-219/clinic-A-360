@@ -11,7 +11,7 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
-<meta name="theme-color" content="#0d9488">
+<meta name="theme-color" content="#1721c1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="نبض">
@@ -803,13 +803,16 @@ function exportReportPDF() {
     if (dateEl) dateEl.textContent = "تاريخ الإصدار: " + new Date().toLocaleDateString("ar-EG");
     window.print();
 }
+</script>
 
-/* ---------- تسجيل Service Worker (يفعّل خاصية "تثبيت التطبيق" الحقيقية) ---------- */
+<!-- ---------- تسجيل Service Worker (يفعّل خاصية "تثبيت التطبيق" الحقيقية) ---------- -->
+<script>
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-    });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js');
+  });
 }
 </script>
+
 </body>
 </html>
