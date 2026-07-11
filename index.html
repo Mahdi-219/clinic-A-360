@@ -6,6 +6,16 @@
 <title>نبض | سستم جدول حالات العيادة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+<!-- ===== ربط تطبيق الويب (PWA): الأيقونة + manifest ===== -->
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+<meta name="theme-color" content="#0d9488">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="نبض">
+
 <style>
     :root {
         --ink: #0f2942;
@@ -161,7 +171,7 @@
     .report-section { background: white; border: 1px solid var(--line); padding: 20px; border-radius: var(--radius); margin-top: 18px; overflow-x: auto; }
     .report-title { font-size: 16.5px; font-weight: 700; color: var(--ink); margin-bottom: 14px; text-align: center; }
 
-    .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 900px; }
+    .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 950px; }
     .monthly-table th, .monthly-table td { border: 1px solid var(--line); padding: 9px 10px; text-align: center; font-size: 13px; }
     .monthly-table th { background-color: var(--ink); color: white; font-weight: 700; }
     .monthly-table tr:nth-child(even) { background-color: #f7f9fa; }
@@ -248,15 +258,18 @@
         <div class="auth-title">تسجيل الدخول إلى النظام</div>
         <div class="form-grid">
             <div class="form-group">
+                <label for="loginClinic">اختر العيادة / Clinic</label>
+                <select id="loginClinic" onchange="onClinicChange()">
+                    <option value="عيادة الف">عيادة الف (Clinic A)</option>
+                    <option value="عيادة باء">عيادة باء (Clinic B)</option>
+                    <option value="حساب مسؤول">حساب مسؤول (Admin)</option>
+                </select>
+            </div>
+            <div class="form-group" id="shiftGroup">
                 <label for="loginShift">اختر الشفت الحالي / Shift</label>
                 <select id="loginShift">
-                    <option value="شفت الف صباحي">شفت الف صباحي (A-Morning)</option>
-                    <option value="شفت الف مسائي">شفت الف مسائي (A-Evening)</option>
-                    <option value="شفت باء صباحي">شفت باء صباحي (B-Morning)</option>
-                    <option value="شفت باء مسائي">شفت باء مسائي (B-Evening)</option>
-                    <option value="شفت جيم صباحي">شفت جيم صباحي (C-Morning)</option>
-                    <option value="شفت جيم مسائي">شفت جيم مسائي (C-Evening)</option>
-                    <option value="حساب مسؤول">حساب مسؤول (Admin)</option>
+                    <option value="صباحي">صباحي (Morning)</option>
+                    <option value="مسائي">مسائي (Evening)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -405,6 +418,16 @@
         <!-- لوحة المسؤول -->
         <div class="admin-panel" id="adminPanel">
             <div class="auth-title" style="border:none;">لوحة تحكم المسؤول</div>
+
+            <div class="form-group" style="max-width:280px;">
+                <label for="reportClinicFilter">تصفية حسب العيادة</label>
+                <select id="reportClinicFilter">
+                    <option value="all">كل العيادات</option>
+                    <option value="عيادة الف">عيادة الف</option>
+                    <option value="عيادة باء">عيادة باء</option>
+                </select>
+            </div>
+
             <button class="btn-primary btn-admin" onclick="loadMonthlyReport()">جلب التقرير الشهري الكامل</button>
 
             <div class="report-section" id="reportSection" style="display:none;">
@@ -416,7 +439,7 @@
                 <table class="monthly-table" id="reportTable">
                     <thead>
                         <tr>
-                            <th>التاريخ</th><th>الرقم الوظيفي</th><th>الشفت</th><th>الإجمالي</th>
+                            <th>التاريخ</th><th>العيادة</th><th>الرقم الوظيفي</th><th>الشفت</th><th>الإجمالي</th>
                             <th>حالات طبية</th><th>ضغط الدم</th><th>صداع</th><th>علامات حيوية</th>
                             <th>إصابات</th><th>حروق</th><th>نقل مستشفى</th>
                         </tr>
@@ -440,7 +463,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxjYDPUwZ6QFrFxT9yWwkux
 
 const CASE_KEYS = ["sick_cases", "blood_pressure", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
 
-let session = { empId: null, shift: null, isAdmin: false, token: null };
+let session = { empId: null, clinic: null, shift: null, isAdmin: false, token: null };
 let counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
 
 /* ---------- أدوات مساعدة عامة ---------- */
@@ -484,6 +507,13 @@ function switchAuthScreen(screenId) {
     });
     document.getElementById("errorMessage").style.display = "none";
     document.getElementById("successMessage").style.display = "none";
+}
+
+/* تُظهر أو تُخفي قائمة "الشفت" حسب اختيار العيادة — حساب المسؤول لا يحتاج شفت */
+function onClinicChange() {
+    const clinic = document.getElementById("loginClinic").value;
+    const shiftGroup = document.getElementById("shiftGroup");
+    shiftGroup.style.display = (clinic === "حساب مسؤول") ? "none" : "block";
 }
 
 /* تشفير أحادي الاتجاه (SHA-256) من جهة العميل قبل إرسال الرمز السري.
@@ -545,6 +575,7 @@ checkServerStatus();
 /* ---------- تسجيل الدخول / التسجيل / استرجاع الرمز ---------- */
 
 async function handleLogin() {
+    const clinic = document.getElementById("loginClinic").value;
     const shift = document.getElementById("loginShift").value;
     const empId = document.getElementById("loginEmpId").value.trim();
     const pin = document.getElementById("loginPin").value.trim();
@@ -560,7 +591,8 @@ async function handleLogin() {
 
         if (result.status === "SUCCESS") {
             session.empId = empId;
-            session.shift = shift;
+            session.clinic = clinic;
+            session.shift = (clinic === "حساب مسؤول") ? null : shift;
             session.isAdmin = !!result.isAdmin; // الصلاحية تُحسم من السيرفر وليس من اختيار المستخدم فقط
             session.token = result.token;
             enterDashboard();
@@ -630,7 +662,7 @@ async function handleForgot() {
 }
 
 function logout() {
-    session = { empId: null, shift: null, isAdmin: false, token: null };
+    session = { empId: null, clinic: null, shift: null, isAdmin: false, token: null };
     counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
     document.getElementById("mainDashboard").style.display = "none";
     document.getElementById("adminPanel").style.display = "none";
@@ -640,6 +672,8 @@ function logout() {
     document.getElementById("activeUserDisplay").textContent = "لم يتم تسجيل الدخول";
     document.getElementById("loginEmpId").value = "";
     document.getElementById("loginPin").value = "";
+    document.getElementById("loginClinic").value = "عيادة الف";
+    onClinicChange();
     switchAuthScreen("loginScreen");
 }
 
@@ -653,7 +687,7 @@ function enterDashboard() {
     document.getElementById("statusDot").classList.add("active");
     document.getElementById("statusText").textContent = "تم تسجيل الدخول بنجاح";
     document.getElementById("activeUserDisplay").textContent =
-        session.isAdmin ? "مسؤول النظام" : `الموظف رقم ${session.empId} — ${session.shift}`;
+        session.isAdmin ? "مسؤول النظام" : `الموظف رقم ${session.empId} — ${session.clinic} — ${session.shift}`;
 
     document.getElementById("adminPanel").style.display = session.isAdmin ? "block" : "none";
     document.getElementById("saveBtn").style.display = session.isAdmin ? "none" : "block";
@@ -688,6 +722,7 @@ async function saveData() {
             token: session.token,
             date_target: now.toLocaleDateString("en-CA"),
             emp_id: session.empId,
+            clinic: session.clinic,
             shift: session.shift,
             total_daily: total,
             timestamp: now.toISOString(),
@@ -716,8 +751,10 @@ async function loadMonthlyReport() {
     if (!session.isAdmin) { showError("هذه الميزة للمسؤول فقط"); return; }
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
+    const clinicFilter = document.getElementById("reportClinicFilter").value;
+
     try {
-        const result = await apiGet({ action: "GET_MONTHLY_REPORT", token: session.token });
+        const result = await apiGet({ action: "GET_MONTHLY_REPORT", token: session.token, clinic: clinicFilter });
         if (!Array.isArray(result)) {
             if (result && result.status === "FORBIDDEN") {
                 showError("جلسة المسؤول غير صالحة، سجّل الدخول من جديد");
@@ -738,13 +775,13 @@ function renderReportTable(rows) {
     body.innerHTML = "";
 
     if (!rows.length) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="11">لا توجد بيانات مسجلة بعد لهذا الشهر</td></tr>`;
+        body.innerHTML = `<tr class="empty-row"><td colspan="12">لا توجد بيانات مسجلة بعد لهذا الشهر</td></tr>`;
         return;
     }
 
     rows.forEach(r => {
         const tr = document.createElement("tr");
-        [r.date, r.emp_id, r.shift, r.total_daily, r.sick_cases, r.blood_pressure,
+        [r.date, r.clinic, r.emp_id, r.shift, r.total_daily, r.sick_cases, r.blood_pressure,
          r.headache, r.vital_signs, r.injuries, r.burns, r.hospital_transfer].forEach(val => {
             const td = document.createElement("td");
             td.textContent = val;
@@ -760,6 +797,13 @@ function exportReportPDF() {
     const dateEl = document.getElementById("printDate");
     if (dateEl) dateEl.textContent = "تاريخ الإصدار: " + new Date().toLocaleDateString("ar-EG");
     window.print();
+}
+
+/* ---------- تسجيل Service Worker (يفعّل خاصية "تثبيت التطبيق" الحقيقية) ---------- */
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
 }
 </script>
 </body>
