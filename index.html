@@ -78,6 +78,22 @@
     .dot.active { background-color: var(--success); box-shadow: 0 0 0 4px rgba(31,139,76,0.15); }
     #activeUserDisplay { color: var(--ink); }
 
+    /* ===== شريط حالة السيرفر ===== */
+    .server-status {
+        display: flex; align-items: center; justify-content: center; gap: 9px;
+        background: #f5f8f9; border: 1px solid var(--line); border-radius: 10px;
+        padding: 11px 16px; margin-bottom: 16px; font-size: 13.5px; font-weight: 700;
+        transition: background-color .2s, border-color .2s, color .2s;
+    }
+    .server-status .dot2 { width: 9px; height: 9px; border-radius: 50%; background: #b7c2ca; flex-shrink: 0; }
+    .server-status.checking { color: #8a6d1f; background: #fdf3d9; border-color: #f0dfa0; }
+    .server-status.checking .dot2 { background: #d4a017; animation: blink-status 1s infinite; }
+    .server-status.online { color: var(--accent-dark); background: var(--accent-soft); border-color: #b9e6df; }
+    .server-status.online .dot2 { background: var(--success); box-shadow: 0 0 0 4px rgba(31,139,76,0.15); }
+    .server-status.offline { color: #7d241a; background: var(--danger-soft); border-color: #f2c4bd; }
+    .server-status.offline .dot2 { background: var(--danger); }
+    @keyframes blink-status { 50% { opacity: .35; } }
+
     /* ===== شاشات الدخول ===== */
     .auth-screen { background: #f7f9fa; padding: 26px; border-radius: var(--radius); margin-bottom: 24px; border: 1px solid var(--line); }
     .auth-title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
@@ -157,7 +173,10 @@
     .loader { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.5); border-top: 2px solid #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    #pdfTemplate { width: 100%; max-width: 900px; padding: 30px; background: white; color: #222; box-sizing: border-box; }
+    #pdfTemplate {
+        position: fixed; top: 0; left: -10000px; z-index: -1;
+        width: 900px; padding: 30px; background: white; color: #222; box-sizing: border-box;
+    }
     .pdf-header { text-align: center; border-bottom: 3px solid var(--ink); padding-bottom: 15px; margin-bottom: 20px; }
     .pdf-header h2 { color: var(--ink); font-size: 22px; margin-bottom: 5px; font-weight: 700; }
     .pdf-header p { color: #555; font-size: 14px; }
@@ -188,6 +207,11 @@
                      M300 20 H450 L465 20 L475 5 L490 35 L500 20 L515 20 L525 12 L535 20 H600"
                   fill="none" stroke="#0d9488" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" opacity="0.75"/>
         </svg>
+    </div>
+
+    <div class="server-status checking" id="serverStatus">
+        <span class="dot2" id="serverStatusDot"></span>
+        <span id="serverStatusText">يتم التحقق من حالة السيرفر...</span>
     </div>
 
     <div class="status-bar">
@@ -377,7 +401,7 @@
                     </thead>
                     <tbody id="reportTableBody"></tbody>
                 </table>
-                <button class="btn-secondary" onclick="exportReportPDF()">تصدير التقرير PDF</button>
+                <button class="btn-secondary" onclick="exportReportPDF(this)">تصدير التقرير PDF</button>
             </div>
         </div>
     </div>
@@ -386,7 +410,7 @@
 </div>
 
 <!-- قالب مخفي يُستخدم فقط عند تصدير PDF -->
-<div id="pdfTemplate" style="display:none;"></div>
+<div id="pdfTemplate"></div>
 
 <script>
 /* =========================================================
@@ -469,6 +493,35 @@ async function apiGet(params) {
     const res = await fetch(url.toString());
     return res.json();
 }
+
+/* ---------- حالة السيرفر (تفحص تلقائيًا عند فتح الصفحة) ---------- */
+
+async function checkServerStatus() {
+    const wrap = document.getElementById("serverStatus");
+    const text = document.getElementById("serverStatusText");
+
+    if (API_URL.includes("PASTE_YOUR")) {
+        wrap.className = "server-status offline";
+        text.textContent = "لم يتم ربط رابط السيرفر بعد (API_URL)";
+        return;
+    }
+
+    try {
+        const result = await apiGet({ action: "PING" });
+        if (result && result.status === "OK") {
+            wrap.className = "server-status online";
+            text.textContent = "🟢 السيرفر متصل ويعمل بشكل طبيعي";
+        } else {
+            wrap.className = "server-status offline";
+            text.textContent = "🔴 السيرفر يستجيب لكن برد غير متوقع";
+        }
+    } catch (e) {
+        wrap.className = "server-status offline";
+        text.textContent = "🔴 تعذر الاتصال بالسيرفر، تحقق من رابط API أو النشر";
+    }
+}
+
+checkServerStatus();
 
 /* ---------- تسجيل الدخول / التسجيل / استرجاع الرمز ---------- */
 
@@ -684,7 +737,9 @@ function renderReportTable(rows) {
 
 /* ---------- تصدير PDF ---------- */
 
-function exportReportPDF() {
+async function exportReportPDF(btn) {
+    if (btn) setBusy(btn, true, "تصدير التقرير PDF");
+
     const table = document.getElementById("reportTable").outerHTML;
     const tpl = document.getElementById("pdfTemplate");
     tpl.innerHTML = `
@@ -694,13 +749,23 @@ function exportReportPDF() {
         </div>
         ${table}
     `;
-    tpl.style.display = "block";
-    html2pdf().from(tpl).set({
-        margin: 10,
-        filename: `تقرير-شهري-${Date.now()}.pdf`,
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }
-    }).save().then(() => { tpl.style.display = "none"; });
+
+    // لازم ننتظر تحميل الخط العربي واكتمال الرسم فعليًا، وإلا يطلع PDF فاضي
+    if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (e) {}
+    }
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    try {
+        await html2pdf().from(tpl).set({
+            margin: 10,
+            filename: `تقرير-شهري-${Date.now()}.pdf`,
+            html2canvas: { scale: 2, useCORS: true, windowWidth: tpl.scrollWidth || 900 },
+            jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }
+        }).save();
+    } finally {
+        if (btn) setBusy(btn, false, "تصدير التقرير PDF");
+    }
 }
 </script>
 </body>
