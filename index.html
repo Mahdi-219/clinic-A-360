@@ -4,18 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نبض | سستم جدول حالات العيادة</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#0d9488">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-
-<!-- ===== ربط تطبيق الويب (PWA): الأيقونة + manifest ===== -->
-<link rel="manifest" href="./manifest.json">
-<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
-<meta name="theme-color" content="#1721c1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="نبض">
-
 <style>
     :root {
         --ink: #0f2942;
@@ -171,10 +167,57 @@
     .report-section { background: white; border: 1px solid var(--line); padding: 20px; border-radius: var(--radius); margin-top: 18px; overflow-x: auto; }
     .report-title { font-size: 16.5px; font-weight: 700; color: var(--ink); margin-bottom: 14px; text-align: center; }
 
-    .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 950px; }
+    .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 900px; }
     .monthly-table th, .monthly-table td { border: 1px solid var(--line); padding: 9px 10px; text-align: center; font-size: 13px; }
     .monthly-table th { background-color: var(--ink); color: white; font-weight: 700; }
     .monthly-table tr:nth-child(even) { background-color: #f7f9fa; }
+    .monthly-table tr.editing { background-color: #fdf3d9; }
+    .row-input {
+        width: 60px; padding: 4px 6px; border: 1.5px solid var(--accent); border-radius: 6px;
+        font-size: 13px; text-align: center; font-family: inherit;
+    }
+    .row-btn {
+        border: none; border-radius: 6px; padding: 5px 10px; font-size: 12px; font-weight: 700;
+        cursor: pointer; margin: 0 2px; font-family: inherit;
+    }
+    .row-edit { background: var(--accent-soft); color: var(--accent-dark); }
+    .row-edit:hover { background: #cdeee8; }
+    .row-delete { background: var(--danger-soft); color: var(--danger); }
+    .row-delete:hover { background: #f6d2cc; }
+    .row-save { background: var(--success); color: #fff; }
+    .row-save:hover { background: #17703c; }
+    .row-cancel { background: #eceff1; color: var(--ink-soft); }
+    .row-cancel:hover { background: #dfe4e7; }
+    .cell-actions { white-space: nowrap; }
+
+    /* ===== قسم الإحصائيات البيانية ===== */
+    .stats-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .btn-stat {
+        flex: 1; min-width: 180px; background: #fff; color: var(--ink-soft);
+        border: 1.5px solid var(--line); padding: 12px 14px; font-size: 13.5px; font-weight: 700;
+        border-radius: 10px; cursor: pointer; font-family: inherit; transition: border-color .15s, color .15s, background-color .15s;
+    }
+    .btn-stat:hover { border-color: var(--accent); color: var(--accent-dark); background: var(--accent-soft); }
+    .btn-stat.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .chart-card {
+        background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 20px; margin-top: 16px;
+    }
+    .chart-card-title { font-size: 15.5px; font-weight: 700; color: var(--ink); margin-bottom: 14px; text-align: center; }
+    .chart-canvas-wrap { max-width: 560px; margin: 0 auto; position: relative; }
+
+    .combined-total-box {
+        display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 6px;
+    }
+    .combined-total-card {
+        background: linear-gradient(160deg, var(--accent-soft), #fff); border: 1.5px solid #b9e6df;
+        border-radius: 12px; padding: 18px 26px; text-align: center; min-width: 160px;
+    }
+    .combined-total-card.grand { background: linear-gradient(160deg, var(--amber-soft), #fff); border-color: #f0dfa0; }
+    .combined-total-card .label { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+    .combined-total-card .value { font-size: 28px; font-weight: 700; color: var(--accent-dark); }
+    .combined-total-card.grand .value { color: var(--amber); }
     .empty-row td { padding: 24px; color: var(--muted); font-style: italic; }
 
     .footer-note { text-align: center; margin-top: 24px; font-size: 12px; color: var(--muted); }
@@ -213,6 +256,7 @@
         .print-only-header h2 { color: var(--ink); font-size: 20px; margin-bottom: 4px; }
         .print-only-header p { color: #555; font-size: 12px; }
         .monthly-table { min-width: 0; width: 100%; }
+        .cell-actions, .monthly-table th:last-child { display: none !important; }
         @page { size: A4 landscape; margin: 12mm; }
     }
 </style>
@@ -259,24 +303,23 @@
         <div class="form-grid">
             <div class="form-group">
                 <label for="loginClinic">اختر العيادة / Clinic</label>
-                <select id="loginClinic" onchange="onClinicChange()">
+                <select id="loginClinic">
                     <option value="عيادة الف">عيادة الف (Clinic A)</option>
                     <option value="عيادة باء">عيادة باء (Clinic B)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="loginShift">اختر الشفت الحالي / Shift</label>
+                <select id="loginShift">
+                    <option value="شفت الف صباحي">شفت الف صباحي (A-Morning)</option>
+                    <option value="شفت الف مسائي">شفت الف مسائي (A-Evening)</option>
+                    <option value="شفت باء صباحي">شفت باء صباحي (B-Morning)</option>
+                    <option value="شفت باء مسائي">شفت باء مسائي (B-Evening)</option>
+                    <option value="شفت جيم صباحي">شفت جيم صباحي (C-Morning)</option>
+                    <option value="شفت جيم مسائي">شفت جيم مسائي (C-Evening)</option>
                     <option value="حساب مسؤول">حساب مسؤول (Admin)</option>
                 </select>
             </div>
-            <div class="form-group" id="shiftGroup">
-                <label for="loginShift">اختر الشفت الحالي / Shift</label>
-                <select id="loginShift">
-                    <option value="شفت الف صباحي">شفت الف صباحي (Shift A - Morning)</option>
-                    <option value="شفت الف مسائي">شفت الف مسائي (Shift A - Evening)</option>
-                    <option value="شفت باء صباحي">شفت باء صباحي (Shift B - Morning)</option>
-                    <option value="شفت باء مسائي">شفت باء مسائي (Shift B - Evening)</option>
-                    <option value="شفت جيم صباحي">شفت جيم صباحي (Shift C - Morning)</option>
-                    <option value="شفت جيم مسائي">شفت جيم مسائي (Shift C - Evening)</option>
-                </select>
-            </div>
-
             <div class="form-group">
                 <label for="loginEmpId">الرقم الوظيفي / Emp ID</label>
                 <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this)" inputmode="numeric">
@@ -424,16 +467,30 @@
         <div class="admin-panel" id="adminPanel">
             <div class="auth-title" style="border:none;">لوحة تحكم المسؤول</div>
 
-            <div class="form-group" style="max-width:280px;">
-                <label for="reportClinicFilter">تصفية حسب العيادة</label>
-                <select id="reportClinicFilter">
-                    <option value="all">كل العيادات</option>
-                    <option value="عيادة الف">عيادة الف</option>
-                    <option value="عيادة باء">عيادة باء</option>
+            <div class="form-group">
+                <label for="adminClinicSelect">اختر العيادة لعرض تقريرها</label>
+                <select id="adminClinicSelect">
+                    <option value="all">كل العيادات (All Clinics)</option>
+                    <option value="عيادة الف">عيادة الف (Clinic A)</option>
+                    <option value="عيادة باء">عيادة باء (Clinic B)</option>
                 </select>
             </div>
 
-            <button class="btn-primary btn-admin" onclick="loadMonthlyReport()">جلب التقرير الشهري الكامل</button>
+            <button class="btn-primary btn-admin" onclick="loadMonthlyReport()">جلب التقرير الشهري</button>
+
+            <div class="stats-controls">
+                <button class="btn-stat" id="btnPieChart" onclick="showPieChart()">📊 نسب أنواع الحالات (دائري)</button>
+                <button class="btn-stat" id="btnBarChart" onclick="showBarChart()">📶 مقارنة العيادتين (أعمدة)</button>
+                <button class="btn-stat" id="btnCombinedTotal" onclick="showCombinedTotal()">🏥 إجمالي العيادتين معًا</button>
+            </div>
+
+            <div class="chart-card" id="chartCard" style="display:none;">
+                <div class="chart-card-title" id="chartCardTitle"></div>
+                <div id="combinedTotalBox" class="combined-total-box" style="display:none;"></div>
+                <div class="chart-canvas-wrap" id="chartCanvasWrap">
+                    <canvas id="statsCanvas"></canvas>
+                </div>
+            </div>
 
             <div class="report-section" id="reportSection" style="display:none;">
                 <div class="print-only-header" id="printOnlyHeader">
@@ -444,9 +501,9 @@
                 <table class="monthly-table" id="reportTable">
                     <thead>
                         <tr>
-                            <th>التاريخ</th><th>العيادة</th><th>الرقم الوظيفي</th><th>الشفت</th><th>الإجمالي</th>
+                            <th>التاريخ</th><th>الرقم الوظيفي</th><th>العيادة</th><th>الشفت</th><th>الإجمالي</th>
                             <th>حالات طبية</th><th>ضغط الدم</th><th>صداع</th><th>علامات حيوية</th>
-                            <th>إصابات</th><th>حروق</th><th>نقل مستشفى</th>
+                            <th>إصابات</th><th>حروق</th><th>نقل مستشفى</th><th>إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="reportTableBody"></tbody>
@@ -468,7 +525,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxjYDPUwZ6QFrFxT9yWwkux
 
 const CASE_KEYS = ["sick_cases", "blood_pressure", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
 
-let session = { empId: null, clinic: null, shift: null, isAdmin: false, token: null };
+let session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
 let counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
 
 /* ---------- أدوات مساعدة عامة ---------- */
@@ -512,13 +569,6 @@ function switchAuthScreen(screenId) {
     });
     document.getElementById("errorMessage").style.display = "none";
     document.getElementById("successMessage").style.display = "none";
-}
-
-/* تُظهر أو تُخفي قائمة "الشفت" حسب اختيار العيادة — حساب المسؤول لا يحتاج شفت */
-function onClinicChange() {
-    const clinic = document.getElementById("loginClinic").value;
-    const shiftGroup = document.getElementById("shiftGroup");
-    shiftGroup.style.display = (clinic === "حساب مسؤول") ? "none" : "block";
 }
 
 /* تشفير أحادي الاتجاه (SHA-256) من جهة العميل قبل إرسال الرمز السري.
@@ -596,8 +646,8 @@ async function handleLogin() {
 
         if (result.status === "SUCCESS") {
             session.empId = empId;
+            session.shift = shift;
             session.clinic = clinic;
-            session.shift = (clinic === "حساب مسؤول") ? null : shift;
             session.isAdmin = !!result.isAdmin; // الصلاحية تُحسم من السيرفر وليس من اختيار المستخدم فقط
             session.token = result.token;
             enterDashboard();
@@ -667,8 +717,10 @@ async function handleForgot() {
 }
 
 function logout() {
-    session = { empId: null, clinic: null, shift: null, isAdmin: false, token: null };
+    session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
     counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
+    if (statsChart) { statsChart.destroy(); statsChart = null; }
+    document.getElementById("chartCard").style.display = "none";
     document.getElementById("mainDashboard").style.display = "none";
     document.getElementById("adminPanel").style.display = "none";
     document.getElementById("reportSection").style.display = "none";
@@ -677,8 +729,6 @@ function logout() {
     document.getElementById("activeUserDisplay").textContent = "لم يتم تسجيل الدخول";
     document.getElementById("loginEmpId").value = "";
     document.getElementById("loginPin").value = "";
-    document.getElementById("loginClinic").value = "عيادة الف";
-    onClinicChange();
     switchAuthScreen("loginScreen");
 }
 
@@ -756,10 +806,10 @@ async function loadMonthlyReport() {
     if (!session.isAdmin) { showError("هذه الميزة للمسؤول فقط"); return; }
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
-    const clinicFilter = document.getElementById("reportClinicFilter").value;
+    const clinic = document.getElementById("adminClinicSelect").value;
 
     try {
-        const result = await apiGet({ action: "GET_MONTHLY_REPORT", token: session.token, clinic: clinicFilter });
+        const result = await apiGet({ action: "GET_MONTHLY_REPORT", token: session.token, clinic });
         if (!Array.isArray(result)) {
             if (result && result.status === "FORBIDDEN") {
                 showError("جلسة المسؤول غير صالحة، سجّل الدخول من جديد");
@@ -775,25 +825,339 @@ async function loadMonthlyReport() {
     }
 }
 
+const REPORT_EDIT_FIELDS = ["sick_cases", "blood_pressure", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
+
+/* ---------- الإحصائيات البيانية (دائري / أعمدة / إجمالي مدمج) ---------- */
+
+const CASE_LABELS = {
+    sick_cases: "حالات طبية",
+    blood_pressure: "ضغط الدم",
+    headache: "صداع",
+    vital_signs: "علامات حيوية",
+    injuries: "إصابات",
+    burns: "حروق",
+    hospital_transfer: "نقل مستشفى"
+};
+
+const CASE_COLORS = {
+    sick_cases: "#0d9488",
+    blood_pressure: "#c0392b",
+    headache: "#b8860b",
+    vital_signs: "#2980b9",
+    injuries: "#8e44ad",
+    burns: "#d35400",
+    hospital_transfer: "#16a085"
+};
+
+let statsChart = null; // مرجع الرسم البياني الحالي، نحذفه قبل رسم واحد جديد
+
+function setActiveStatBtn(id) {
+    ["btnPieChart", "btnBarChart", "btnCombinedTotal"].forEach(btnId => {
+        document.getElementById(btnId).classList.toggle("active", btnId === id);
+    });
+}
+
+// يجلب بيانات عيادة معينة (أو الكل) ويرجع مجموع كل نوع حالة + الإجمالي العام
+async function fetchClinicTotals(clinicValue) {
+    const result = await apiGet({ action: "GET_MONTHLY_REPORT", token: session.token, clinic: clinicValue });
+    if (!Array.isArray(result)) return null;
+
+    const totals = Object.fromEntries(REPORT_EDIT_FIELDS.map(k => [k, 0]));
+    let grandTotal = 0;
+    result.forEach(row => {
+        REPORT_EDIT_FIELDS.forEach(k => { totals[k] += Number(row[k]) || 0; });
+        grandTotal += Number(row.total_daily) || 0;
+    });
+    return { totals, grandTotal, count: result.length };
+}
+
+function showChartCard(title) {
+    document.getElementById("chartCard").style.display = "block";
+    document.getElementById("chartCardTitle").textContent = title;
+    document.getElementById("chartCanvasWrap").style.display = "block";
+    document.getElementById("combinedTotalBox").style.display = "none";
+}
+
+// ١) رسم دائري: نسب أنواع الحالات (يحترم اختيار العيادة الحالي بقائمة المسؤول)
+async function showPieChart() {
+    if (!session.isAdmin) { showError("هذه الميزة للمسؤول فقط"); return; }
+    setActiveStatBtn("btnPieChart");
+
+    const clinic = document.getElementById("adminClinicSelect").value;
+    const clinicLabel = clinic === "all" ? "كل العيادات" : clinic;
+
+    try {
+        const data = await fetchClinicTotals(clinic);
+        if (!data) { showError("تعذر جلب بيانات الرسم البياني"); return; }
+
+        if (data.grandTotal === 0) {
+            showError("لا توجد بيانات كافية لعرض الرسم البياني");
+            return;
+        }
+
+        showChartCard(`نسب أنواع الحالات — ${clinicLabel}`);
+
+        const labels = REPORT_EDIT_FIELDS.map(k => CASE_LABELS[k]);
+        const values = REPORT_EDIT_FIELDS.map(k => data.totals[k]);
+        const colors = REPORT_EDIT_FIELDS.map(k => CASE_COLORS[k]);
+
+        if (statsChart) statsChart.destroy();
+        const ctx = document.getElementById("statsCanvas").getContext("2d");
+        statsChart = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels,
+                datasets: [{ data: values, backgroundColor: colors, borderColor: "#fff", borderWidth: 2 }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: "bottom", labels: { font: { family: "Tajawal" }, padding: 14 } },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const pct = ((ctx.parsed / data.grandTotal) * 100).toFixed(1);
+                                return `${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء بناء الرسم البياني");
+    }
+}
+
+// ٢) رسم أعمدة: مقارنة كل نوع حالة بين العيادتين
+async function showBarChart() {
+    if (!session.isAdmin) { showError("هذه الميزة للمسؤول فقط"); return; }
+    setActiveStatBtn("btnBarChart");
+
+    try {
+        const [dataA, dataB] = await Promise.all([
+            fetchClinicTotals("عيادة الف"),
+            fetchClinicTotals("عيادة باء")
+        ]);
+        if (!dataA || !dataB) { showError("تعذر جلب بيانات الرسم البياني"); return; }
+
+        if (dataA.grandTotal === 0 && dataB.grandTotal === 0) {
+            showError("لا توجد بيانات كافية لعرض المقارنة");
+            return;
+        }
+
+        showChartCard("مقارنة أنواع الحالات بين العيادتين");
+
+        const labels = REPORT_EDIT_FIELDS.map(k => CASE_LABELS[k]);
+        const valuesA = REPORT_EDIT_FIELDS.map(k => dataA.totals[k]);
+        const valuesB = REPORT_EDIT_FIELDS.map(k => dataB.totals[k]);
+
+        if (statsChart) statsChart.destroy();
+        const ctx = document.getElementById("statsCanvas").getContext("2d");
+        statsChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels,
+                datasets: [
+                    { label: "عيادة الف", data: valuesA, backgroundColor: "#0d9488", borderRadius: 6 },
+                    { label: "عيادة باء", data: valuesB, backgroundColor: "#b8860b", borderRadius: 6 }
+                ]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                    x: { ticks: { font: { family: "Tajawal" } } }
+                },
+                plugins: {
+                    legend: { position: "bottom", labels: { font: { family: "Tajawal" }, padding: 14 } }
+                }
+            }
+        });
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء بناء الرسم البياني");
+    }
+}
+
+// ٣) إجمالي العيادتين معًا (بطاقات أرقام بدون رسم بياني)
+async function showCombinedTotal() {
+    if (!session.isAdmin) { showError("هذه الميزة للمسؤول فقط"); return; }
+    setActiveStatBtn("btnCombinedTotal");
+
+    try {
+        const [dataA, dataB] = await Promise.all([
+            fetchClinicTotals("عيادة الف"),
+            fetchClinicTotals("عيادة باء")
+        ]);
+        if (!dataA || !dataB) { showError("تعذر جلب البيانات"); return; }
+
+        document.getElementById("chartCard").style.display = "block";
+        document.getElementById("chartCardTitle").textContent = "إجمالي الحالات — العيادتين معًا";
+        document.getElementById("chartCanvasWrap").style.display = "none";
+
+        const box = document.getElementById("combinedTotalBox");
+        box.style.display = "flex";
+        box.innerHTML = `
+            <div class="combined-total-card">
+                <div class="label">عيادة الف</div>
+                <div class="value">${dataA.grandTotal}</div>
+            </div>
+            <div class="combined-total-card">
+                <div class="label">عيادة باء</div>
+                <div class="value">${dataB.grandTotal}</div>
+            </div>
+            <div class="combined-total-card grand">
+                <div class="label">الإجمالي الكلي</div>
+                <div class="value">${dataA.grandTotal + dataB.grandTotal}</div>
+            </div>
+        `;
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء جلب البيانات");
+    }
+}
+
 function renderReportTable(rows) {
     const body = document.getElementById("reportTableBody");
     body.innerHTML = "";
 
     if (!rows.length) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="12">لا توجد بيانات مسجلة بعد لهذا الشهر</td></tr>`;
+        body.innerHTML = `<tr class="empty-row"><td colspan="13">لا توجد بيانات مسجلة بعد لهذا الشهر</td></tr>`;
         return;
     }
 
     rows.forEach(r => {
         const tr = document.createElement("tr");
-        [r.date, r.clinic, r.emp_id, r.shift, r.total_daily, r.sick_cases, r.blood_pressure,
-         r.headache, r.vital_signs, r.injuries, r.burns, r.hospital_transfer].forEach(val => {
+        tr.dataset.id = r.id;
+
+        const staticCells = [r.date, r.emp_id, r.clinic, r.shift];
+        staticCells.forEach(val => {
             const td = document.createElement("td");
-            td.textContent = val;
+            td.textContent = val ?? "";
             tr.appendChild(td);
         });
+
+        // الإجمالي (يُحسب تلقائيًا، غير قابل للتعديل المباشر)
+        const totalTd = document.createElement("td");
+        totalTd.className = "cell-total";
+        totalTd.textContent = r.total_daily;
+        tr.appendChild(totalTd);
+
+        // الحقول القابلة للتعديل
+        REPORT_EDIT_FIELDS.forEach(key => {
+            const td = document.createElement("td");
+            td.className = "cell-" + key;
+            td.textContent = r[key];
+            td.dataset.value = r[key];
+            tr.appendChild(td);
+        });
+
+        // عمود الإجراءات
+        const actionsTd = document.createElement("td");
+        actionsTd.className = "cell-actions";
+        actionsTd.innerHTML = `
+            <button class="row-btn row-edit" onclick="startEditRow(this)">تعديل</button>
+            <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>
+        `;
+        tr.appendChild(actionsTd);
+
         body.appendChild(tr);
     });
+}
+
+function startEditRow(btn) {
+    const tr = btn.closest("tr");
+    if (tr.classList.contains("editing")) return;
+    tr.classList.add("editing");
+
+    REPORT_EDIT_FIELDS.forEach(key => {
+        const td = tr.querySelector(".cell-" + key);
+        const currentVal = td.dataset.value;
+        td.innerHTML = `<input type="number" min="0" class="row-input" value="${currentVal}">`;
+    });
+
+    const actionsTd = tr.querySelector(".cell-actions");
+    actionsTd.innerHTML = `
+        <button class="row-btn row-save" onclick="saveEditRow(this)">حفظ</button>
+        <button class="row-btn row-cancel" onclick="cancelEditRow(this)">إلغاء</button>
+    `;
+}
+
+function cancelEditRow(btn) {
+    const tr = btn.closest("tr");
+    tr.classList.remove("editing");
+    REPORT_EDIT_FIELDS.forEach(key => {
+        const td = tr.querySelector(".cell-" + key);
+        td.textContent = td.dataset.value;
+    });
+    const actionsTd = tr.querySelector(".cell-actions");
+    actionsTd.innerHTML = `
+        <button class="row-btn row-edit" onclick="startEditRow(this)">تعديل</button>
+        <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>
+    `;
+}
+
+async function saveEditRow(btn) {
+    const tr = btn.closest("tr");
+    const id = tr.dataset.id;
+
+    const updated = {};
+    let newTotal = 0;
+    REPORT_EDIT_FIELDS.forEach(key => {
+        const input = tr.querySelector(".cell-" + key + " input");
+        const val = Math.max(0, parseInt(input.value || "0", 10) || 0);
+        updated[key] = val;
+        newTotal += val;
+    });
+
+    setBusy(btn, true, "حفظ");
+    try {
+        const result = await apiPost("UPDATE_ENTRY", { token: session.token, id, ...updated });
+        if (result.status === "SUCCESS") {
+            REPORT_EDIT_FIELDS.forEach(key => {
+                const td = tr.querySelector(".cell-" + key);
+                td.dataset.value = updated[key];
+                td.textContent = updated[key];
+            });
+            tr.querySelector(".cell-total").textContent = newTotal;
+            tr.classList.remove("editing");
+            const actionsTd = tr.querySelector(".cell-actions");
+            actionsTd.innerHTML = `
+                <button class="row-btn row-edit" onclick="startEditRow(this)">تعديل</button>
+                <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>
+            `;
+            showSuccess("تم تحديث الحالة بنجاح");
+        } else {
+            showError("تعذر حفظ التعديل");
+            setBusy(btn, false, "حفظ");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
+        setBusy(btn, false, "حفظ");
+    }
+}
+
+async function deleteRow(btn) {
+    const tr = btn.closest("tr");
+    const id = tr.dataset.id;
+
+    if (!confirm("هل أنت متأكد من حذف هذا السجل نهائيًا؟")) return;
+
+    setBusy(btn, true, "حذف");
+    try {
+        const result = await apiPost("DELETE_ENTRY", { token: session.token, id });
+        if (result.status === "SUCCESS") {
+            tr.remove();
+            showSuccess("تم حذف السجل بنجاح");
+            const body = document.getElementById("reportTableBody");
+            if (!body.children.length) {
+                body.innerHTML = `<tr class="empty-row"><td colspan="13">لا توجد بيانات مسجلة بعد لهذا الشهر</td></tr>`;
+            }
+        } else {
+            showError("تعذر حذف السجل");
+            setBusy(btn, false, "حذف");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء الحذف");
+        setBusy(btn, false, "حذف");
+    }
 }
 
 /* ---------- تصدير PDF ---------- */
@@ -804,15 +1168,5 @@ function exportReportPDF() {
     window.print();
 }
 </script>
-
-<!-- ---------- تسجيل Service Worker (يفعّل خاصية "تثبيت التطبيق" الحقيقية) ---------- -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js');
-  });
-}
-</script>
-
 </body>
 </html>
