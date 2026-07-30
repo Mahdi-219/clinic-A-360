@@ -522,6 +522,11 @@
                 <button class="tab-btn" id="scopeBtnMonthly" onclick="setReportScope('monthly')">🗓️ الإحصائية الشهرية</button>
             </div>
 
+            <div class="form-group" id="dailyReportDateGroup">
+                <label for="dailyReportDate">اختر تاريخ الإحصائية اليومية</label>
+                <input type="date" id="dailyReportDate" onchange="loadMonthlyReport()">
+            </div>
+
             <div class="form-group">
                 <label for="adminClinicSelect">اختر العيادة لعرض تقريرها</label>
                 <select id="adminClinicSelect" onchange="loadMonthlyReport()">
@@ -854,6 +859,7 @@ function populateTimeSelect(selectEl, count) {
 }
 populateTimeSelect(document.getElementById("patientTimeHour"), 24);
 populateTimeSelect(document.getElementById("patientTimeMinute"), 60);
+document.getElementById("dailyReportDate").value = new Date().toLocaleDateString("en-CA");
 
 function setDefaultPatientTime() {
     const now = new Date();
@@ -903,6 +909,7 @@ async function savePatient() {
             showSuccess("تم حفظ بيانات المريض بنجاح");
             clearPatientForm();
             loadTodayShiftPatients(); // نحدّث الجدول من السيرفر عشان يظهر لكل زملاء نفس الشفت
+            loadMonthlyReport(); // نحدّث الإحصائية بنفس لحظة حفظ المريض
         } else {
             showError("فشل الحفظ، حاول مرة أخرى");
         }
@@ -975,6 +982,12 @@ function setReportScope(scope) {
     document.getElementById("loadReportBtn").textContent = isDaily ? "جلب إحصائية اليوم" : "جلب التقرير الشهري";
     document.getElementById("reportTableTitle").textContent = isDaily ? "إحصائية اليوم لكل الشفتات" : "التقرير الشهري لكل الشفتات";
 
+    // حقل اختيار التاريخ يظهر بس بوضع "إحصائية اليوم"
+    document.getElementById("dailyReportDateGroup").style.display = isDaily ? "block" : "none";
+    if (isDaily && !document.getElementById("dailyReportDate").value) {
+        document.getElementById("dailyReportDate").value = todayDateStringLocal();
+    }
+
     // نحدّث تلقائيًا بالنطاق الجديد بدل ما ننتظر ضغطة يدوية
     loadMonthlyReport();
 }
@@ -991,9 +1004,15 @@ async function loadMonthlyReport() {
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
     const clinic = document.getElementById("adminClinicSelect").value;
+    const params = { action: currentReportAction(), token: session.token, clinic };
+
+    // بوضع "إحصائية اليوم" نرسل التاريخ المختار — نفس اليوم اللي يختاره المستخدم يُعرض فورًا
+    if (currentReportScope === "daily") {
+        params.date = document.getElementById("dailyReportDate").value || todayDateStringLocal();
+    }
 
     try {
-        const result = await apiGet({ action: currentReportAction(), token: session.token, clinic });
+        const result = await apiGet(params);
         if (!Array.isArray(result)) {
             if (result && result.status === "FORBIDDEN") {
                 showError("جلسة الدخول غير صالحة، سجّل الدخول من جديد");
