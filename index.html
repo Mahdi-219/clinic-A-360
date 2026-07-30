@@ -431,8 +431,11 @@
                         <input type="text" id="patientTemp" placeholder="°C">
                     </div>
                     <div class="form-group">
-                        <label for="patientTime">الوقت</label>
-                        <input type="time" id="patientTime">
+                        <label for="patientTimeHour">الوقت (نظام 24 ساعة)</label>
+                        <div style="display:flex; gap:8px;">
+                            <select id="patientTimeHour" style="flex:1;"></select>
+                            <select id="patientTimeMinute" style="flex:1;"></select>
+                        </div>
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="patientAction">التعامل</label>
@@ -447,16 +450,19 @@
                     <h2>تقرير مرضى اليوم</h2>
                     <p id="todayPatientsPrintDate"></p>
                 </div>
-                <div class="report-title">مرضى اليوم (<span id="todayPatientCount">0</span>)</div>
+                <div class="report-title" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                    <span>مرضى اليوم — نفس عيادتك وشفتك (<span id="todayPatientCount">0</span>)</span>
+                    <button class="row-btn row-edit" onclick="loadTodayShiftPatients()">🔄 تحديث</button>
+                </div>
                 <table class="monthly-table" id="todayPatientsTable">
                     <thead>
                         <tr>
                             <th>الوقت</th><th>اسم المريض</th><th>الرقم المدني</th><th>الحالة</th>
-                            <th>الضغط</th><th>السكر</th><th>الحرارة</th><th>التعامل</th>
+                            <th>الضغط</th><th>السكر</th><th>الحرارة</th><th>التعامل</th><th>الرقم الوظيفي</th>
                         </tr>
                     </thead>
                     <tbody id="todayPatientsBody">
-                        <tr class="empty-row"><td colspan="8">لم تتم إضافة أي مريض بعد اليوم</td></tr>
+                        <tr class="empty-row"><td colspan="9">لم تتم إضافة أي مريض بعد اليوم لنفس عيادتك وشفتك</td></tr>
                     </tbody>
                 </table>
                 <button class="btn-secondary" onclick="printSection('todayPatientsReportSection', 'todayPatientsPrintDate', 'مرضى_اليوم')">🖨️ طباعة / حفظ PDF</button>
@@ -552,7 +558,7 @@
                         <tr>
                             <th>التاريخ</th><th>الرقم الوظيفي</th><th>العيادة</th><th>الشفت</th><th>الإجمالي</th>
                             <th>حالات طبية</th><th>ضغط الدم</th><th>صداع</th><th>علامات حيوية</th>
-                            <th>إصابات</th><th>حروق</th><th>نقل مستشفى</th><th class="th-actions">إجراءات</th>
+                            <th>إصابات</th><th>حروق</th><th>نقل مستشفى</th><th class="th-actions" id="reportActionsHeader">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="reportTableBody"></tbody>
@@ -575,7 +581,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxjYDPUwZ6QFrFxT9yWwkuxHZQiV-dJhmxDZ9ImEJWVC7kKOCDEe6eAm9BYHzPjzyg/exec";
 
 let session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
-let todayPatients = []; // سجل المرضى المضافين في هذه الجلسة (محلي فقط لعرضه في الجدول)
 
 /* ---------- أدوات مساعدة عامة ---------- */
 
@@ -774,8 +779,7 @@ async function handleForgot() {
 
 function logout() {
     session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
-    todayPatients = [];
-    renderTodayPatientsTable();
+    renderTodayPatientsTable([]);
     if (statsChart) { statsChart.destroy(); statsChart = null; }
     document.getElementById("chartCard").style.display = "none";
     document.getElementById("mainDashboard").style.display = "none";
@@ -808,6 +812,8 @@ function enterDashboard() {
 
     if (session.isAdmin) {
         document.getElementById("patientsViewDate").value = todayDateStringLocal();
+    } else {
+        loadTodayShiftPatients();
     }
 
     // نحافظ على التبويب اللي كان محدد قبل تسجيل الدخول بدل ما نرجّعه دايمًا لإضافة المريض
@@ -833,11 +839,20 @@ function switchTab(tab) {
     document.getElementById("tabBtnMonthlyStats").classList.toggle("active", !isAddPatient);
 }
 
+// يبني قوائم الساعات (00-23) والدقائق (00-59) داخل عنصري select — يضمن نظام 24 ساعة دايمًا بغض النظر عن إعدادات المتصفح
+function populateTimeSelect(selectEl, count) {
+    selectEl.innerHTML = Array.from({ length: count }, (_, i) => {
+        const v = String(i).padStart(2, "0");
+        return `<option value="${v}">${v}</option>`;
+    }).join("");
+}
+populateTimeSelect(document.getElementById("patientTimeHour"), 24);
+populateTimeSelect(document.getElementById("patientTimeMinute"), 60);
+
 function setDefaultPatientTime() {
     const now = new Date();
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mm = String(now.getMinutes()).padStart(2, "0");
-    document.getElementById("patientTime").value = `${hh}:${mm}`;
+    document.getElementById("patientTimeHour").value = String(now.getHours()).padStart(2, "0");
+    document.getElementById("patientTimeMinute").value = String(now.getMinutes()).padStart(2, "0");
 }
 
 /* ---------- إضافة مريض ---------- */
@@ -852,7 +867,7 @@ async function savePatient() {
     const sugar = document.getElementById("patientSugar").value.trim();
     const temp = document.getElementById("patientTemp").value.trim();
     const action = document.getElementById("patientAction").value.trim();
-    const time = document.getElementById("patientTime").value;
+    const time = document.getElementById("patientTimeHour").value + ":" + document.getElementById("patientTimeMinute").value;
 
     if (!name || !civilId) { showError("الرجاء إدخال اسم المريض والرقم المدني"); return; }
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
@@ -880,9 +895,8 @@ async function savePatient() {
 
         if (result.status === "SUCCESS") {
             showSuccess("تم حفظ بيانات المريض بنجاح");
-            todayPatients.unshift({ name, civilId, condition, bp, sugar, temp, action, time });
-            renderTodayPatientsTable();
             clearPatientForm();
+            loadTodayShiftPatients(); // نحدّث الجدول من السيرفر عشان يظهر لكل زملاء نفس الشفت
         } else {
             showError("فشل الحفظ، حاول مرة أخرى");
         }
@@ -905,25 +919,40 @@ function clearPatientForm() {
     document.getElementById("patientName").focus();
 }
 
-function renderTodayPatientsTable() {
-    const body = document.getElementById("todayPatientsBody");
-    document.getElementById("todayPatientCount").textContent = todayPatients.length;
+// يجلب من السيرفر كل مرضى اليوم لنفس العيادة ونفس اسم الشفت المسجّل فيه الموظف
+// (يشوف زملاءه اللي بنفس الفترة، مو بس اللي أضافهم هو بجهازه)
+async function loadTodayShiftPatients() {
+    if (API_URL.includes("PASTE_YOUR")) return;
+    try {
+        const result = await apiGet({ action: "GET_PATIENTS_BY_DATE", token: session.token, clinic: session.clinic, shift: session.shift });
+        if (!Array.isArray(result)) return; // نتجاهل بصمت لو فشل الجلب، الجدول يبقى بآخر حالة معروضة
+        renderTodayPatientsTable(result);
+    } catch (e) {
+        // تجاهل بصمت، المستخدم يقدر يضغط زر التحديث يدويًا لاحقًا
+    }
+}
 
-    if (!todayPatients.length) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="8">لم تتم إضافة أي مريض بعد اليوم</td></tr>`;
+function renderTodayPatientsTable(rows) {
+    const body = document.getElementById("todayPatientsBody");
+    document.getElementById("todayPatientCount").textContent = rows.length;
+
+    if (!rows.length) {
+        body.innerHTML = `<tr class="empty-row"><td colspan="9">لم تتم إضافة أي مريض بعد اليوم لنفس عيادتك وشفتك</td></tr>`;
         return;
     }
 
-    body.innerHTML = todayPatients.map(p => `
+    // الأحدث فوق
+    body.innerHTML = rows.slice().reverse().map(p => `
         <tr>
-            <td>${p.time || ""}</td>
-            <td>${p.name}</td>
-            <td>${p.civilId}</td>
+            <td>${p.time || "-"}</td>
+            <td>${p.patient_name}</td>
+            <td>${p.civil_id}</td>
             <td>${p.condition}</td>
-            <td>${p.bp || "-"}</td>
+            <td>${p.blood_pressure || "-"}</td>
             <td>${p.sugar || "-"}</td>
-            <td>${p.temp || "-"}</td>
-            <td>${p.action || "-"}</td>
+            <td>${p.temperature || "-"}</td>
+            <td>${p.treatment || "-"}</td>
+            <td>${p.emp_id}</td>
         </tr>
     `).join("");
 }
@@ -1226,89 +1255,21 @@ function renderReportTable(rows) {
             tr.appendChild(td);
         });
 
-        // عمود الإجراءات
+        // عمود الإجراءات — الحذف متاح للمسؤول فقط (التعديل غير متاح هنا لأن هذا تقرير
+        // مجمّع لعدة مرضى؛ التعديل الفردي متاح من قسم "عرض المرضى" الخاص بالمسؤول)
         const actionsTd = document.createElement("td");
         actionsTd.className = "cell-actions";
-        actionsTd.innerHTML = `
-            <button class="row-btn row-edit" onclick="startEditRow(this)">تعديل</button>
-            <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>
-        `;
+        actionsTd.innerHTML = session.isAdmin
+            ? `<button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>`
+            : "";
         tr.appendChild(actionsTd);
 
         body.appendChild(tr);
     });
-}
 
-function startEditRow(btn) {
-    const tr = btn.closest("tr");
-    if (tr.classList.contains("editing")) return;
-    tr.classList.add("editing");
-
-    REPORT_EDIT_FIELDS.forEach(key => {
-        const td = tr.querySelector(".cell-" + key);
-        const currentVal = td.dataset.value;
-        td.innerHTML = `<input type="number" min="0" class="row-input" value="${currentVal}">`;
-    });
-
-    const actionsTd = tr.querySelector(".cell-actions");
-    actionsTd.innerHTML = `
-        <button class="row-btn row-save" onclick="saveEditRow(this)">حفظ</button>
-        <button class="row-btn row-cancel" onclick="cancelEditRow(this)">إلغاء</button>
-    `;
-}
-
-function cancelEditRow(btn) {
-    const tr = btn.closest("tr");
-    tr.classList.remove("editing");
-    REPORT_EDIT_FIELDS.forEach(key => {
-        const td = tr.querySelector(".cell-" + key);
-        td.textContent = td.dataset.value;
-    });
-    const actionsTd = tr.querySelector(".cell-actions");
-    actionsTd.innerHTML = `
-        <button class="row-btn row-edit" onclick="startEditRow(this)">تعديل</button>
-        <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>
-    `;
-}
-
-async function saveEditRow(btn) {
-    const tr = btn.closest("tr");
-    const id = tr.dataset.id;
-
-    const updated = {};
-    let newTotal = 0;
-    REPORT_EDIT_FIELDS.forEach(key => {
-        const input = tr.querySelector(".cell-" + key + " input");
-        const val = Math.max(0, parseInt(input.value || "0", 10) || 0);
-        updated[key] = val;
-        newTotal += val;
-    });
-
-    setBusy(btn, true, "حفظ");
-    try {
-        const result = await apiPost("UPDATE_ENTRY", { token: session.token, id, ...updated });
-        if (result.status === "SUCCESS") {
-            REPORT_EDIT_FIELDS.forEach(key => {
-                const td = tr.querySelector(".cell-" + key);
-                td.dataset.value = updated[key];
-                td.textContent = updated[key];
-            });
-            tr.querySelector(".cell-total").textContent = newTotal;
-            tr.classList.remove("editing");
-            const actionsTd = tr.querySelector(".cell-actions");
-            actionsTd.innerHTML = `
-                <button class="row-btn row-edit" onclick="startEditRow(this)">تعديل</button>
-                <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>
-            `;
-            showSuccess("تم تحديث الحالة بنجاح");
-        } else {
-            showError("تعذر حفظ التعديل");
-            setBusy(btn, false, "حفظ");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
-        setBusy(btn, false, "حفظ");
-    }
+    // عمود "إجراءات" بالكامل يظهر للمسؤول فقط
+    const actionsHeader = document.getElementById("reportActionsHeader");
+    if (actionsHeader) actionsHeader.style.display = session.isAdmin ? "" : "none";
 }
 
 async function deleteRow(btn) {
@@ -1419,7 +1380,15 @@ function startEditPatientRow(btn) {
             td.innerHTML = `<select class="row-input">${PATIENT_CONDITION_OPTIONS.map(o =>
                 `<option value="${o}" ${o === val ? "selected" : ""}>${o}</option>`).join("")}</select>`;
         } else if (key === "time") {
-            td.innerHTML = `<input type="time" class="row-input" value="${val}">`;
+            const [h, m] = (val || "00:00").split(":");
+            const hourOpts = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"))
+                .map(v => `<option value="${v}" ${v === h ? "selected" : ""}>${v}</option>`).join("");
+            const minOpts = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"))
+                .map(v => `<option value="${v}" ${v === m ? "selected" : ""}>${v}</option>`).join("");
+            td.innerHTML = `<div style="display:flex; gap:4px;">
+                <select class="row-input time-hour-select">${hourOpts}</select>
+                <select class="row-input time-minute-select">${minOpts}</select>
+            </div>`;
         } else {
             td.innerHTML = `<input type="text" class="row-input" value="${val}">`;
         }
@@ -1452,8 +1421,15 @@ async function savePatientEditRow(btn) {
 
     const updated = {};
     PATIENT_ROW_FIELDS.forEach((key, idx) => {
-        const field = tr.querySelector(".cell-p-" + idx + " input, .cell-p-" + idx + " select");
-        updated[key] = field.value.trim();
+        const cell = tr.querySelector(".cell-p-" + idx);
+        if (key === "time") {
+            const h = cell.querySelector(".time-hour-select").value;
+            const m = cell.querySelector(".time-minute-select").value;
+            updated[key] = `${h}:${m}`;
+        } else {
+            const field = cell.querySelector("input, select");
+            updated[key] = field.value.trim();
+        }
     });
 
     setBusy(btn, true, "حفظ");
