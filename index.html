@@ -316,8 +316,13 @@
     <div class="alert-message alert-danger" id="errorMessage" role="alert" style="display:none;"></div>
     <div class="alert-message alert-success" id="successMessage" role="status" style="display:none;"></div>
 
+    <!-- شاشة تحقق مؤقتة — تمنع "ومضة" شاشة تسجيل الدخول قبل ما نتأكد من الجلسة المحفوظة -->
+    <div class="auth-screen" id="authCheckingScreen" style="text-align:center; color: var(--muted);">
+        جاري التحقق من الجلسة...
+    </div>
+
     <!-- شاشة تسجيل الدخول -->
-    <div class="auth-screen" id="loginScreen">
+    <div class="auth-screen" id="loginScreen" style="display:none;">
         <div class="auth-title">تسجيل الدخول إلى النظام</div>
         <div class="form-grid">
             <div class="form-group">
@@ -553,7 +558,7 @@
 
             <!-- ===== إدخال/تعديل الإحصائية اليدوية — للمسؤول فقط ===== -->
             <div class="auth-screen" id="statsEntryPanel" style="display:none;">
-                <div class="auth-title">إدخال إحصائية اليوم</div>
+                <div class="auth-title" id="statsEntryPanelTitle">إدخال إحصائية اليوم</div>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="statsEntryDate">التاريخ</label>
@@ -676,21 +681,6 @@
                 </div>
 
                 <button class="btn-primary btn-admin" id="loadReportBtn" onclick="loadMonthlyReport()">جلب إحصائية اليوم</button>
-
-                <div class="stats-controls">
-                    <button class="btn-stat" id="btnPieChart" onclick="showCaseTypeChart('doughnut')">📊 نسب الحالات (دائري)</button>
-                    <button class="btn-stat" id="btnBarSingle" onclick="showCaseTypeChart('bar')">📶 نسب الحالات (أعمدة)</button>
-                    <button class="btn-stat" id="btnBarChart" onclick="showBarChart()">📶 مقارنة العيادتين</button>
-                    <button class="btn-stat" id="btnCombinedTotal" onclick="showCombinedTotal()">🏥 إجمالي العيادتين معًا</button>
-                </div>
-
-                <div class="chart-card" id="chartCard" style="display:none;">
-                    <div class="chart-card-title" id="chartCardTitle"></div>
-                    <div id="combinedTotalBox" class="combined-total-box" style="display:none;"></div>
-                    <div class="chart-canvas-wrap" id="chartCanvasWrap">
-                        <canvas id="statsCanvas"></canvas>
-                    </div>
-                </div>
             </div>
 
             <div class="report-section" id="reportSection" style="display:none;">
@@ -702,9 +692,9 @@
                 <table class="monthly-table" id="reportTable">
                     <thead>
                         <tr>
-                            <th>التاريخ</th><th>الرقم الوظيفي</th><th>العيادة</th><th>الشفت</th><th>الإجمالي</th>
-                            <th>حالات طبية</th><th>ضغط الدم</th><th>السكر</th><th>صداع</th><th>علامات حيوية</th>
-                            <th>إصابات</th><th>حروق</th><th>نقل مستشفى</th><th class="th-actions" id="reportActionsHeader">إجراءات</th>
+                            <th>التاريخ</th><th>الرقم الوظيفي</th><th>العيادة</th><th>الشفت</th><th class="th-stat-category">الإجمالي</th>
+                            <th class="th-stat-category">حالات طبية</th><th class="th-stat-category">ضغط الدم</th><th class="th-stat-category">السكر</th><th class="th-stat-category">صداع</th><th class="th-stat-category">علامات حيوية</th>
+                            <th class="th-stat-category">إصابات</th><th class="th-stat-category">حروق</th><th class="th-stat-category">نقل مستشفى</th><th class="th-actions" id="reportActionsHeader">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="reportTableBody"></tbody>
@@ -907,11 +897,11 @@ function clearPersistedSession() {
 // ولو صحيحة ندخل مباشرة للوحة التحكم بدون ما نرجع لشاشة تسجيل الدخول
 async function restoreSession() {
     const saved = localStorage.getItem(SESSION_STORAGE_KEY);
-    if (!saved) return;
+    if (!saved) { showLoginScreenNow(); return; }
 
     let parsed;
-    try { parsed = JSON.parse(saved); } catch (e) { clearPersistedSession(); return; }
-    if (!parsed || !parsed.token) { clearPersistedSession(); return; }
+    try { parsed = JSON.parse(saved); } catch (e) { clearPersistedSession(); showLoginScreenNow(); return; }
+    if (!parsed || !parsed.token) { clearPersistedSession(); showLoginScreenNow(); return; }
 
     try {
         const result = await apiGet({ action: "VALIDATE_SESSION", token: parsed.token });
@@ -920,13 +910,20 @@ async function restoreSession() {
                 empId: parsed.empId, shift: parsed.shift, clinic: parsed.clinic,
                 isAdmin: result.isAdmin, token: parsed.token
             };
-            enterDashboard();
+            enterDashboard(); // هذي تخفي شاشة التحقق ضمنيًا لأنها تخفي كل شاشات auth-screen
         } else {
             clearPersistedSession();
+            showLoginScreenNow();
         }
     } catch (e) {
-        // تعذر التحقق (مثلاً السيرفر غير متاح مؤقتًا) — نتركه بشاشة الدخول العادية
+        // تعذر التحقق (مثلاً السيرفر غير متاح مؤقتًا) — نرجع لشاشة الدخول العادية بدل ما تعلق شاشة التحقق للأبد
+        showLoginScreenNow();
     }
+}
+
+function showLoginScreenNow() {
+    document.getElementById("authCheckingScreen").style.display = "none";
+    switchAuthScreen("loginScreen");
 }
 
 restoreSession();
@@ -1057,7 +1054,7 @@ function logout() {
 /* ---------- لوحة التحكم والتبويبات ---------- */
 
 function enterDashboard() {
-    ["loginScreen", "registerScreen", "forgotScreen"].forEach(id => {
+    ["loginScreen", "registerScreen", "forgotScreen", "authCheckingScreen"].forEach(id => {
         document.getElementById(id).style.display = "none";
     });
     document.getElementById("mainDashboard").style.display = "block";
@@ -1356,6 +1353,10 @@ async function saveDailyStats() {
             showSuccess("تم حفظ الإحصائية بنجاح");
             statsEntryExistingId = result.id;
             loadMonthlyReport(); // نحدّث الجدول تحت عشان يبين التغيير فورًا
+            if (session.isAdmin) {
+                document.getElementById("statsEntryPanel").style.display = "none";
+                document.getElementById("statsEntryPanelTitle").textContent = "إدخال إحصائية اليوم";
+            }
         } else {
             showError("تعذر حفظ الإحصائية، حاول مرة أخرى");
         }
@@ -1616,8 +1617,10 @@ function renderReportTable(rows) {
     const body = document.getElementById("reportTableBody");
     body.innerHTML = "";
 
+    const colCount = session.isAdmin ? 5 : 14; // للمسؤول: تاريخ/رقم وظيفي/عيادة/شفت/إجراءات بس
+
     if (!rows.length) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="14">لا توجد بيانات مسجلة بعد لـ${currentReportScopeLabel()}</td></tr>`;
+        body.innerHTML = `<tr class="empty-row"><td colspan="${colCount}">لا توجد بيانات مسجلة بعد لـ${currentReportScopeLabel()}</td></tr>`;
         return;
     }
 
@@ -1632,26 +1635,27 @@ function renderReportTable(rows) {
             tr.appendChild(td);
         });
 
-        // الإجمالي (يُحسب تلقائيًا، غير قابل للتعديل المباشر)
-        const totalTd = document.createElement("td");
-        totalTd.className = "cell-total";
-        totalTd.textContent = r.total_daily;
-        tr.appendChild(totalTd);
+        // أعمدة الإجمالي وكل الحالات تظهر للمسعفين فقط — المسؤول يشوف جدول مختصر ويعدّل عن طريق زر "تعديل"
+        if (!session.isAdmin) {
+            const totalTd = document.createElement("td");
+            totalTd.className = "cell-total";
+            totalTd.textContent = r.total_daily;
+            tr.appendChild(totalTd);
 
-        // الحقول القابلة للتعديل
-        REPORT_EDIT_FIELDS.forEach(key => {
-            const td = document.createElement("td");
-            td.className = "cell-" + key;
-            td.textContent = r[key];
-            td.dataset.value = r[key];
-            tr.appendChild(td);
-        });
+            REPORT_EDIT_FIELDS.forEach(key => {
+                const td = document.createElement("td");
+                td.className = "cell-" + key;
+                td.textContent = r[key];
+                td.dataset.value = r[key];
+                tr.appendChild(td);
+            });
+        }
 
         // عمود الإجراءات — التعديل والحذف متاحين للمسؤول فقط (يراقب ويعدّل، ما يضيف)
         const actionsTd = document.createElement("td");
         actionsTd.className = "cell-actions";
         actionsTd.innerHTML = session.isAdmin
-            ? `<button class="row-btn row-edit" onclick="startEditRow(this)">تعديل</button>
+            ? `<button class="row-btn row-edit" onclick="editStatsRow('${r.date}', '${r.clinic}', '${r.shift}')">تعديل</button>
                <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>`
             : "";
         tr.appendChild(actionsTd);
@@ -1659,76 +1663,25 @@ function renderReportTable(rows) {
         body.appendChild(tr);
     });
 
-    // عمود "إجراءات" بالكامل يظهر للمسؤول فقط
+    // عمود "إجراءات" وأعمدة الإجمالي/الحالات تظهر حسب نوع الحساب
     const actionsHeader = document.getElementById("reportActionsHeader");
     if (actionsHeader) actionsHeader.style.display = session.isAdmin ? "" : "none";
+    document.querySelectorAll(".th-stat-category").forEach(th => {
+        th.style.display = session.isAdmin ? "none" : "";
+    });
 }
 
-function startEditRow(btn) {
-    const tr = btn.closest("tr");
-    if (tr.classList.contains("editing")) return;
-    tr.classList.add("editing");
-
-    REPORT_EDIT_FIELDS.forEach(key => {
-        const td = tr.querySelector(".cell-" + key);
-        const currentVal = td.dataset.value;
-        td.innerHTML = `<input type="number" min="0" class="row-input" value="${currentVal}">`;
-    });
-
-    const actionsTd = tr.querySelector(".cell-actions");
-    actionsTd.innerHTML = `
-        <button class="row-btn row-save" onclick="saveEditRow(this)">حفظ</button>
-        <button class="row-btn row-cancel" onclick="cancelEditRow(this)">إلغاء</button>
-    `;
-}
-
-function cancelEditRow(btn) {
-    const tr = btn.closest("tr");
-    tr.classList.remove("editing");
-    REPORT_EDIT_FIELDS.forEach(key => {
-        const td = tr.querySelector(".cell-" + key);
-        td.textContent = td.dataset.value;
-    });
-    const actionsTd = tr.querySelector(".cell-actions");
-    actionsTd.innerHTML = `
-        <button class="row-btn row-edit" onclick="startEditRow(this)">تعديل</button>
-        <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>
-    `;
-}
-
-async function saveEditRow(btn) {
-    const tr = btn.closest("tr");
-    const cells = tr.querySelectorAll("td");
-    // الخلايا الأولى الأربعة ثابتة: التاريخ، الرقم الوظيفي، العيادة، الشفت
-    const rowDate = cells[0].textContent;
-    const rowClinic = cells[2].textContent;
-    const rowShift = cells[3].textContent;
-
-    const updated = {};
-    REPORT_EDIT_FIELDS.forEach(key => {
-        const input = tr.querySelector(".cell-" + key + " input");
-        updated[key] = Math.max(0, parseInt(input.value || "0", 10) || 0);
-    });
-
-    setBusy(btn, true, "حفظ");
-    try {
-        const result = await apiPost("SAVE_DAILY_STATS", {
-            token: session.token,
-            date_target: rowDate, clinic: rowClinic, shift: rowShift,
-            emp_id: session.empId, timestamp: new Date().toISOString(),
-            ...updated
-        });
-        if (result.status === "SUCCESS") {
-            showSuccess("تم تحديث الإحصائية بنجاح");
-            loadMonthlyReport(); // نعيد تحميل الجدول كامل عشان الإجمالي وكل شي يبين محدّث وصحيح
-        } else {
-            showError("تعذر حفظ التعديل");
-            setBusy(btn, false, "حفظ");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
-        setBusy(btn, false, "حفظ");
-    }
+// يفتح لوحة العدادات (نفس اللي يستخدمها المسعفين للإضافة) معبّاة ببيانات الصف
+// المطلوب تعديله — طريقة المسؤول للتعديل بدل التعديل المباشر بخلايا الجدول
+async function editStatsRow(date, clinic, shift) {
+    const panel = document.getElementById("statsEntryPanel");
+    document.getElementById("statsEntryPanelTitle").textContent = "تعديل إحصائية — " + date;
+    panel.style.display = "block";
+    document.getElementById("statsEntryDate").value = date;
+    document.getElementById("statsEntryClinic").value = clinic;
+    document.getElementById("statsEntryShift").value = shift;
+    await loadStatsEntryCounters();
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 async function deleteRow(btn) {
@@ -2072,14 +2025,23 @@ function printSection(sectionId, dateElId, filenamePrefix) {
     const dateEl = document.getElementById(dateElId);
     if (dateEl) dateEl.textContent = "تاريخ الطباعة: " + new Date().toLocaleDateString("ar-EG");
 
+    // ملاحظة: ما ننظّف (نشيل print-target) مباشرة بعد window.print() لأن بعض متصفحات
+    // الجوال تعالج الطباعة بشكل غير متزامن — التنظيف الفوري كان يمسح المحتوى قبل ما
+    // يخلص تجهيز الطباعة فعليًا، فيطلع صفحة فاضية بالجوال. نعتمد على afterprint فقط،
+    // ومهلة احتياطية (10 ثواني) في حال المتصفح ما يدعم afterprint أصلًا.
     try {
         window.print();
     } catch (e) {
         showError("تعذر فتح نافذة الطباعة");
-    } finally {
         document.title = ORIGINAL_PAGE_TITLE;
         document.querySelectorAll(".print-target").forEach(el => el.classList.remove("print-target"));
     }
+
+    clearTimeout(window._printCleanupTimer);
+    window._printCleanupTimer = setTimeout(() => {
+        document.title = ORIGINAL_PAGE_TITLE;
+        document.querySelectorAll(".print-target").forEach(el => el.classList.remove("print-target"));
+    }, 10000);
 }
 
 window.addEventListener("afterprint", () => {
