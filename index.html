@@ -106,12 +106,13 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 6px; }
     .form-group { margin-bottom: 10px; }
     label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--ink-soft); font-size: 13.5px; }
-    select, input {
+    select, input, textarea {
         width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 9px;
         font-size: 15px; background-color: #fff; outline: none; color: var(--text);
         font-family: inherit; transition: border-color .15s, box-shadow .15s;
     }
-    select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    textarea { resize: vertical; }
+    select:focus, input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
     .auth-links { display: flex; gap: 18px; margin-top: 12px; font-size: 13px; }
     .auth-links span { color: var(--accent-dark); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -124,27 +125,24 @@
 
     /* ===== لوحة التحكم ===== */
     #mainDashboard { display: none; }
-    .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-top: 8px; }
+
+    /* ===== مبدّل التبويبات (إضافة المريض / الإحصائية الشهرية) ===== */
+    .tab-switcher {
+        display: flex; margin-bottom: 20px; background: #f0f3f5; border: 1.5px solid var(--line);
+        border-radius: 12px; padding: 4px; gap: 4px;
+    }
+    .tab-btn {
+        flex: 1; background: transparent; color: var(--ink-soft); border: none;
+        padding: 12px 16px; font-size: 14.5px; font-weight: 700; border-radius: 9px;
+        cursor: pointer; font-family: inherit; transition: background-color .15s, color .15s, box-shadow .15s;
+    }
+    .tab-btn:hover:not(.active) { color: var(--ink); }
+    .tab-btn.active { background: #fff; color: var(--accent-dark); box-shadow: 0 2px 8px -2px rgba(15,41,66,0.18); }
+
     .case-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; text-align: center; transition: transform .15s, box-shadow .15s; }
     .case-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-    .case-card.total-card { background: linear-gradient(160deg, var(--accent-soft), #fff); border: 1.5px solid #b9e6df; }
-    .cases-grid.admin-mode .case-card:not(.total-card) { display: none; }
-    .cases-grid.admin-mode { grid-template-columns: 1fr; max-width: 320px; margin-inline: auto; }
     .case-title { font-size: 14.5px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
     .case-subtitle { font-size: 11.5px; color: var(--muted); margin-bottom: 12px; font-style: italic; letter-spacing: .2px; }
-
-    .counter-controls { display: flex; align-items: center; justify-content: center; gap: 14px; }
-    .btn-counter {
-        width: 36px; height: 36px; border-radius: 50%; border: none; font-size: 19px; font-weight: 700;
-        cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .1s, background-color .15s;
-    }
-    .btn-counter:active { transform: scale(0.9); }
-    .btn-counter:disabled { opacity: 0.35; cursor: not-allowed; }
-    .btn-minus { background-color: var(--danger-soft); color: var(--danger); }
-    .btn-minus:hover:not(:disabled) { background-color: #f6d2cc; }
-    .btn-plus { background-color: var(--accent-soft); color: var(--accent-dark); }
-    .btn-plus:hover:not(:disabled) { background-color: #cdeee8; }
-    .counter-value { font-size: 21px; font-weight: 700; min-width: 32px; color: var(--ink); }
 
     .btn-primary {
         background-color: var(--accent); color: white; border: none; padding: 14px 20px; font-size: 15.5px;
@@ -164,8 +162,11 @@
     .btn-admin { background-color: var(--amber); }
     .btn-admin:hover:not(:disabled) { background-color: #96690a; }
 
-    /* ===== لوحة المسؤول ===== */
-    .admin-panel { background: var(--amber-soft); border: 1px solid #f0dfa0; border-radius: var(--radius); padding: 22px; margin-top: 26px; display: none; }
+    /* ===== قسم إضافة المريض ===== */
+    #addPatientSection { display: block; }
+
+    /* ===== قسم الإحصائية الشهرية ===== */
+    #monthlyStatsSection { background: var(--amber-soft); border: 1px solid #f0dfa0; border-radius: var(--radius); padding: 22px; display: none; }
     .report-section { background: white; border: 1px solid var(--line); padding: 20px; border-radius: var(--radius); margin-top: 18px; overflow-x: auto; }
     .report-title { font-size: 16.5px; font-weight: 700; color: var(--ink); margin-bottom: 14px; text-align: center; }
 
@@ -235,6 +236,7 @@
     @media (max-width: 480px) {
         .container { padding: 22px 16px; }
         header h1 { font-size: 22px; }
+        .tab-switcher { flex-direction: column; }
     }
 
     :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
@@ -282,6 +284,12 @@
                      M300 20 H450 L465 20 L475 5 L490 35 L500 20 L515 20 L525 12 L535 20 H600"
                   fill="none" stroke="#0d9488" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" opacity="0.75"/>
         </svg>
+    </div>
+
+    <!-- مبدّل التبويبات — يظهر أول ما تفتح الصفحة، قبل تسجيل الدخول -->
+    <div class="tab-switcher">
+        <button class="tab-btn active" id="tabBtnAddPatient" onclick="switchTab('addPatient')">➕ إضافة المريض</button>
+        <button class="tab-btn" id="tabBtnMonthlyStats" onclick="switchTab('monthlyStats')">📊 الإحصائية الشهرية</button>
     </div>
 
     <div class="server-status checking" id="serverStatus">
@@ -383,92 +391,80 @@
 
     <!-- لوحة التحكم الرئيسية -->
     <div id="mainDashboard">
-        <div class="cases-grid" id="casesGrid">
-            <div class="case-card total-card">
-                <div class="case-title" style="color: var(--accent-dark);">توتال الحالات اليومية</div>
-                <div class="case-subtitle">Total Daily Cases</div>
-                <div class="counter-controls">
-                    <span class="counter-value" id="total_daily" style="font-size: 30px; color: var(--accent-dark);">0</span>
+
+        <!-- ===== قسم إضافة المريض ===== -->
+        <div id="addPatientSection">
+            <div class="auth-screen">
+                <div class="auth-title">إضافة مريض جديد</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="patientName">اسم المريض</label>
+                        <input type="text" id="patientName" placeholder="اسم المريض">
+                    </div>
+                    <div class="form-group">
+                        <label for="patientCivilId">الرقم المدني</label>
+                        <input type="text" id="patientCivilId" placeholder="الرقم المدني" inputmode="numeric">
+                    </div>
+                    <div class="form-group">
+                        <label for="patientCondition">الحالة</label>
+                        <select id="patientCondition">
+                            <option value="حالات طبية">حالات طبية</option>
+                            <option value="ضغط الدم">ضغط الدم</option>
+                            <option value="صداع">صداع</option>
+                            <option value="علامات حيوية">علامات حيوية</option>
+                            <option value="إصابات">إصابات</option>
+                            <option value="حروق">حروق</option>
+                            <option value="نقل مستشفى">نقل مستشفى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="patientBP">الضغط</label>
+                        <input type="text" id="patientBP" placeholder="مثال: 120/80">
+                    </div>
+                    <div class="form-group">
+                        <label for="patientSugar">السكر</label>
+                        <input type="text" id="patientSugar" placeholder="mg/dL">
+                    </div>
+                    <div class="form-group">
+                        <label for="patientTemp">الحرارة</label>
+                        <input type="text" id="patientTemp" placeholder="°C">
+                    </div>
+                    <div class="form-group">
+                        <label for="patientTime">الوقت</label>
+                        <input type="time" id="patientTime">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="patientAction">التعامل</label>
+                        <textarea id="patientAction" rows="3" placeholder="اكتب شنو كان التعامل مع الحالة..."></textarea>
+                    </div>
                 </div>
+                <button class="btn-primary" id="savePatientBtn" onclick="savePatient()">حفظ بيانات المريض</button>
             </div>
 
-            <div class="case-card">
-                <div class="case-title">حالات طبية</div>
-                <div class="case-subtitle">Medical Cases</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('sick_cases', -1)" aria-label="إنقاص">−</button>
-                    <span class="counter-value" id="sick_cases">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('sick_cases', 1)" aria-label="زيادة">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">ضغط الدم</div>
-                <div class="case-subtitle">Blood Pressure</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('blood_pressure', -1)" aria-label="إنقاص">−</button>
-                    <span class="counter-value" id="blood_pressure">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('blood_pressure', 1)" aria-label="زيادة">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">صداع</div>
-                <div class="case-subtitle">Headache</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('headache', -1)" aria-label="إنقاص">−</button>
-                    <span class="counter-value" id="headache">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('headache', 1)" aria-label="زيادة">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">علامات حيوية</div>
-                <div class="case-subtitle">Vital Signs</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('vital_signs', -1)" aria-label="إنقاص">−</button>
-                    <span class="counter-value" id="vital_signs">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('vital_signs', 1)" aria-label="زيادة">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">إصابات</div>
-                <div class="case-subtitle">Injuries</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('injuries', -1)" aria-label="إنقاص">−</button>
-                    <span class="counter-value" id="injuries">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('injuries', 1)" aria-label="زيادة">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">حروق</div>
-                <div class="case-subtitle">Burns</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('burns', -1)" aria-label="إنقاص">−</button>
-                    <span class="counter-value" id="burns">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('burns', 1)" aria-label="زيادة">+</button>
-                </div>
-            </div>
-
-            <div class="case-card">
-                <div class="case-title">نقل المستشفى</div>
-                <div class="case-subtitle">Hospital Transfer</div>
-                <div class="counter-controls">
-                    <button class="btn-counter btn-minus" onclick="updateCounter('hospital_transfer', -1)" aria-label="إنقاص">−</button>
-                    <span class="counter-value" id="hospital_transfer">0</span>
-                    <button class="btn-counter btn-plus" onclick="updateCounter('hospital_transfer', 1)" aria-label="زيادة">+</button>
-                </div>
+            <div class="report-section">
+                <div class="report-title">مرضى اليوم (<span id="todayPatientCount">0</span>)</div>
+                <table class="monthly-table" id="todayPatientsTable">
+                    <thead>
+                        <tr>
+                            <th>الوقت</th><th>اسم المريض</th><th>الرقم المدني</th><th>الحالة</th>
+                            <th>الضغط</th><th>السكر</th><th>الحرارة</th><th>التعامل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="todayPatientsBody">
+                        <tr class="empty-row"><td colspan="8">لم تتم إضافة أي مريض بعد اليوم</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <button class="btn-primary" id="saveBtn" onclick="saveData()">حفظ وتوثيق بيانات اليوم</button>
-        <button class="btn-secondary" onclick="logout()">تسجيل الخروج</button>
+        <!-- ===== قسم الإحصائية الشهرية ===== -->
+        <div id="monthlyStatsSection">
+            <div class="auth-title" style="border:none;">الإحصائية الشهرية</div>
 
-        <!-- لوحة المسؤول -->
-        <div class="admin-panel" id="adminPanel">
-            <div class="auth-title" style="border:none;">لوحة تحكم المسؤول</div>
+            <div class="tab-switcher" style="margin-bottom:16px;">
+                <button class="tab-btn active" id="scopeBtnDaily" onclick="setReportScope('daily')">📆 إحصائية اليوم</button>
+                <button class="tab-btn" id="scopeBtnMonthly" onclick="setReportScope('monthly')">🗓️ الإحصائية الشهرية</button>
+            </div>
 
             <div class="form-group">
                 <label for="adminClinicSelect">اختر العيادة لعرض تقريرها</label>
@@ -479,7 +475,7 @@
                 </select>
             </div>
 
-            <button class="btn-primary btn-admin" onclick="loadMonthlyReport()">جلب التقرير الشهري</button>
+            <button class="btn-primary btn-admin" id="loadReportBtn" onclick="loadMonthlyReport()">جلب إحصائية اليوم</button>
 
             <div class="stats-controls">
                 <button class="btn-stat" id="btnPieChart" onclick="showCaseTypeChart('doughnut')">📊 نسب الحالات (دائري)</button>
@@ -498,10 +494,10 @@
 
             <div class="report-section" id="reportSection" style="display:none;">
                 <div class="print-only-header" id="printOnlyHeader">
-                    <h2>التقرير الشهري لحالات العيادة</h2>
+                    <h2>تقرير حالات العيادة</h2>
                     <p id="printDate"></p>
                 </div>
-                <div class="report-title">التقرير الشهري لكل الشفتات</div>
+                <div class="report-title" id="reportTableTitle">إحصائية اليوم لكل الشفتات</div>
                 <table class="monthly-table" id="reportTable">
                     <thead>
                         <tr>
@@ -515,6 +511,8 @@
                 <button class="btn-secondary" onclick="exportReportPDF()">🖨️ طباعة / حفظ PDF</button>
             </div>
         </div>
+
+        <button class="btn-secondary" onclick="logout()">تسجيل الخروج</button>
     </div>
 
     <div class="footer-note">جميع البيانات تُحفظ وتُوثّق آليًا لحظة الضغط على زر الحفظ</div>
@@ -527,10 +525,8 @@
    ========================================================= */
 const API_URL = "https://script.google.com/macros/s/AKfycbxjYDPUwZ6QFrFxT9yWwkuxHZQiV-dJhmxDZ9ImEJWVC7kKOCDEe6eAm9BYHzPjzyg/exec";
 
-const CASE_KEYS = ["sick_cases", "blood_pressure", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
-
 let session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
-let counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
+let todayPatients = []; // سجل المرضى المضافين في هذه الجلسة (محلي فقط لعرضه في الجدول)
 
 /* ---------- أدوات مساعدة عامة ---------- */
 
@@ -729,21 +725,22 @@ async function handleForgot() {
 
 function logout() {
     session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
-    counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
+    todayPatients = [];
+    renderTodayPatientsTable();
     if (statsChart) { statsChart.destroy(); statsChart = null; }
     document.getElementById("chartCard").style.display = "none";
     document.getElementById("mainDashboard").style.display = "none";
-    document.getElementById("adminPanel").style.display = "none";
     document.getElementById("reportSection").style.display = "none";
     document.getElementById("statusDot").classList.remove("active");
     document.getElementById("statusText").textContent = "بانتظار تسجيل الدخول...";
     document.getElementById("activeUserDisplay").textContent = "لم يتم تسجيل الدخول";
     document.getElementById("loginEmpId").value = "";
     document.getElementById("loginPin").value = "";
+    switchTab("addPatient");
     switchAuthScreen("loginScreen");
 }
 
-/* ---------- لوحة التحكم والعدادات ---------- */
+/* ---------- لوحة التحكم والتبويبات ---------- */
 
 function enterDashboard() {
     ["loginScreen", "registerScreen", "forgotScreen"].forEach(id => {
@@ -755,34 +752,46 @@ function enterDashboard() {
     document.getElementById("activeUserDisplay").textContent =
         session.isAdmin ? "مسؤول النظام" : `الموظف رقم ${session.empId} — ${session.clinic} — ${session.shift}`;
 
-    document.getElementById("adminPanel").style.display = session.isAdmin ? "block" : "none";
-    document.getElementById("saveBtn").style.display = session.isAdmin ? "none" : "block";
-    document.getElementById("casesGrid").classList.toggle("admin-mode", session.isAdmin);
-
-    updateTotal();
+    // نحافظ على التبويب اللي كان محدد قبل تسجيل الدخول بدل ما نرجّعه دايمًا لإضافة المريض
+    const wasMonthlyStats = document.getElementById("tabBtnMonthlyStats").classList.contains("active");
+    switchTab(wasMonthlyStats ? "monthlyStats" : "addPatient");
+    setDefaultPatientTime();
 }
 
-function updateCounter(key, delta) {
-    counters[key] = Math.max(0, counters[key] + delta);
-    document.getElementById(key).textContent = counters[key];
-    updateTotal();
+// التبويبان متاحان قبل وبعد تسجيل الدخول — يحددان أي قسم يظهر داخل لوحة التحكم
+function switchTab(tab) {
+    const isAddPatient = tab === "addPatient";
+    document.getElementById("addPatientSection").style.display = isAddPatient ? "block" : "none";
+    document.getElementById("monthlyStatsSection").style.display = isAddPatient ? "none" : "block";
+    document.getElementById("tabBtnAddPatient").classList.toggle("active", isAddPatient);
+    document.getElementById("tabBtnMonthlyStats").classList.toggle("active", !isAddPatient);
 }
 
-function updateTotal() {
-    const total = CASE_KEYS.reduce((sum, k) => sum + counters[k], 0);
-    document.getElementById("total_daily").textContent = total;
+function setDefaultPatientTime() {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    document.getElementById("patientTime").value = `${hh}:${mm}`;
 }
 
-/* ---------- حفظ البيانات اليومية ---------- */
+/* ---------- إضافة مريض ---------- */
 
-async function saveData() {
-    const btn = document.getElementById("saveBtn");
-    const total = CASE_KEYS.reduce((sum, k) => sum + counters[k], 0);
+async function savePatient() {
+    const btn = document.getElementById("savePatientBtn");
 
-    if (total === 0) { showError("لا يمكن حفظ يوم بدون أي حالات مسجلة"); return; }
+    const name = document.getElementById("patientName").value.trim();
+    const civilId = document.getElementById("patientCivilId").value.trim();
+    const condition = document.getElementById("patientCondition").value;
+    const bp = document.getElementById("patientBP").value.trim();
+    const sugar = document.getElementById("patientSugar").value.trim();
+    const temp = document.getElementById("patientTemp").value.trim();
+    const action = document.getElementById("patientAction").value.trim();
+    const time = document.getElementById("patientTime").value;
+
+    if (!name || !civilId) { showError("الرجاء إدخال اسم المريض والرقم المدني"); return; }
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
-    setBusy(btn, true, "حفظ وتوثيق بيانات اليوم");
+    setBusy(btn, true, "حفظ بيانات المريض");
     try {
         const now = new Date();
         const payload = {
@@ -791,40 +800,99 @@ async function saveData() {
             emp_id: session.empId,
             clinic: session.clinic,
             shift: session.shift,
-            total_daily: total,
-            timestamp: now.toISOString(),
-            ...counters
+            patient_name: name,
+            civil_id: civilId,
+            condition,
+            blood_pressure: bp,
+            sugar,
+            temperature: temp,
+            treatment: action,
+            time,
+            timestamp: now.toISOString()
         };
-        const result = await apiPost("SYNC_DATA", payload);
+        const result = await apiPost("ADD_PATIENT", payload);
 
         if (result.status === "SUCCESS") {
-            showSuccess("تم حفظ وتوثيق بيانات اليوم بنجاح");
-            counters = Object.fromEntries(CASE_KEYS.map(k => [k, 0]));
-            CASE_KEYS.forEach(k => document.getElementById(k).textContent = "0");
-            updateTotal();
+            showSuccess("تم حفظ بيانات المريض بنجاح");
+            todayPatients.unshift({ name, civilId, condition, bp, sugar, temp, action, time });
+            renderTodayPatientsTable();
+            clearPatientForm();
         } else {
             showError("فشل الحفظ، حاول مرة أخرى");
         }
     } catch (e) {
         showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
     } finally {
-        setBusy(btn, false, "حفظ وتوثيق بيانات اليوم");
+        setBusy(btn, false, "حفظ بيانات المريض");
     }
 }
 
-/* ---------- تقرير المسؤول ---------- */
+function clearPatientForm() {
+    document.getElementById("patientName").value = "";
+    document.getElementById("patientCivilId").value = "";
+    document.getElementById("patientCondition").selectedIndex = 0;
+    document.getElementById("patientBP").value = "";
+    document.getElementById("patientSugar").value = "";
+    document.getElementById("patientTemp").value = "";
+    document.getElementById("patientAction").value = "";
+    setDefaultPatientTime();
+    document.getElementById("patientName").focus();
+}
+
+function renderTodayPatientsTable() {
+    const body = document.getElementById("todayPatientsBody");
+    document.getElementById("todayPatientCount").textContent = todayPatients.length;
+
+    if (!todayPatients.length) {
+        body.innerHTML = `<tr class="empty-row"><td colspan="8">لم تتم إضافة أي مريض بعد اليوم</td></tr>`;
+        return;
+    }
+
+    body.innerHTML = todayPatients.map(p => `
+        <tr>
+            <td>${p.time || ""}</td>
+            <td>${p.name}</td>
+            <td>${p.civilId}</td>
+            <td>${p.condition}</td>
+            <td>${p.bp || "-"}</td>
+            <td>${p.sugar || "-"}</td>
+            <td>${p.temp || "-"}</td>
+            <td>${p.action || "-"}</td>
+        </tr>
+    `).join("");
+}
+
+/* ---------- التقرير: يومي أو شهري ---------- */
+
+let currentReportScope = "daily"; // القيمة الافتراضية عند فتح القسم
+
+function setReportScope(scope) {
+    currentReportScope = scope;
+    const isDaily = scope === "daily";
+    document.getElementById("scopeBtnDaily").classList.toggle("active", isDaily);
+    document.getElementById("scopeBtnMonthly").classList.toggle("active", !isDaily);
+    document.getElementById("loadReportBtn").textContent = isDaily ? "جلب إحصائية اليوم" : "جلب التقرير الشهري";
+    document.getElementById("reportTableTitle").textContent = isDaily ? "إحصائية اليوم لكل الشفتات" : "التقرير الشهري لكل الشفتات";
+
+    // نخفي أي تقرير أو رسم بياني قديم لحد ما يضغط جلب من جديد بالنطاق الجديد
+    document.getElementById("reportSection").style.display = "none";
+    document.getElementById("chartCard").style.display = "none";
+}
+
+function currentReportAction() {
+    return currentReportScope === "daily" ? "GET_DAILY_REPORT" : "GET_MONTHLY_REPORT";
+}
 
 async function loadMonthlyReport() {
-    if (!session.isAdmin) { showError("هذه الميزة للمسؤول فقط"); return; }
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
     const clinic = document.getElementById("adminClinicSelect").value;
 
     try {
-        const result = await apiGet({ action: "GET_MONTHLY_REPORT", token: session.token, clinic });
+        const result = await apiGet({ action: currentReportAction(), token: session.token, clinic });
         if (!Array.isArray(result)) {
             if (result && result.status === "FORBIDDEN") {
-                showError("جلسة المسؤول غير صالحة، سجّل الدخول من جديد");
+                showError("جلسة الدخول غير صالحة، سجّل الدخول من جديد");
             } else {
                 showError("تعذر جلب التقرير");
             }
@@ -892,7 +960,6 @@ function showChartCard(title) {
 
 // ١) نسب أنواع الحالات — يدعم عرض دائري أو عمودي لنفس البيانات (يحترم اختيار العيادة بقائمة المسؤول)
 async function showCaseTypeChart(chartType) {
-    if (!session.isAdmin) { showError("هذه الميزة للمسؤول فقط"); return; }
     setActiveStatBtn(chartType === "doughnut" ? "btnPieChart" : "btnBarSingle");
 
     if (typeof Chart === "undefined") {
@@ -965,7 +1032,6 @@ async function showCaseTypeChart(chartType) {
 
 // ٢) رسم أعمدة: مقارنة كل نوع حالة بين العيادتين
 async function showBarChart() {
-    if (!session.isAdmin) { showError("هذه الميزة للمسؤول فقط"); return; }
     setActiveStatBtn("btnBarChart");
 
     if (typeof Chart === "undefined") {
@@ -1020,7 +1086,6 @@ async function showBarChart() {
 
 // ٣) إجمالي العيادتين معًا (بطاقات أرقام بدون رسم بياني)
 async function showCombinedTotal() {
-    if (!session.isAdmin) { showError("هذه الميزة للمسؤول فقط"); return; }
     setActiveStatBtn("btnCombinedTotal");
 
     try {
