@@ -681,6 +681,21 @@
                 </div>
 
                 <button class="btn-primary btn-admin" id="loadReportBtn" onclick="loadMonthlyReport()">جلب إحصائية اليوم</button>
+
+                <div class="stats-controls">
+                    <button class="btn-stat" id="btnPieChart" onclick="showCaseTypeChart('doughnut')">📊 نسب الحالات (دائري)</button>
+                    <button class="btn-stat" id="btnBarSingle" onclick="showCaseTypeChart('bar')">📶 نسب الحالات (أعمدة)</button>
+                    <button class="btn-stat" id="btnBarChart" onclick="showBarChart()">📶 مقارنة العيادتين</button>
+                    <button class="btn-stat" id="btnCombinedTotal" onclick="showCombinedTotal()">🏥 إجمالي العيادتين معًا</button>
+                </div>
+
+                <div class="chart-card" id="chartCard" style="display:none;">
+                    <div class="chart-card-title" id="chartCardTitle"></div>
+                    <div id="combinedTotalBox" class="combined-total-box" style="display:none;"></div>
+                    <div class="chart-canvas-wrap" id="chartCanvasWrap">
+                        <canvas id="statsCanvas"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div class="report-section" id="reportSection" style="display:none;">
