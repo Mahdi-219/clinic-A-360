@@ -164,6 +164,7 @@
 
     /* ===== قسم إضافة المريض ===== */
     #addPatientSection { display: block; }
+    #adminPatientsSection { display: none; }
 
     /* ===== قسم الإحصائية الشهرية ===== */
     #monthlyStatsSection { background: var(--amber-soft); border: 1px solid #f0dfa0; border-radius: var(--radius); padding: 22px; display: none; }
@@ -242,26 +243,26 @@
     :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
     /* أثناء التقاط صورة PDF، نخفي زر التصدير حتى لا يظهر داخل الملف الناتج */
-    .pdf-exporting #reportSection .btn-secondary { display: none !important; }
+    .pdf-exporting .print-target .btn-secondary { display: none !important; }
 
-    /* ===== تنسيق الطباعة / حفظ PDF من المتصفح مباشرة ===== */
+    /* ===== تنسيق الطباعة / حفظ PDF من المتصفح مباشرة (أي قسم يُعطى كلاس print-target) ===== */
     .print-only-header { display: none; }
     @media print {
         body * { visibility: hidden; }
-        #reportSection, #reportSection * { visibility: visible; }
-        #reportSection {
+        .print-target, .print-target * { visibility: visible; }
+        .print-target {
             position: absolute; left: 0; top: 0; width: 100%;
             border: none; box-shadow: none; padding: 0;
         }
-        #reportSection .btn-secondary { display: none !important; }
-        .print-only-header {
+        .print-target .btn-secondary { display: none !important; }
+        .print-target .print-only-header {
             display: block; text-align: center; border-bottom: 3px solid var(--ink);
             padding-bottom: 12px; margin-bottom: 16px;
         }
         .print-only-header h2 { color: var(--ink); font-size: 20px; margin-bottom: 4px; }
         .print-only-header p { color: #555; font-size: 12px; }
         .monthly-table { min-width: 0; width: 100%; }
-        .cell-actions, .monthly-table th:last-child { display: none !important; }
+        .cell-actions, .th-actions { display: none !important; }
         @page { size: A4 landscape; margin: 12mm; }
     }
 </style>
@@ -441,7 +442,11 @@
                 <button class="btn-primary" id="savePatientBtn" onclick="savePatient()">حفظ بيانات المريض</button>
             </div>
 
-            <div class="report-section">
+            <div class="report-section" id="todayPatientsReportSection">
+                <div class="print-only-header" id="todayPatientsPrintHeader">
+                    <h2>تقرير مرضى اليوم</h2>
+                    <p id="todayPatientsPrintDate"></p>
+                </div>
                 <div class="report-title">مرضى اليوم (<span id="todayPatientCount">0</span>)</div>
                 <table class="monthly-table" id="todayPatientsTable">
                     <thead>
@@ -454,6 +459,50 @@
                         <tr class="empty-row"><td colspan="8">لم تتم إضافة أي مريض بعد اليوم</td></tr>
                     </tbody>
                 </table>
+                <button class="btn-secondary" onclick="printSection('todayPatientsReportSection', 'todayPatientsPrintDate', 'مرضى_اليوم')">🖨️ طباعة / حفظ PDF</button>
+            </div>
+        </div>
+
+        <!-- ===== قسم عرض المرضى (للمسؤول) — يظهر بدل قسم إضافة المريض ===== -->
+        <div id="adminPatientsSection" style="display:none;">
+            <div class="auth-screen">
+                <div class="auth-title">عرض المرضى حسب التاريخ</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="patientsViewDate">التاريخ</label>
+                        <input type="date" id="patientsViewDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="patientsViewClinic">اختر العيادة</label>
+                        <select id="patientsViewClinic">
+                            <option value="all">كل العيادات (All Clinics)</option>
+                            <option value="عيادة الف">عيادة الف (Clinic A)</option>
+                            <option value="عيادة باء">عيادة باء (Clinic B)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-primary btn-admin" onclick="loadPatientsByDate()">عرض المرضى</button>
+            </div>
+
+            <div class="report-section" id="patientsByDateSection" style="display:none;">
+                <div class="print-only-header" id="patientsByDatePrintHeader">
+                    <h2>تقرير المرضى</h2>
+                    <p id="patientsByDatePrintDate"></p>
+                </div>
+                <div class="report-title">قائمة المرضى</div>
+                <table class="monthly-table" id="patientsByDateTable">
+                    <thead>
+                        <tr>
+                            <th>الوقت</th><th>اسم المريض</th><th>الرقم المدني</th><th>الحالة</th>
+                            <th>الضغط</th><th>السكر</th><th>الحرارة</th><th>التعامل</th>
+                            <th>العيادة</th><th>الشفت</th><th>الرقم الوظيفي</th><th class="th-actions">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientsByDateBody">
+                        <tr class="empty-row"><td colspan="12">اختر تاريخًا واضغط "عرض المرضى"</td></tr>
+                    </tbody>
+                </table>
+                <button class="btn-secondary" onclick="printSection('patientsByDateSection', 'patientsByDatePrintDate', 'تقرير_المرضى')">🖨️ طباعة / حفظ PDF</button>
             </div>
         </div>
 
@@ -503,12 +552,12 @@
                         <tr>
                             <th>التاريخ</th><th>الرقم الوظيفي</th><th>العيادة</th><th>الشفت</th><th>الإجمالي</th>
                             <th>حالات طبية</th><th>ضغط الدم</th><th>صداع</th><th>علامات حيوية</th>
-                            <th>إصابات</th><th>حروق</th><th>نقل مستشفى</th><th>إجراءات</th>
+                            <th>إصابات</th><th>حروق</th><th>نقل مستشفى</th><th class="th-actions">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="reportTableBody"></tbody>
                 </table>
-                <button class="btn-secondary" onclick="exportReportPDF()">🖨️ طباعة / حفظ PDF</button>
+                <button class="btn-secondary" onclick="printSection('reportSection', 'printDate', 'التقرير_الشهري')">🖨️ طباعة / حفظ PDF</button>
             </div>
         </div>
 
@@ -731,11 +780,13 @@ function logout() {
     document.getElementById("chartCard").style.display = "none";
     document.getElementById("mainDashboard").style.display = "none";
     document.getElementById("reportSection").style.display = "none";
+    document.getElementById("patientsByDateSection").style.display = "none";
     document.getElementById("statusDot").classList.remove("active");
     document.getElementById("statusText").textContent = "بانتظار تسجيل الدخول...";
     document.getElementById("activeUserDisplay").textContent = "لم يتم تسجيل الدخول";
     document.getElementById("loginEmpId").value = "";
     document.getElementById("loginPin").value = "";
+    document.getElementById("tabBtnAddPatient").textContent = "➕ إضافة المريض";
     switchTab("addPatient");
     switchAuthScreen("loginScreen");
 }
@@ -752,16 +803,31 @@ function enterDashboard() {
     document.getElementById("activeUserDisplay").textContent =
         session.isAdmin ? "مسؤول النظام" : `الموظف رقم ${session.empId} — ${session.clinic} — ${session.shift}`;
 
+    // تسمية التبويب الأول تختلف حسب نوع الحساب: عرض المرضى للمسؤول، إضافة مريض للموظف
+    document.getElementById("tabBtnAddPatient").textContent = session.isAdmin ? "👥 عرض المرضى" : "➕ إضافة المريض";
+
+    if (session.isAdmin) {
+        document.getElementById("patientsViewDate").value = todayDateStringLocal();
+    }
+
     // نحافظ على التبويب اللي كان محدد قبل تسجيل الدخول بدل ما نرجّعه دايمًا لإضافة المريض
     const wasMonthlyStats = document.getElementById("tabBtnMonthlyStats").classList.contains("active");
     switchTab(wasMonthlyStats ? "monthlyStats" : "addPatient");
     setDefaultPatientTime();
 }
 
-// التبويبان متاحان قبل وبعد تسجيل الدخول — يحددان أي قسم يظهر داخل لوحة التحكم
+function todayDateStringLocal() {
+    return new Date().toLocaleDateString("en-CA"); // صيغة yyyy-MM-dd ثابتة
+}
+
+// التبويبان متاحان قبل وبعد تسجيل الدخول. حساب المسؤول يشوف "عرض المرضى"
+// بدل نموذج "إضافة مريض" داخل نفس التبويب الأول
 function switchTab(tab) {
     const isAddPatient = tab === "addPatient";
-    document.getElementById("addPatientSection").style.display = isAddPatient ? "block" : "none";
+    const isAdmin = session.isAdmin;
+
+    document.getElementById("addPatientSection").style.display = (isAddPatient && !isAdmin) ? "block" : "none";
+    document.getElementById("adminPatientsSection").style.display = (isAddPatient && isAdmin) ? "block" : "none";
     document.getElementById("monthlyStatsSection").style.display = isAddPatient ? "none" : "block";
     document.getElementById("tabBtnAddPatient").classList.toggle("active", isAddPatient);
     document.getElementById("tabBtnMonthlyStats").classList.toggle("active", !isAddPatient);
@@ -883,6 +949,10 @@ function currentReportAction() {
     return currentReportScope === "daily" ? "GET_DAILY_REPORT" : "GET_MONTHLY_REPORT";
 }
 
+function currentReportScopeLabel() {
+    return currentReportScope === "daily" ? "اليوم" : "الشهر";
+}
+
 async function loadMonthlyReport() {
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
@@ -938,8 +1008,9 @@ function setActiveStatBtn(id) {
 }
 
 // يجلب بيانات عيادة معينة (أو الكل) ويرجع مجموع كل نوع حالة + الإجمالي العام
+// (يحترم النطاق الحالي: يومي أو شهري)
 async function fetchClinicTotals(clinicValue) {
-    const result = await apiGet({ action: "GET_MONTHLY_REPORT", token: session.token, clinic: clinicValue });
+    const result = await apiGet({ action: currentReportAction(), token: session.token, clinic: clinicValue });
     if (!Array.isArray(result)) return null;
 
     const totals = Object.fromEntries(REPORT_EDIT_FIELDS.map(k => [k, 0]));
@@ -979,7 +1050,7 @@ async function showCaseTypeChart(chartType) {
             return;
         }
 
-        showChartCard(`نسب أنواع الحالات — ${clinicLabel}`);
+        showChartCard(`نسب أنواع الحالات — ${clinicLabel} (${currentReportScopeLabel()})`);
 
         const labels = REPORT_EDIT_FIELDS.map(k => CASE_LABELS[k]);
         const values = REPORT_EDIT_FIELDS.map(k => data.totals[k]);
@@ -1051,7 +1122,7 @@ async function showBarChart() {
             return;
         }
 
-        showChartCard("مقارنة أنواع الحالات بين العيادتين");
+        showChartCard(`مقارنة أنواع الحالات بين العيادتين (${currentReportScopeLabel()})`);
 
         const labels = REPORT_EDIT_FIELDS.map(k => CASE_LABELS[k]);
         const valuesA = REPORT_EDIT_FIELDS.map(k => dataA.totals[k]);
@@ -1096,7 +1167,7 @@ async function showCombinedTotal() {
         if (!dataA || !dataB) { showError("تعذر جلب البيانات"); return; }
 
         document.getElementById("chartCard").style.display = "block";
-        document.getElementById("chartCardTitle").textContent = "إجمالي الحالات — العيادتين معًا";
+        document.getElementById("chartCardTitle").textContent = `إجمالي الحالات — العيادتين معًا (${currentReportScopeLabel()})`;
         document.getElementById("chartCanvasWrap").style.display = "none";
 
         const box = document.getElementById("combinedTotalBox");
@@ -1266,13 +1337,198 @@ async function deleteRow(btn) {
     }
 }
 
-/* ---------- تصدير PDF ---------- */
+/* ---------- عرض المرضى حسب التاريخ (للمسؤول) ---------- */
 
-function exportReportPDF() {
-    const dateEl = document.getElementById("printDate");
-    if (dateEl) dateEl.textContent = "تاريخ الإصدار: " + new Date().toLocaleDateString("ar-EG");
+const PATIENT_CONDITION_OPTIONS = ["حالات طبية", "ضغط الدم", "صداع", "علامات حيوية", "إصابات", "حروق", "نقل مستشفى"];
+
+async function loadPatientsByDate() {
+    const date = document.getElementById("patientsViewDate").value;
+    if (!date) { showError("اختر تاريخًا أولاً"); return; }
+
+    const clinic = document.getElementById("patientsViewClinic").value;
+
+    try {
+        const result = await apiGet({ action: "GET_PATIENTS_BY_DATE", token: session.token, date, clinic });
+        if (!Array.isArray(result)) {
+            if (result && result.status === "FORBIDDEN") {
+                showError("هذه الميزة للمسؤول فقط، أو الجلسة غير صالحة");
+            } else {
+                showError("تعذر جلب بيانات المرضى");
+            }
+            return;
+        }
+        renderPatientsByDateTable(result);
+        document.getElementById("patientsByDateSection").style.display = "block";
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء جلب بيانات المرضى");
+    }
+}
+
+const PATIENT_ROW_FIELDS = ["time", "patient_name", "civil_id", "condition", "blood_pressure", "sugar", "temperature", "treatment"];
+
+function renderPatientsByDateTable(rows) {
+    const body = document.getElementById("patientsByDateBody");
+    body.innerHTML = "";
+
+    if (!rows.length) {
+        body.innerHTML = `<tr class="empty-row"><td colspan="12">لا يوجد مرضى مسجلون بهذا التاريخ</td></tr>`;
+        return;
+    }
+
+    rows.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.dataset.id = r.id;
+
+        PATIENT_ROW_FIELDS.forEach((key, idx) => {
+            const td = document.createElement("td");
+            td.className = "cell-p-" + idx;
+            const val = r[key] ?? "";
+            td.textContent = val === "" ? "-" : val;
+            td.dataset.value = val;
+            tr.appendChild(td);
+        });
+
+        // حقول للعرض فقط (غير قابلة للتعديل): العيادة، الشفت، الرقم الوظيفي
+        [r.clinic, r.shift, r.emp_id].forEach(val => {
+            const td = document.createElement("td");
+            td.textContent = val ?? "";
+            tr.appendChild(td);
+        });
+
+        const actionsTd = document.createElement("td");
+        actionsTd.className = "cell-actions";
+        actionsTd.innerHTML = `
+            <button class="row-btn row-edit" onclick="startEditPatientRow(this)">تعديل</button>
+            <button class="row-btn row-delete" onclick="deletePatientRow(this)">حذف</button>
+        `;
+        tr.appendChild(actionsTd);
+
+        body.appendChild(tr);
+    });
+}
+
+function startEditPatientRow(btn) {
+    const tr = btn.closest("tr");
+    if (tr.classList.contains("editing")) return;
+    tr.classList.add("editing");
+
+    PATIENT_ROW_FIELDS.forEach((key, idx) => {
+        const td = tr.querySelector(".cell-p-" + idx);
+        const val = td.dataset.value;
+        if (key === "condition") {
+            td.innerHTML = `<select class="row-input">${PATIENT_CONDITION_OPTIONS.map(o =>
+                `<option value="${o}" ${o === val ? "selected" : ""}>${o}</option>`).join("")}</select>`;
+        } else if (key === "time") {
+            td.innerHTML = `<input type="time" class="row-input" value="${val}">`;
+        } else {
+            td.innerHTML = `<input type="text" class="row-input" value="${val}">`;
+        }
+    });
+
+    const actionsTd = tr.querySelector(".cell-actions");
+    actionsTd.innerHTML = `
+        <button class="row-btn row-save" onclick="savePatientEditRow(this)">حفظ</button>
+        <button class="row-btn row-cancel" onclick="cancelPatientEditRow(this)">إلغاء</button>
+    `;
+}
+
+function cancelPatientEditRow(btn) {
+    const tr = btn.closest("tr");
+    tr.classList.remove("editing");
+    PATIENT_ROW_FIELDS.forEach((key, idx) => {
+        const td = tr.querySelector(".cell-p-" + idx);
+        td.textContent = td.dataset.value === "" ? "-" : td.dataset.value;
+    });
+    const actionsTd = tr.querySelector(".cell-actions");
+    actionsTd.innerHTML = `
+        <button class="row-btn row-edit" onclick="startEditPatientRow(this)">تعديل</button>
+        <button class="row-btn row-delete" onclick="deletePatientRow(this)">حذف</button>
+    `;
+}
+
+async function savePatientEditRow(btn) {
+    const tr = btn.closest("tr");
+    const id = tr.dataset.id;
+
+    const updated = {};
+    PATIENT_ROW_FIELDS.forEach((key, idx) => {
+        const field = tr.querySelector(".cell-p-" + idx + " input, .cell-p-" + idx + " select");
+        updated[key] = field.value.trim();
+    });
+
+    setBusy(btn, true, "حفظ");
+    try {
+        const result = await apiPost("UPDATE_PATIENT", { token: session.token, id, ...updated });
+        if (result.status === "SUCCESS") {
+            PATIENT_ROW_FIELDS.forEach((key, idx) => {
+                const td = tr.querySelector(".cell-p-" + idx);
+                td.dataset.value = updated[key];
+                td.textContent = updated[key] === "" ? "-" : updated[key];
+            });
+            tr.classList.remove("editing");
+            const actionsTd = tr.querySelector(".cell-actions");
+            actionsTd.innerHTML = `
+                <button class="row-btn row-edit" onclick="startEditPatientRow(this)">تعديل</button>
+                <button class="row-btn row-delete" onclick="deletePatientRow(this)">حذف</button>
+            `;
+            showSuccess("تم تحديث بيانات المريض بنجاح");
+        } else {
+            showError("تعذر حفظ التعديل");
+            setBusy(btn, false, "حفظ");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
+        setBusy(btn, false, "حفظ");
+    }
+}
+
+async function deletePatientRow(btn) {
+    const tr = btn.closest("tr");
+    const id = tr.dataset.id;
+
+    if (!confirm("هل أنت متأكد من حذف بيانات هذا المريض نهائيًا؟")) return;
+
+    setBusy(btn, true, "حذف");
+    try {
+        const result = await apiPost("DELETE_PATIENT", { token: session.token, id });
+        if (result.status === "SUCCESS") {
+            tr.remove();
+            showSuccess("تم حذف المريض بنجاح");
+            const body = document.getElementById("patientsByDateBody");
+            if (!body.children.length) {
+                body.innerHTML = `<tr class="empty-row"><td colspan="12">لا يوجد مرضى مسجلون بهذا التاريخ</td></tr>`;
+            }
+        } else {
+            showError("تعذر حذف السجل");
+            setBusy(btn, false, "حذف");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء الحذف");
+        setBusy(btn, false, "حذف");
+    }
+}
+
+/* ---------- طباعة / حفظ PDF (أي قسم — اسم الملف دايمًا بتاريخ اليوم الفعلي) ---------- */
+
+const ORIGINAL_PAGE_TITLE = document.title;
+
+function printSection(sectionId, dateElId, filenamePrefix) {
+    document.querySelectorAll(".print-target").forEach(el => el.classList.remove("print-target"));
+    document.getElementById(sectionId).classList.add("print-target");
+
+    // اسم الملف المقترح عند الحفظ يكون دايمًا بتاريخ اليوم الفعلي، بغض النظر عن التاريخ المعروض بالتقرير
+    document.title = `${filenamePrefix}_${todayDateStringLocal()}`;
+
+    const dateEl = document.getElementById(dateElId);
+    if (dateEl) dateEl.textContent = "تاريخ الطباعة: " + new Date().toLocaleDateString("ar-EG");
+
     window.print();
 }
+
+window.addEventListener("afterprint", () => {
+    document.title = ORIGINAL_PAGE_TITLE;
+    document.querySelectorAll(".print-target").forEach(el => el.classList.remove("print-target"));
+});
 </script>
 </body>
 </html>
