@@ -641,39 +641,41 @@
                 <button class="btn-primary btn-admin" id="saveStatsBtn" onclick="saveDailyStats()">حفظ الإحصائية</button>
             </div>
 
-            <div class="tab-switcher" style="margin-bottom:16px;">
-                <button class="tab-btn active" id="scopeBtnDaily" onclick="setReportScope('daily')">📆 إحصائية اليوم</button>
-                <button class="tab-btn" id="scopeBtnMonthly" onclick="setReportScope('monthly')">🗓️ الإحصائية الشهرية</button>
-            </div>
+            <div id="monthlyStatsAdminControls">
+                <div class="tab-switcher" style="margin-bottom:16px;">
+                    <button class="tab-btn active" id="scopeBtnDaily" onclick="setReportScope('daily')">📆 إحصائية اليوم</button>
+                    <button class="tab-btn" id="scopeBtnMonthly" onclick="setReportScope('monthly')">🗓️ الإحصائية الشهرية</button>
+                </div>
 
-            <div class="form-group" id="dailyReportDateGroup">
-                <label for="dailyReportDate">اختر تاريخ الإحصائية اليومية</label>
-                <input type="date" id="dailyReportDate" onchange="loadMonthlyReport()">
-            </div>
+                <div class="form-group" id="dailyReportDateGroup">
+                    <label for="dailyReportDate">اختر تاريخ الإحصائية اليومية</label>
+                    <input type="date" id="dailyReportDate" onchange="loadMonthlyReport()">
+                </div>
 
-            <div class="form-group">
-                <label for="adminClinicSelect">اختر العيادة لعرض تقريرها</label>
-                <select id="adminClinicSelect" onchange="loadMonthlyReport()">
-                    <option value="all">كل العيادات (All Clinics)</option>
-                    <option value="عيادة الف">عيادة الف (Clinic A)</option>
-                    <option value="عيادة باء">عيادة باء (Clinic B)</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label for="adminClinicSelect">اختر العيادة لعرض تقريرها</label>
+                    <select id="adminClinicSelect" onchange="loadMonthlyReport()">
+                        <option value="all">كل العيادات (All Clinics)</option>
+                        <option value="عيادة الف">عيادة الف (Clinic A)</option>
+                        <option value="عيادة باء">عيادة باء (Clinic B)</option>
+                    </select>
+                </div>
 
-            <button class="btn-primary btn-admin" id="loadReportBtn" onclick="loadMonthlyReport()">جلب إحصائية اليوم</button>
+                <button class="btn-primary btn-admin" id="loadReportBtn" onclick="loadMonthlyReport()">جلب إحصائية اليوم</button>
 
-            <div class="stats-controls">
-                <button class="btn-stat" id="btnPieChart" onclick="showCaseTypeChart('doughnut')">📊 نسب الحالات (دائري)</button>
-                <button class="btn-stat" id="btnBarSingle" onclick="showCaseTypeChart('bar')">📶 نسب الحالات (أعمدة)</button>
-                <button class="btn-stat" id="btnBarChart" onclick="showBarChart()">📶 مقارنة العيادتين</button>
-                <button class="btn-stat" id="btnCombinedTotal" onclick="showCombinedTotal()">🏥 إجمالي العيادتين معًا</button>
-            </div>
+                <div class="stats-controls">
+                    <button class="btn-stat" id="btnPieChart" onclick="showCaseTypeChart('doughnut')">📊 نسب الحالات (دائري)</button>
+                    <button class="btn-stat" id="btnBarSingle" onclick="showCaseTypeChart('bar')">📶 نسب الحالات (أعمدة)</button>
+                    <button class="btn-stat" id="btnBarChart" onclick="showBarChart()">📶 مقارنة العيادتين</button>
+                    <button class="btn-stat" id="btnCombinedTotal" onclick="showCombinedTotal()">🏥 إجمالي العيادتين معًا</button>
+                </div>
 
-            <div class="chart-card" id="chartCard" style="display:none;">
-                <div class="chart-card-title" id="chartCardTitle"></div>
-                <div id="combinedTotalBox" class="combined-total-box" style="display:none;"></div>
-                <div class="chart-canvas-wrap" id="chartCanvasWrap">
-                    <canvas id="statsCanvas"></canvas>
+                <div class="chart-card" id="chartCard" style="display:none;">
+                    <div class="chart-card-title" id="chartCardTitle"></div>
+                    <div id="combinedTotalBox" class="combined-total-box" style="display:none;"></div>
+                    <div class="chart-canvas-wrap" id="chartCanvasWrap">
+                        <canvas id="statsCanvas"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -1081,8 +1083,10 @@ function switchTab(tab) {
     document.getElementById("tabBtnMonthlyStats").classList.toggle("active", isMonthlyStats);
     document.getElementById("tabBtnManageEmployees").classList.toggle("active", isManageEmployees);
 
-    // لوحة إدخال الإحصائية اليدوية تظهر للمسؤول فقط — الموظف يشوف التقرير والرسوم البيانية بس (عرض فقط)
+    // لوحة إدخال الإحصائية اليدوية، ولوحة التحكم بالتقرير (نطاق يومي/شهري، تاريخ، عيادة،
+    // زر جلب، رسوم بيانية) تظهر للمسؤول فقط — الموظف يشوف الجدول بس (عرض فقط لاغير)
     document.getElementById("statsEntryPanel").style.display = (isMonthlyStats && isAdmin) ? "block" : "none";
+    document.getElementById("monthlyStatsAdminControls").style.display = (isMonthlyStats && isAdmin) ? "block" : "none";
     if (isMonthlyStats && isAdmin && !document.getElementById("statsEntryDate").value) {
         document.getElementById("statsEntryDate").value = todayDateStringLocal();
         loadStatsEntryCounters();
