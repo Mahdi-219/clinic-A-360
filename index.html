@@ -553,7 +553,7 @@
 
             <!-- ===== إدخال/تعديل الإحصائية اليدوية — للمسؤول فقط ===== -->
             <div class="auth-screen" id="statsEntryPanel" style="display:none;">
-                <div class="auth-title">إدخال / تعديل الإحصائية اليدوية</div>
+                <div class="auth-title">إدخال إحصائية اليوم</div>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="statsEntryDate">التاريخ</label>
@@ -1097,12 +1097,15 @@ function switchTab(tab) {
     document.getElementById("tabBtnMonthlyStats").classList.toggle("active", isMonthlyStats);
     document.getElementById("tabBtnManageEmployees").classList.toggle("active", isManageEmployees);
 
-    // لوحة إدخال الإحصائية اليدوية، ولوحة التحكم بالتقرير (نطاق يومي/شهري، تاريخ، عيادة،
-    // زر جلب، رسوم بيانية) تظهر للمسؤول فقط — الموظف يشوف الجدول بس (عرض فقط لاغير)
-    document.getElementById("statsEntryPanel").style.display = (isMonthlyStats && isAdmin) ? "block" : "none";
+    // لوحة إدخال الإحصائية اليدوية (العدادات +/-) صارت للمسعفين (هم يضيفون) —
+    // لوحة التحكم بالتقرير (نطاق يومي/شهري، تاريخ، عيادة، زر جلب، رسوم بيانية) تبقى للمسؤول
+    // (يراقب ويعدّل الجدول بس، ما يضيف عن طريق العدادات)
+    document.getElementById("statsEntryPanel").style.display = (isMonthlyStats && !isAdmin) ? "block" : "none";
     document.getElementById("monthlyStatsAdminControls").style.display = (isMonthlyStats && isAdmin) ? "block" : "none";
-    if (isMonthlyStats && isAdmin && !document.getElementById("statsEntryDate").value) {
+    if (isMonthlyStats && !isAdmin && !document.getElementById("statsEntryDate").value) {
         document.getElementById("statsEntryDate").value = todayDateStringLocal();
+        document.getElementById("statsEntryClinic").value = session.clinic || "عيادة الف";
+        document.getElementById("statsEntryShift").value = session.shift || document.getElementById("statsEntryShift").value;
         loadStatsEntryCounters();
     }
 
@@ -1304,7 +1307,6 @@ function resetStatsCounters() {
 // يجيب أي إحصائية محفوظة مسبقًا لنفس (التاريخ + العيادة + الشفت) المختارين، عشان
 // المسؤول يعدّل عليها بدل ما ينشئ صف مكرر
 async function loadStatsEntryCounters() {
-    if (!session.isAdmin) return;
     const date = document.getElementById("statsEntryDate").value;
     const clinic = document.getElementById("statsEntryClinic").value;
     const shift = document.getElementById("statsEntryShift").value;
@@ -1645,12 +1647,12 @@ function renderReportTable(rows) {
             tr.appendChild(td);
         });
 
-        // عمود الإجراءات — الحذف متاح للمسؤول فقط (التعديل غير متاح هنا لأن هذا تقرير
-        // مجمّع لعدة مرضى؛ التعديل الفردي متاح من قسم "عرض المرضى" الخاص بالمسؤول)
+        // عمود الإجراءات — التعديل والحذف متاحين للمسؤول فقط (يراقب ويعدّل، ما يضيف)
         const actionsTd = document.createElement("td");
         actionsTd.className = "cell-actions";
         actionsTd.innerHTML = session.isAdmin
-            ? `<button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>`
+            ? `<button class="row-btn row-edit" onclick="startEditRow(this)">تعديل</button>
+               <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>`
             : "";
         tr.appendChild(actionsTd);
 
@@ -1660,6 +1662,73 @@ function renderReportTable(rows) {
     // عمود "إجراءات" بالكامل يظهر للمسؤول فقط
     const actionsHeader = document.getElementById("reportActionsHeader");
     if (actionsHeader) actionsHeader.style.display = session.isAdmin ? "" : "none";
+}
+
+function startEditRow(btn) {
+    const tr = btn.closest("tr");
+    if (tr.classList.contains("editing")) return;
+    tr.classList.add("editing");
+
+    REPORT_EDIT_FIELDS.forEach(key => {
+        const td = tr.querySelector(".cell-" + key);
+        const currentVal = td.dataset.value;
+        td.innerHTML = `<input type="number" min="0" class="row-input" value="${currentVal}">`;
+    });
+
+    const actionsTd = tr.querySelector(".cell-actions");
+    actionsTd.innerHTML = `
+        <button class="row-btn row-save" onclick="saveEditRow(this)">حفظ</button>
+        <button class="row-btn row-cancel" onclick="cancelEditRow(this)">إلغاء</button>
+    `;
+}
+
+function cancelEditRow(btn) {
+    const tr = btn.closest("tr");
+    tr.classList.remove("editing");
+    REPORT_EDIT_FIELDS.forEach(key => {
+        const td = tr.querySelector(".cell-" + key);
+        td.textContent = td.dataset.value;
+    });
+    const actionsTd = tr.querySelector(".cell-actions");
+    actionsTd.innerHTML = `
+        <button class="row-btn row-edit" onclick="startEditRow(this)">تعديل</button>
+        <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>
+    `;
+}
+
+async function saveEditRow(btn) {
+    const tr = btn.closest("tr");
+    const cells = tr.querySelectorAll("td");
+    // الخلايا الأولى الأربعة ثابتة: التاريخ، الرقم الوظيفي، العيادة، الشفت
+    const rowDate = cells[0].textContent;
+    const rowClinic = cells[2].textContent;
+    const rowShift = cells[3].textContent;
+
+    const updated = {};
+    REPORT_EDIT_FIELDS.forEach(key => {
+        const input = tr.querySelector(".cell-" + key + " input");
+        updated[key] = Math.max(0, parseInt(input.value || "0", 10) || 0);
+    });
+
+    setBusy(btn, true, "حفظ");
+    try {
+        const result = await apiPost("SAVE_DAILY_STATS", {
+            token: session.token,
+            date_target: rowDate, clinic: rowClinic, shift: rowShift,
+            emp_id: session.empId, timestamp: new Date().toISOString(),
+            ...updated
+        });
+        if (result.status === "SUCCESS") {
+            showSuccess("تم تحديث الإحصائية بنجاح");
+            loadMonthlyReport(); // نعيد تحميل الجدول كامل عشان الإجمالي وكل شي يبين محدّث وصحيح
+        } else {
+            showError("تعذر حفظ التعديل");
+            setBusy(btn, false, "حفظ");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
+        setBusy(btn, false, "حفظ");
+    }
 }
 
 async function deleteRow(btn) {
