@@ -291,19 +291,12 @@
     <div class="tab-switcher">
         <button class="tab-btn active" id="tabBtnAddPatient" onclick="switchTab('addPatient')">➕ إضافة المريض</button>
         <button class="tab-btn" id="tabBtnMonthlyStats" onclick="switchTab('monthlyStats')">📊 الإحصائية الشهرية</button>
+        <button class="tab-btn" id="tabBtnManageEmployees" onclick="switchTab('manageEmployees')" style="display:none;">🛠️ إدارة الموظفين</button>
     </div>
 
     <div class="server-status checking" id="serverStatus">
         <span class="dot2" id="serverStatusDot"></span>
         <span id="serverStatusText">يتم التحقق من حالة السيرفر...</span>
-    </div>
-
-    <div class="status-bar">
-        <div class="status-indicator">
-            <span class="dot" id="statusDot"></span>
-            <span id="statusText">بانتظار تسجيل الدخول...</span>
-        </div>
-        <div id="activeUserDisplay">لم يتم تسجيل الدخول</div>
     </div>
 
     <div class="alert-message alert-danger" id="errorMessage" role="alert" style="display:none;"></div>
@@ -314,37 +307,22 @@
         <div class="auth-title">تسجيل الدخول إلى النظام</div>
         <div class="form-grid">
             <div class="form-group">
-                <label for="loginClinic">اختر العيادة / Clinic</label>
-                <select id="loginClinic" onchange="toggleAdminLoginUI()">
-                    <option value="عيادة الف">عيادة الف (Clinic A)</option>
-                    <option value="عيادة باء">عيادة باء (Clinic B)</option>
-                    <option value="حساب مسؤول">حساب مسؤول (Admin)</option>
-                </select>
-            </div>
-            <div class="form-group" id="loginShiftGroup">
-                <label for="loginShift">اختر الشفت الحالي / Shift</label>
-                <select id="loginShift">
-                    <option value="شفت الف صباحي">شفت الف صباحي (A-Morning)</option>
-                    <option value="شفت الف مسائي">شفت الف مسائي (A-Evening)</option>
-                    <option value="شفت باء صباحي">شفت باء صباحي (B-Morning)</option>
-                    <option value="شفت باء مسائي">شفت باء مسائي (B-Evening)</option>
-                    <option value="شفت جيم صباحي">شفت جيم صباحي (C-Morning)</option>
-                    <option value="شفت جيم مسائي">شفت جيم مسائي (C-Evening)</option>
-                </select>
-            </div>
-            <div class="form-group">
                 <label for="loginEmpId">الرقم الوظيفي / Emp ID</label>
-                <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this)" inputmode="numeric">
+                <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this); checkLoginEmpIdPreview();" inputmode="numeric">
             </div>
             <div class="form-group">
                 <label for="loginPin">الرمز السري / Password</label>
                 <input type="password" id="loginPin" placeholder="******">
             </div>
         </div>
+        <div class="form-group" id="loginClinicShiftPreviewGroup" style="display:none;">
+            <label>العيادة والشفت المسجلة</label>
+            <input type="text" id="loginClinicShiftPreview" disabled style="background:#e9edf0; color:var(--muted); cursor:not-allowed;">
+        </div>
         <button class="btn-primary" id="loginBtn" onclick="handleLogin()">تسجيل الدخول وتأكيد الهوية</button>
         <div class="auth-links">
             <span onclick="switchAuthScreen('registerScreen')">إنشاء حساب جديد</span>
-            <span onclick="switchAuthScreen('forgotScreen')">استرجاع الرمز بالهاتف</span>
+            <span onclick="switchAuthScreen('forgotScreen')">استرجاع الرمز</span>
         </div>
     </div>
 
@@ -361,6 +339,32 @@
                 <input type="tel" id="regPhone" placeholder="99988877">
             </div>
             <div class="form-group">
+                <label for="regCivilId">الرقم المدني</label>
+                <input type="text" id="regCivilId" placeholder="الرقم المدني" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label for="regEmail">البريد الإلكتروني</label>
+                <input type="email" id="regEmail" placeholder="name@example.com">
+            </div>
+            <div class="form-group">
+                <label for="regClinic">اختر العيادة</label>
+                <select id="regClinic">
+                    <option value="عيادة الف">عيادة الف (Clinic A)</option>
+                    <option value="عيادة باء">عيادة باء (Clinic B)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="regShift">اختر الشفت / الفترة</label>
+                <select id="regShift">
+                    <option value="شفت الف صباحي">شفت الف صباحي (A-Morning)</option>
+                    <option value="شفت الف مسائي">شفت الف مسائي (A-Evening)</option>
+                    <option value="شفت باء صباحي">شفت باء صباحي (B-Morning)</option>
+                    <option value="شفت باء مسائي">شفت باء مسائي (B-Evening)</option>
+                    <option value="شفت جيم صباحي">شفت جيم صباحي (C-Morning)</option>
+                    <option value="شفت جيم مسائي">شفت جيم مسائي (C-Evening)</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="regPin">اختر الرمز السري</label>
                 <input type="password" id="regPin" placeholder="******">
             </div>
@@ -371,7 +375,7 @@
 
     <!-- شاشة استرجاع الرمز -->
     <div class="auth-screen" id="forgotScreen" style="display: none;">
-        <div class="auth-title">استرجاع وتحديث الرمز الخاص عبر الهاتف</div>
+        <div class="auth-title">استرجاع وتحديث الرمز الخاص</div>
         <div class="form-grid">
             <div class="form-group">
                 <label for="forgotEmpId">الرقم الوظيفي الخاص بك</label>
@@ -380,6 +384,14 @@
             <div class="form-group">
                 <label for="forgotPhone">رقم الهاتف المسجل بالمنظومة</label>
                 <input type="tel" id="forgotPhone" placeholder="99988877">
+            </div>
+            <div class="form-group">
+                <label for="forgotCivilId">الرقم المدني المسجل</label>
+                <input type="text" id="forgotCivilId" placeholder="الرقم المدني" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label for="forgotEmail">البريد الإلكتروني المسجل</label>
+                <input type="email" id="forgotEmail" placeholder="name@example.com">
             </div>
             <div class="form-group">
                 <label for="forgotNewPin">أدخل الرمز السري الجديد</label>
@@ -408,16 +420,24 @@
                     </div>
                     <div class="form-group">
                         <label for="patientCondition">الحالة</label>
-                        <input type="text" id="patientCondition" list="conditionSuggestions" placeholder="اكتب الحالة (مثال: حالات طبية، ضغط الدم...)">
-                        <datalist id="conditionSuggestions">
-                            <option value="حالات طبية">
-                            <option value="ضغط الدم">
-                            <option value="صداع">
-                            <option value="علامات حيوية">
-                            <option value="إصابات">
-                            <option value="حروق">
-                            <option value="نقل مستشفى">
-                        </datalist>
+                        <select id="patientCondition" onchange="toggleOtherConditionBox()">
+                            <option value="حالات طبية">حالات طبية</option>
+                            <option value="ضغط الدم">ضغط الدم</option>
+                            <option value="ضغط زايد">ضغط زايد</option>
+                            <option value="ضغط ناقص">ضغط ناقص</option>
+                            <option value="سكر زايد">سكر زايد</option>
+                            <option value="سكر ناقص">سكر ناقص</option>
+                            <option value="صداع">صداع</option>
+                            <option value="علامات حيوية">علامات حيوية</option>
+                            <option value="إصابات">إصابات</option>
+                            <option value="حروق">حروق</option>
+                            <option value="نقل مستشفى">نقل مستشفى</option>
+                            <option value="__other__">أخرى (اكتب الحالة)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="patientConditionOtherGroup" style="display:none;">
+                        <label for="patientConditionOther">اكتب الحالة</label>
+                        <input type="text" id="patientConditionOther" placeholder="اكتب نوع الحالة">
                     </div>
                     <div class="form-group">
                         <label for="patientBP">الضغط</label>
@@ -517,6 +537,110 @@
         <div id="monthlyStatsSection">
             <div class="auth-title" style="border:none;">الإحصائية الشهرية</div>
 
+            <!-- ===== إدخال/تعديل الإحصائية اليدوية — للمسؤول فقط ===== -->
+            <div class="auth-screen" id="statsEntryPanel" style="display:none;">
+                <div class="auth-title">إدخال / تعديل الإحصائية اليدوية</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="statsEntryDate">التاريخ</label>
+                        <input type="date" id="statsEntryDate" onchange="loadStatsEntryCounters()">
+                    </div>
+                    <div class="form-group">
+                        <label for="statsEntryClinic">العيادة</label>
+                        <select id="statsEntryClinic" onchange="loadStatsEntryCounters()">
+                            <option value="عيادة الف">عيادة الف (Clinic A)</option>
+                            <option value="عيادة باء">عيادة باء (Clinic B)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="statsEntryShift">الشفت</label>
+                        <select id="statsEntryShift" onchange="loadStatsEntryCounters()">
+                            <option value="شفت الف صباحي">شفت الف صباحي (A-Morning)</option>
+                            <option value="شفت الف مسائي">شفت الف مسائي (A-Evening)</option>
+                            <option value="شفت باء صباحي">شفت باء صباحي (B-Morning)</option>
+                            <option value="شفت باء مسائي">شفت باء مسائي (B-Evening)</option>
+                            <option value="شفت جيم صباحي">شفت جيم صباحي (C-Morning)</option>
+                            <option value="شفت جيم مسائي">شفت جيم مسائي (C-Evening)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="cases-grid" id="statsCountersGrid">
+                    <div class="case-card total-card">
+                        <div class="case-title" style="color: var(--accent-dark);">الإجمالي</div>
+                        <div class="counter-controls">
+                            <span class="counter-value" id="statsTotalDisplay" style="font-size: 30px; color: var(--accent-dark);">0</span>
+                        </div>
+                    </div>
+                    <div class="case-card">
+                        <div class="case-title">حالات طبية</div>
+                        <div class="counter-controls">
+                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('sick_cases', -1)">−</button>
+                            <span class="counter-value" id="stat_sick_cases">0</span>
+                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('sick_cases', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="case-card">
+                        <div class="case-title">ضغط الدم</div>
+                        <div class="counter-controls">
+                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('blood_pressure', -1)">−</button>
+                            <span class="counter-value" id="stat_blood_pressure">0</span>
+                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('blood_pressure', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="case-card">
+                        <div class="case-title">السكر</div>
+                        <div class="counter-controls">
+                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('sugar', -1)">−</button>
+                            <span class="counter-value" id="stat_sugar">0</span>
+                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('sugar', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="case-card">
+                        <div class="case-title">صداع</div>
+                        <div class="counter-controls">
+                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('headache', -1)">−</button>
+                            <span class="counter-value" id="stat_headache">0</span>
+                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('headache', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="case-card">
+                        <div class="case-title">علامات حيوية</div>
+                        <div class="counter-controls">
+                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('vital_signs', -1)">−</button>
+                            <span class="counter-value" id="stat_vital_signs">0</span>
+                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('vital_signs', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="case-card">
+                        <div class="case-title">إصابات</div>
+                        <div class="counter-controls">
+                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('injuries', -1)">−</button>
+                            <span class="counter-value" id="stat_injuries">0</span>
+                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('injuries', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="case-card">
+                        <div class="case-title">حروق</div>
+                        <div class="counter-controls">
+                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('burns', -1)">−</button>
+                            <span class="counter-value" id="stat_burns">0</span>
+                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('burns', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="case-card">
+                        <div class="case-title">نقل مستشفى</div>
+                        <div class="counter-controls">
+                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('hospital_transfer', -1)">−</button>
+                            <span class="counter-value" id="stat_hospital_transfer">0</span>
+                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('hospital_transfer', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary btn-admin" id="saveStatsBtn" onclick="saveDailyStats()">حفظ الإحصائية</button>
+            </div>
+
             <div class="tab-switcher" style="margin-bottom:16px;">
                 <button class="tab-btn active" id="scopeBtnDaily" onclick="setReportScope('daily')">📆 إحصائية اليوم</button>
                 <button class="tab-btn" id="scopeBtnMonthly" onclick="setReportScope('monthly')">🗓️ الإحصائية الشهرية</button>
@@ -563,13 +687,30 @@
                     <thead>
                         <tr>
                             <th>التاريخ</th><th>الرقم الوظيفي</th><th>العيادة</th><th>الشفت</th><th>الإجمالي</th>
-                            <th>حالات طبية</th><th>ضغط الدم</th><th>صداع</th><th>علامات حيوية</th>
+                            <th>حالات طبية</th><th>ضغط الدم</th><th>السكر</th><th>صداع</th><th>علامات حيوية</th>
                             <th>إصابات</th><th>حروق</th><th>نقل مستشفى</th><th class="th-actions" id="reportActionsHeader">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="reportTableBody"></tbody>
                 </table>
                 <button class="btn-secondary" onclick="printSection('reportSection', 'printDate', 'التقرير_الشهري')">🖨️ طباعة / حفظ PDF</button>
+            </div>
+        </div>
+
+        <!-- ===== قسم إدارة الموظفين (للمسؤول فقط) ===== -->
+        <div id="manageEmployeesSection" style="display:none;">
+            <div class="auth-title" style="border:none;">إدارة الموظفين — تعديل العيادة والشفت</div>
+            <div class="report-section">
+                <table class="monthly-table" id="employeesTable">
+                    <thead>
+                        <tr>
+                            <th>الرقم الوظيفي</th><th>رقم الهاتف</th><th>العيادة الحالية</th><th>الشفت الحالي</th><th class="th-actions">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeesTableBody">
+                        <tr class="empty-row"><td colspan="5">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -584,7 +725,18 @@
    إعدادات الاتصال بالسيرفر (Google Apps Script Web App)
    استبدل الرابط أدناه برابط الـ Web App الخاص بك بعد النشر
    ========================================================= */
-const API_URL = "https://script.google.com/macros/s/AKfycbxjYDPUwZ6QFrFxT9yWwkuxHZQiV-dJhmxDZ9ImEJWVC7kKOCDEe6eAm9BYHzPjzyg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyf6Qxoq0i4RkrauhfrQpeuWa0jPvHolmE0-nwyw5FRQez1qgk7KdgMlQiggBEjnvre/exec";
+
+// حارس عام: أي خطأ JS غير متوقع ينسجل بالكونسول (للمطوّر) ويطلع تنبيه للمستخدم
+// بدل ما تفشل الصفحة بصمت وتطلع فاضية بدون أي رسالة
+window.addEventListener("error", (e) => {
+    console.error("خطأ غير متوقع:", e.error || e.message);
+    const el = document.getElementById("errorMessage");
+    if (el) {
+        el.textContent = "صار خطأ غير متوقع، جرّب تحدّث الصفحة. لو تكرر، بلّغ الأدمن.";
+        el.style.display = "block";
+    }
+});
 
 let session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
 
@@ -592,6 +744,39 @@ let session = { empId: null, shift: null, clinic: null, isAdmin: false, token: n
 
 function limitFourDigits(input) {
     if (input.value.length > 4) input.value = input.value.slice(0, 4);
+}
+
+// بمجرد ما يكتمل الرقم الوظيفي (4 أرقام) بشاشة الدخول، نجيب عيادته وشفته
+// المسجلين ونعرضهم بمربع رصاصي مقفول للعرض فقط (بدون الحاجة لإدخال الرمز السري)
+let empIdPreviewTimer = null;
+function checkLoginEmpIdPreview() {
+    clearTimeout(empIdPreviewTimer);
+    const empId = document.getElementById("loginEmpId").value.trim();
+    const group = document.getElementById("loginClinicShiftPreviewGroup");
+    const preview = document.getElementById("loginClinicShiftPreview");
+
+    if (empId.length !== 4) {
+        group.style.display = "none";
+        return;
+    }
+
+    empIdPreviewTimer = setTimeout(async () => {
+        try {
+            const result = await apiGet({ action: "GET_USER_CLINIC_SHIFT", emp_id: empId });
+            if (result && result.status === "FOUND") {
+                if (result.isAdmin) {
+                    preview.value = "حساب مسؤول";
+                } else {
+                    preview.value = `${result.clinic || "-"} — ${result.shift || "-"}`;
+                }
+                group.style.display = "block";
+            } else {
+                group.style.display = "none";
+            }
+        } catch (e) {
+            group.style.display = "none";
+        }
+    }, 300);
 }
 
 function showError(msg) {
@@ -629,13 +814,6 @@ function switchAuthScreen(screenId) {
     });
     document.getElementById("errorMessage").style.display = "none";
     document.getElementById("successMessage").style.display = "none";
-}
-
-// عند اختيار "حساب مسؤول" من قائمة العيادات، نخفي قائمة الشفت لأنها غير مطلوبة للمسؤول
-function toggleAdminLoginUI() {
-    const clinic = document.getElementById("loginClinic").value;
-    const shiftGroup = document.getElementById("loginShiftGroup");
-    shiftGroup.style.display = (clinic === "حساب مسؤول") ? "none" : "block";
 }
 
 /* تشفير أحادي الاتجاه (SHA-256) من جهة العميل قبل إرسال الرمز السري.
@@ -694,11 +872,52 @@ async function checkServerStatus() {
 
 checkServerStatus();
 
+/* ---------- استمرارية تسجيل الدخول عبر الريفرش (localStorage) ---------- */
+
+const SESSION_STORAGE_KEY = "clinicSession";
+
+function persistSession() {
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
+        empId: session.empId, shift: session.shift, clinic: session.clinic,
+        isAdmin: session.isAdmin, token: session.token
+    }));
+}
+
+function clearPersistedSession() {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+}
+
+// عند فتح الصفحة (أو عمل ريفرش) نتحقق إذا فيه جلسة محفوظة ولسا سارية،
+// ولو صحيحة ندخل مباشرة للوحة التحكم بدون ما نرجع لشاشة تسجيل الدخول
+async function restoreSession() {
+    const saved = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!saved) return;
+
+    let parsed;
+    try { parsed = JSON.parse(saved); } catch (e) { clearPersistedSession(); return; }
+    if (!parsed || !parsed.token) { clearPersistedSession(); return; }
+
+    try {
+        const result = await apiGet({ action: "VALIDATE_SESSION", token: parsed.token });
+        if (result && result.status === "VALID") {
+            session = {
+                empId: parsed.empId, shift: parsed.shift, clinic: parsed.clinic,
+                isAdmin: result.isAdmin, token: parsed.token
+            };
+            enterDashboard();
+        } else {
+            clearPersistedSession();
+        }
+    } catch (e) {
+        // تعذر التحقق (مثلاً السيرفر غير متاح مؤقتًا) — نتركه بشاشة الدخول العادية
+    }
+}
+
+restoreSession();
+
 /* ---------- تسجيل الدخول / التسجيل / استرجاع الرمز ---------- */
 
 async function handleLogin() {
-    const clinic = document.getElementById("loginClinic").value;
-    const shift = document.getElementById("loginShift").value;
     const empId = document.getElementById("loginEmpId").value.trim();
     const pin = document.getElementById("loginPin").value.trim();
     const btn = document.getElementById("loginBtn");
@@ -713,10 +932,19 @@ async function handleLogin() {
 
         if (result.status === "SUCCESS") {
             session.empId = empId;
-            session.shift = shift;
-            session.clinic = clinic;
-            session.isAdmin = !!result.isAdmin; // الصلاحية تُحسم من السيرفر وليس من اختيار المستخدم فقط
+            session.isAdmin = !!result.isAdmin;
             session.token = result.token;
+            // العيادة والشفت يجيان من حساب الموظف المسجّل مسبقًا — يدخل بفترته تلقائيًا بدون اختيار كل مرة
+            session.clinic = result.isAdmin ? null : (result.clinic || null);
+            session.shift = result.isAdmin ? null : (result.shift || null);
+
+            if (!session.isAdmin && (!session.clinic || !session.shift)) {
+                showError("حسابك القديم ما فيه عيادة/شفت مسجلة. تواصل مع المسؤول لتحديثها، أو سجّل حساب جديد.");
+                setBusy(btn, false, "تسجيل الدخول وتأكيد الهوية");
+                return;
+            }
+
+            persistSession();
             enterDashboard();
         } else {
             showError("الرقم الوظيفي أو الرمز السري غير صحيح");
@@ -731,16 +959,23 @@ async function handleLogin() {
 async function handleRegister() {
     const empId = document.getElementById("regEmpId").value.trim();
     const phone = document.getElementById("regPhone").value.trim();
+    const civilId = document.getElementById("regCivilId").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const clinic = document.getElementById("regClinic").value;
+    const shift = document.getElementById("regShift").value;
     const pin = document.getElementById("regPin").value.trim();
     const btn = document.getElementById("registerBtn");
 
-    if (!empId || !phone || !pin) { showError("الرجاء تعبئة جميع الحقول"); return; }
+    if (!empId || !phone || !civilId || !email || !pin) { showError("الرجاء تعبئة جميع الحقول"); return; }
     if (empId.length !== 4) { showError("الرقم الوظيفي يجب أن يكون 4 أرقام"); return; }
 
     setBusy(btn, true, "اعتماد وحفظ الحساب الجديد");
     try {
         const pinHash = await hashPin(pin);
-        const result = await apiPost("REGISTER_SECURE", { emp_id: empId, phone, pin_hash: pinHash });
+        const result = await apiPost("REGISTER_SECURE", {
+            emp_id: empId, phone, pin_hash: pinHash,
+            civil_id: civilId, email, clinic, shift
+        });
 
         if (result.status === "SUCCESS") {
             showSuccess("تم إنشاء الحساب بنجاح، يمكنك تسجيل الدخول الآن");
@@ -760,15 +995,19 @@ async function handleRegister() {
 async function handleForgot() {
     const empId = document.getElementById("forgotEmpId").value.trim();
     const phone = document.getElementById("forgotPhone").value.trim();
+    const civilId = document.getElementById("forgotCivilId").value.trim();
+    const email = document.getElementById("forgotEmail").value.trim();
     const newPin = document.getElementById("forgotNewPin").value.trim();
     const btn = document.getElementById("forgotBtn");
 
-    if (!empId || !phone || !newPin) { showError("الرجاء تعبئة جميع الحقول"); return; }
+    if (!empId || !phone || !civilId || !email || !newPin) { showError("الرجاء تعبئة جميع الحقول"); return; }
 
-    setBusy(btn, true, "تحديث الرمز بالهاتف والتحقق");
+    setBusy(btn, true, "تحديث الرمز والتحقق");
     try {
         const newPinHash = await hashPin(newPin);
-        const result = await apiPost("FORGOT_PIN_SECURE", { emp_id: empId, phone, new_pin_hash: newPinHash });
+        const result = await apiPost("FORGOT_PIN_SECURE", {
+            emp_id: empId, phone, civil_id: civilId, email, new_pin_hash: newPinHash
+        });
 
         if (result.status === "SUCCESS") {
             showSuccess("تم تحديث الرمز السري بنجاح");
@@ -779,21 +1018,19 @@ async function handleForgot() {
     } catch (e) {
         showError("تعذر الاتصال بالسيرفر");
     } finally {
-        setBusy(btn, false, "تحديث الرمز بالهاتف والتحقق");
+        setBusy(btn, false, "تحديث الرمز والتحقق");
     }
 }
 
 function logout() {
     session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
+    clearPersistedSession();
     renderTodayPatientsTable([]);
     if (statsChart) { statsChart.destroy(); statsChart = null; }
     document.getElementById("chartCard").style.display = "none";
     document.getElementById("mainDashboard").style.display = "none";
     document.getElementById("reportSection").style.display = "none";
     document.getElementById("patientsByDateSection").style.display = "none";
-    document.getElementById("statusDot").classList.remove("active");
-    document.getElementById("statusText").textContent = "بانتظار تسجيل الدخول...";
-    document.getElementById("activeUserDisplay").textContent = "لم يتم تسجيل الدخول";
     document.getElementById("loginEmpId").value = "";
     document.getElementById("loginPin").value = "";
     document.getElementById("tabBtnAddPatient").textContent = "➕ إضافة المريض";
@@ -808,13 +1045,10 @@ function enterDashboard() {
         document.getElementById(id).style.display = "none";
     });
     document.getElementById("mainDashboard").style.display = "block";
-    document.getElementById("statusDot").classList.add("active");
-    document.getElementById("statusText").textContent = "تم تسجيل الدخول بنجاح";
-    document.getElementById("activeUserDisplay").textContent =
-        session.isAdmin ? "مسؤول النظام" : `الموظف رقم ${session.empId} — ${session.clinic} — ${session.shift}`;
 
     // تسمية التبويب الأول تختلف حسب نوع الحساب: عرض المرضى للمسؤول، إضافة مريض للموظف
     document.getElementById("tabBtnAddPatient").textContent = session.isAdmin ? "👥 عرض المرضى" : "➕ إضافة المريض";
+    document.getElementById("tabBtnManageEmployees").style.display = session.isAdmin ? "block" : "none";
 
     if (session.isAdmin) {
         document.getElementById("patientsViewDate").value = todayDateStringLocal();
@@ -822,9 +1056,7 @@ function enterDashboard() {
         loadTodayShiftPatients();
     }
 
-    // نحافظ على التبويب اللي كان محدد قبل تسجيل الدخول بدل ما نرجّعه دايمًا لإضافة المريض
-    const wasMonthlyStats = document.getElementById("tabBtnMonthlyStats").classList.contains("active");
-    switchTab(wasMonthlyStats ? "monthlyStats" : "addPatient");
+    switchTab("addPatient");
     setDefaultPatientTime();
 }
 
@@ -835,18 +1067,34 @@ function todayDateStringLocal() {
 // التبويبان متاحان قبل وبعد تسجيل الدخول. حساب المسؤول يشوف "عرض المرضى"
 // بدل نموذج "إضافة مريض" داخل نفس التبويب الأول
 function switchTab(tab) {
-    const isAddPatient = tab === "addPatient";
     const isAdmin = session.isAdmin;
+    const isAddPatient = tab === "addPatient";
+    const isMonthlyStats = tab === "monthlyStats";
+    const isManageEmployees = tab === "manageEmployees" && isAdmin;
 
     document.getElementById("addPatientSection").style.display = (isAddPatient && !isAdmin) ? "block" : "none";
     document.getElementById("adminPatientsSection").style.display = (isAddPatient && isAdmin) ? "block" : "none";
-    document.getElementById("monthlyStatsSection").style.display = isAddPatient ? "none" : "block";
-    document.getElementById("tabBtnAddPatient").classList.toggle("active", isAddPatient);
-    document.getElementById("tabBtnMonthlyStats").classList.toggle("active", !isAddPatient);
+    document.getElementById("monthlyStatsSection").style.display = isMonthlyStats ? "block" : "none";
+    document.getElementById("manageEmployeesSection").style.display = isManageEmployees ? "block" : "none";
 
-    // الإحصائية تتحدّث تلقائيًا من نفسها أول ما نفتح التبويب، بدون ما نحتاج نضغط زر يدوي
-    if (!isAddPatient && session.token) {
+    document.getElementById("tabBtnAddPatient").classList.toggle("active", isAddPatient);
+    document.getElementById("tabBtnMonthlyStats").classList.toggle("active", isMonthlyStats);
+    document.getElementById("tabBtnManageEmployees").classList.toggle("active", isManageEmployees);
+
+    // لوحة إدخال الإحصائية اليدوية تظهر للمسؤول فقط — الموظف يشوف التقرير والرسوم البيانية بس (عرض فقط)
+    document.getElementById("statsEntryPanel").style.display = (isMonthlyStats && isAdmin) ? "block" : "none";
+    if (isMonthlyStats && isAdmin && !document.getElementById("statsEntryDate").value) {
+        document.getElementById("statsEntryDate").value = todayDateStringLocal();
+        loadStatsEntryCounters();
+    }
+
+    // الإحصائية (جدول العرض) تتحدّث تلقائيًا أول ما نفتح التبويب
+    if (isMonthlyStats && session.token) {
         loadMonthlyReport();
+    }
+
+    if (isManageEmployees) {
+        loadAllEmployees();
     }
 }
 
@@ -874,7 +1122,10 @@ async function savePatient() {
 
     const name = document.getElementById("patientName").value.trim();
     const civilId = document.getElementById("patientCivilId").value.trim();
-    const condition = document.getElementById("patientCondition").value;
+    const conditionSelect = document.getElementById("patientCondition").value;
+    const condition = conditionSelect === "__other__"
+        ? document.getElementById("patientConditionOther").value.trim()
+        : conditionSelect;
     const bp = document.getElementById("patientBP").value.trim();
     const sugar = document.getElementById("patientSugar").value.trim();
     const temp = document.getElementById("patientTemp").value.trim();
@@ -882,6 +1133,7 @@ async function savePatient() {
     const time = document.getElementById("patientTimeHour").value + ":" + document.getElementById("patientTimeMinute").value;
 
     if (!name || !civilId) { showError("الرجاء إدخال اسم المريض والرقم المدني"); return; }
+    if (conditionSelect === "__other__" && !condition) { showError("الرجاء كتابة نوع الحالة"); return; }
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
     setBusy(btn, true, "حفظ بيانات المريض");
@@ -909,7 +1161,6 @@ async function savePatient() {
             showSuccess("تم حفظ بيانات المريض بنجاح");
             clearPatientForm();
             loadTodayShiftPatients(); // نحدّث الجدول من السيرفر عشان يظهر لكل زملاء نفس الشفت
-            loadMonthlyReport(); // نحدّث الإحصائية بنفس لحظة حفظ المريض
         } else {
             showError("فشل الحفظ، حاول مرة أخرى");
         }
@@ -920,10 +1171,18 @@ async function savePatient() {
     }
 }
 
+function toggleOtherConditionBox() {
+    const isOther = document.getElementById("patientCondition").value === "__other__";
+    document.getElementById("patientConditionOtherGroup").style.display = isOther ? "block" : "none";
+    if (!isOther) document.getElementById("patientConditionOther").value = "";
+}
+
 function clearPatientForm() {
     document.getElementById("patientName").value = "";
     document.getElementById("patientCivilId").value = "";
-    document.getElementById("patientCondition").value = "";
+    document.getElementById("patientCondition").selectedIndex = 0;
+    document.getElementById("patientConditionOther").value = "";
+    document.getElementById("patientConditionOtherGroup").style.display = "none";
     document.getElementById("patientBP").value = "";
     document.getElementById("patientSugar").value = "";
     document.getElementById("patientTemp").value = "";
@@ -1000,6 +1259,93 @@ function currentReportScopeLabel() {
     return currentReportScope === "daily" ? "اليوم" : "الشهر";
 }
 
+/* ---------- الإحصائية اليدوية (للمسؤول فقط) ---------- */
+
+const STATS_COUNTER_KEYS = ["sick_cases", "blood_pressure", "sugar", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
+let statsCounters = Object.fromEntries(STATS_COUNTER_KEYS.map(k => [k, 0]));
+let statsEntryExistingId = null; // لو فيه صف موجود لنفس اليوم/العيادة/الشفت، نحفظ رقمه عشان نحدّثه بدل ما نكرره
+
+function updateStatsCounter(key, delta) {
+    statsCounters[key] = Math.max(0, (statsCounters[key] || 0) + delta);
+    document.getElementById("stat_" + key).textContent = statsCounters[key];
+    updateStatsTotalDisplay();
+}
+
+function updateStatsTotalDisplay() {
+    const total = STATS_COUNTER_KEYS.reduce((sum, k) => sum + (statsCounters[k] || 0), 0);
+    document.getElementById("statsTotalDisplay").textContent = total;
+}
+
+function resetStatsCounters() {
+    statsCounters = Object.fromEntries(STATS_COUNTER_KEYS.map(k => [k, 0]));
+    STATS_COUNTER_KEYS.forEach(k => { document.getElementById("stat_" + k).textContent = "0"; });
+    updateStatsTotalDisplay();
+    statsEntryExistingId = null;
+}
+
+// يجيب أي إحصائية محفوظة مسبقًا لنفس (التاريخ + العيادة + الشفت) المختارين، عشان
+// المسؤول يعدّل عليها بدل ما ينشئ صف مكرر
+async function loadStatsEntryCounters() {
+    if (!session.isAdmin) return;
+    const date = document.getElementById("statsEntryDate").value;
+    const clinic = document.getElementById("statsEntryClinic").value;
+    const shift = document.getElementById("statsEntryShift").value;
+    if (!date || !clinic || !shift) { resetStatsCounters(); return; }
+
+    try {
+        const result = await apiGet({ action: "GET_DAILY_REPORT", token: session.token, clinic, date });
+        if (!Array.isArray(result)) { resetStatsCounters(); return; }
+
+        const existing = result.find(r => r.shift === shift);
+        if (existing) {
+            STATS_COUNTER_KEYS.forEach(k => {
+                statsCounters[k] = Number(existing[k]) || 0;
+                document.getElementById("stat_" + k).textContent = statsCounters[k];
+            });
+            updateStatsTotalDisplay();
+            statsEntryExistingId = existing.id;
+        } else {
+            resetStatsCounters();
+        }
+    } catch (e) {
+        resetStatsCounters();
+    }
+}
+
+async function saveDailyStats() {
+    const btn = document.getElementById("saveStatsBtn");
+    const date = document.getElementById("statsEntryDate").value;
+    const clinic = document.getElementById("statsEntryClinic").value;
+    const shift = document.getElementById("statsEntryShift").value;
+
+    if (!date || !clinic || !shift) { showError("الرجاء اختيار التاريخ والعيادة والشفت"); return; }
+    if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
+
+    setBusy(btn, true, "حفظ الإحصائية");
+    try {
+        const payload = {
+            token: session.token,
+            date_target: date,
+            emp_id: session.empId,
+            clinic, shift,
+            timestamp: new Date().toISOString(),
+            ...statsCounters
+        };
+        const result = await apiPost("SAVE_DAILY_STATS", payload);
+        if (result.status === "SUCCESS") {
+            showSuccess("تم حفظ الإحصائية بنجاح");
+            statsEntryExistingId = result.id;
+            loadMonthlyReport(); // نحدّث الجدول تحت عشان يبين التغيير فورًا
+        } else {
+            showError("تعذر حفظ الإحصائية، حاول مرة أخرى");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
+    } finally {
+        setBusy(btn, false, "حفظ الإحصائية");
+    }
+}
+
 async function loadMonthlyReport() {
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
@@ -1028,13 +1374,14 @@ async function loadMonthlyReport() {
     }
 }
 
-const REPORT_EDIT_FIELDS = ["sick_cases", "blood_pressure", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
+const REPORT_EDIT_FIELDS = ["sick_cases", "blood_pressure", "sugar", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
 
 /* ---------- الإحصائيات البيانية (دائري / أعمدة / إجمالي مدمج) ---------- */
 
 const CASE_LABELS = {
     sick_cases: "حالات طبية",
     blood_pressure: "ضغط الدم",
+    sugar: "السكر",
     headache: "صداع",
     vital_signs: "علامات حيوية",
     injuries: "إصابات",
@@ -1045,6 +1392,7 @@ const CASE_LABELS = {
 const CASE_COLORS = {
     sick_cases: "#0d9488",
     blood_pressure: "#c0392b",
+    sugar: "#e67e22",
     headache: "#b8860b",
     vital_signs: "#2980b9",
     injuries: "#8e44ad",
@@ -1249,7 +1597,7 @@ function renderReportTable(rows) {
     body.innerHTML = "";
 
     if (!rows.length) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="13">لا توجد بيانات مسجلة بعد لهذا الشهر</td></tr>`;
+        body.innerHTML = `<tr class="empty-row"><td colspan="14">لا توجد بيانات مسجلة بعد لهذا الشهر</td></tr>`;
         return;
     }
 
@@ -1310,7 +1658,7 @@ async function deleteRow(btn) {
             showSuccess("تم حذف السجل بنجاح");
             const body = document.getElementById("reportTableBody");
             if (!body.children.length) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="13">لا توجد بيانات مسجلة بعد لهذا الشهر</td></tr>`;
+                body.innerHTML = `<tr class="empty-row"><td colspan="14">لا توجد بيانات مسجلة بعد لهذا الشهر</td></tr>`;
             }
         } else {
             showError("تعذر حذف السجل");
@@ -1324,7 +1672,7 @@ async function deleteRow(btn) {
 
 /* ---------- عرض المرضى حسب التاريخ (للمسؤول) ---------- */
 
-const PATIENT_CONDITION_OPTIONS = ["حالات طبية", "ضغط الدم", "صداع", "علامات حيوية", "إصابات", "حروق", "نقل مستشفى"];
+const PATIENT_CONDITION_OPTIONS = ["حالات طبية", "ضغط الدم", "ضغط زايد", "ضغط ناقص", "سكر زايد", "سكر ناقص", "صداع", "علامات حيوية", "إصابات", "حروق", "نقل مستشفى"];
 
 async function loadPatientsByDate() {
     const date = document.getElementById("patientsViewDate").value;
@@ -1401,7 +1749,15 @@ function startEditPatientRow(btn) {
         const td = tr.querySelector(".cell-p-" + idx);
         const val = td.dataset.value;
         if (key === "condition") {
-            td.innerHTML = `<input type="text" class="row-input" list="conditionSuggestions" value="${val}">`;
+            const isKnown = PATIENT_CONDITION_OPTIONS.includes(val);
+            const selectVal = isKnown ? val : "__other__";
+            const optionsHTML = PATIENT_CONDITION_OPTIONS.map(o =>
+                `<option value="${o}" ${o === selectVal ? "selected" : ""}>${o}</option>`).join("")
+                + `<option value="__other__" ${selectVal === "__other__" ? "selected" : ""}>أخرى (اكتب الحالة)</option>`;
+            td.innerHTML = `
+                <select class="row-input cond-select" onchange="this.nextElementSibling.style.display = this.value === '__other__' ? 'block' : 'none';">${optionsHTML}</select>
+                <input type="text" class="row-input cond-other" placeholder="اكتب الحالة" value="${isKnown ? "" : val}" style="display:${isKnown ? "none" : "block"}; margin-top:4px;">
+            `;
         } else if (key === "time") {
             const [h, m] = (val || "00:00").split(":");
             const hourOpts = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"))
@@ -1449,6 +1805,11 @@ async function savePatientEditRow(btn) {
             const h = cell.querySelector(".time-hour-select").value;
             const m = cell.querySelector(".time-minute-select").value;
             updated[key] = `${h}:${m}`;
+        } else if (key === "condition") {
+            const selectVal = cell.querySelector(".cond-select").value;
+            updated[key] = selectVal === "__other__"
+                ? cell.querySelector(".cond-other").value.trim()
+                : selectVal;
         } else {
             const field = cell.querySelector("input, select");
             updated[key] = field.value.trim();
@@ -1507,13 +1868,116 @@ async function deletePatientRow(btn) {
     }
 }
 
+/* ---------- إدارة الموظفين (للمسؤول فقط) ---------- */
+
+const SHIFT_OPTIONS = ["شفت الف صباحي", "شفت الف مسائي", "شفت باء صباحي", "شفت باء مسائي", "شفت جيم صباحي", "شفت جيم مسائي"];
+const CLINIC_OPTIONS = ["عيادة الف", "عيادة باء"];
+
+async function loadAllEmployees() {
+    const body = document.getElementById("employeesTableBody");
+    try {
+        const result = await apiGet({ action: "GET_ALL_EMPLOYEES", token: session.token });
+        if (!Array.isArray(result)) {
+            body.innerHTML = `<tr class="empty-row"><td colspan="5">تعذر جلب قائمة الموظفين</td></tr>`;
+            return;
+        }
+        if (!result.length) {
+            body.innerHTML = `<tr class="empty-row"><td colspan="5">ما فيه موظفين مسجلين بعد</td></tr>`;
+            return;
+        }
+        body.innerHTML = "";
+        result.forEach(emp => {
+            const tr = document.createElement("tr");
+            tr.dataset.empId = emp.emp_id;
+            tr.innerHTML = `
+                <td>${emp.emp_id}</td>
+                <td>${emp.phone || "-"}</td>
+                <td class="cell-emp-clinic" data-value="${emp.clinic}">${emp.clinic || "-"}</td>
+                <td class="cell-emp-shift" data-value="${emp.shift}">${emp.shift || "-"}</td>
+                <td class="cell-actions">
+                    <button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button>
+                </td>
+            `;
+            body.appendChild(tr);
+        });
+    } catch (e) {
+        body.innerHTML = `<tr class="empty-row"><td colspan="5">تعذر الاتصال بالسيرفر</td></tr>`;
+    }
+}
+
+function startEditEmployeeRow(btn) {
+    const tr = btn.closest("tr");
+    if (tr.classList.contains("editing")) return;
+    tr.classList.add("editing");
+
+    const clinicTd = tr.querySelector(".cell-emp-clinic");
+    const shiftTd = tr.querySelector(".cell-emp-shift");
+    const currentClinic = clinicTd.dataset.value;
+    const currentShift = shiftTd.dataset.value;
+
+    clinicTd.innerHTML = `<select class="row-input">${CLINIC_OPTIONS.map(c =>
+        `<option value="${c}" ${c === currentClinic ? "selected" : ""}>${c}</option>`).join("")}</select>`;
+    shiftTd.innerHTML = `<select class="row-input">${SHIFT_OPTIONS.map(s =>
+        `<option value="${s}" ${s === currentShift ? "selected" : ""}>${s}</option>`).join("")}</select>`;
+
+    const actionsTd = tr.querySelector(".cell-actions");
+    actionsTd.innerHTML = `
+        <button class="row-btn row-save" onclick="saveEmployeeEditRow(this)">حفظ</button>
+        <button class="row-btn row-cancel" onclick="cancelEmployeeEditRow(this)">إلغاء</button>
+    `;
+}
+
+function cancelEmployeeEditRow(btn) {
+    const tr = btn.closest("tr");
+    tr.classList.remove("editing");
+    const clinicTd = tr.querySelector(".cell-emp-clinic");
+    const shiftTd = tr.querySelector(".cell-emp-shift");
+    clinicTd.textContent = clinicTd.dataset.value || "-";
+    shiftTd.textContent = shiftTd.dataset.value || "-";
+    const actionsTd = tr.querySelector(".cell-actions");
+    actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button>`;
+}
+
+async function saveEmployeeEditRow(btn) {
+    const tr = btn.closest("tr");
+    const empId = tr.dataset.empId;
+    const clinic = tr.querySelector(".cell-emp-clinic select").value;
+    const shift = tr.querySelector(".cell-emp-shift select").value;
+
+    setBusy(btn, true, "حفظ");
+    try {
+        const result = await apiPost("UPDATE_EMPLOYEE_SHIFT", { token: session.token, emp_id: empId, clinic, shift });
+        if (result.status === "SUCCESS") {
+            const clinicTd = tr.querySelector(".cell-emp-clinic");
+            const shiftTd = tr.querySelector(".cell-emp-shift");
+            clinicTd.dataset.value = clinic;
+            shiftTd.dataset.value = shift;
+            clinicTd.textContent = clinic;
+            shiftTd.textContent = shift;
+            tr.classList.remove("editing");
+            const actionsTd = tr.querySelector(".cell-actions");
+            actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button>`;
+            showSuccess("تم تحديث بيانات الموظف بنجاح");
+        } else {
+            showError("تعذر حفظ التعديل");
+            setBusy(btn, false, "حفظ");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
+        setBusy(btn, false, "حفظ");
+    }
+}
+
 /* ---------- طباعة / حفظ PDF (أي قسم — اسم الملف دايمًا بتاريخ اليوم الفعلي) ---------- */
 
 const ORIGINAL_PAGE_TITLE = document.title;
 
 function printSection(sectionId, dateElId, filenamePrefix) {
+    const section = document.getElementById(sectionId);
+    if (!section) { showError("تعذر تجهيز الطباعة، حاول تحديث الصفحة"); return; }
+
     document.querySelectorAll(".print-target").forEach(el => el.classList.remove("print-target"));
-    document.getElementById(sectionId).classList.add("print-target");
+    section.classList.add("print-target");
 
     // اسم الملف المقترح عند الحفظ يكون دايمًا بتاريخ اليوم الفعلي، بغض النظر عن التاريخ المعروض بالتقرير
     document.title = `${filenamePrefix}_${todayDateStringLocal()}`;
@@ -1521,7 +1985,14 @@ function printSection(sectionId, dateElId, filenamePrefix) {
     const dateEl = document.getElementById(dateElId);
     if (dateEl) dateEl.textContent = "تاريخ الطباعة: " + new Date().toLocaleDateString("ar-EG");
 
-    window.print();
+    try {
+        window.print();
+    } catch (e) {
+        showError("تعذر فتح نافذة الطباعة");
+    } finally {
+        document.title = ORIGINAL_PAGE_TITLE;
+        document.querySelectorAll(".print-target").forEach(el => el.classList.remove("print-target"));
+    }
 }
 
 window.addEventListener("afterprint", () => {
