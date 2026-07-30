@@ -408,15 +408,16 @@
                     </div>
                     <div class="form-group">
                         <label for="patientCondition">الحالة</label>
-                        <select id="patientCondition">
-                            <option value="حالات طبية">حالات طبية</option>
-                            <option value="ضغط الدم">ضغط الدم</option>
-                            <option value="صداع">صداع</option>
-                            <option value="علامات حيوية">علامات حيوية</option>
-                            <option value="إصابات">إصابات</option>
-                            <option value="حروق">حروق</option>
-                            <option value="نقل مستشفى">نقل مستشفى</option>
-                        </select>
+                        <input type="text" id="patientCondition" list="conditionSuggestions" placeholder="اكتب الحالة (مثال: حالات طبية، ضغط الدم...)">
+                        <datalist id="conditionSuggestions">
+                            <option value="حالات طبية">
+                            <option value="ضغط الدم">
+                            <option value="صداع">
+                            <option value="علامات حيوية">
+                            <option value="إصابات">
+                            <option value="حروق">
+                            <option value="نقل مستشفى">
+                        </datalist>
                     </div>
                     <div class="form-group">
                         <label for="patientBP">الضغط</label>
@@ -523,7 +524,7 @@
 
             <div class="form-group">
                 <label for="adminClinicSelect">اختر العيادة لعرض تقريرها</label>
-                <select id="adminClinicSelect">
+                <select id="adminClinicSelect" onchange="loadMonthlyReport()">
                     <option value="all">كل العيادات (All Clinics)</option>
                     <option value="عيادة الف">عيادة الف (Clinic A)</option>
                     <option value="عيادة باء">عيادة باء (Clinic B)</option>
@@ -837,6 +838,11 @@ function switchTab(tab) {
     document.getElementById("monthlyStatsSection").style.display = isAddPatient ? "none" : "block";
     document.getElementById("tabBtnAddPatient").classList.toggle("active", isAddPatient);
     document.getElementById("tabBtnMonthlyStats").classList.toggle("active", !isAddPatient);
+
+    // الإحصائية تتحدّث تلقائيًا من نفسها أول ما نفتح التبويب، بدون ما نحتاج نضغط زر يدوي
+    if (!isAddPatient && session.token) {
+        loadMonthlyReport();
+    }
 }
 
 // يبني قوائم الساعات (00-23) والدقائق (00-59) داخل عنصري select — يضمن نظام 24 ساعة دايمًا بغض النظر عن إعدادات المتصفح
@@ -910,7 +916,7 @@ async function savePatient() {
 function clearPatientForm() {
     document.getElementById("patientName").value = "";
     document.getElementById("patientCivilId").value = "";
-    document.getElementById("patientCondition").selectedIndex = 0;
+    document.getElementById("patientCondition").value = "";
     document.getElementById("patientBP").value = "";
     document.getElementById("patientSugar").value = "";
     document.getElementById("patientTemp").value = "";
@@ -969,9 +975,8 @@ function setReportScope(scope) {
     document.getElementById("loadReportBtn").textContent = isDaily ? "جلب إحصائية اليوم" : "جلب التقرير الشهري";
     document.getElementById("reportTableTitle").textContent = isDaily ? "إحصائية اليوم لكل الشفتات" : "التقرير الشهري لكل الشفتات";
 
-    // نخفي أي تقرير أو رسم بياني قديم لحد ما يضغط جلب من جديد بالنطاق الجديد
-    document.getElementById("reportSection").style.display = "none";
-    document.getElementById("chartCard").style.display = "none";
+    // نحدّث تلقائيًا بالنطاق الجديد بدل ما ننتظر ضغطة يدوية
+    loadMonthlyReport();
 }
 
 function currentReportAction() {
@@ -1377,8 +1382,7 @@ function startEditPatientRow(btn) {
         const td = tr.querySelector(".cell-p-" + idx);
         const val = td.dataset.value;
         if (key === "condition") {
-            td.innerHTML = `<select class="row-input">${PATIENT_CONDITION_OPTIONS.map(o =>
-                `<option value="${o}" ${o === val ? "selected" : ""}>${o}</option>`).join("")}</select>`;
+            td.innerHTML = `<input type="text" class="row-input" list="conditionSuggestions" value="${val}">`;
         } else if (key === "time") {
             const [h, m] = (val || "00:00").split(":");
             const hourOpts = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"))
