@@ -33,6 +33,28 @@
         --shadow: 0 10px 30px -14px rgba(15,41,66,0.18);
     }
 
+    body.dark-mode {
+        --ink: #eef2f4;
+        --ink-soft: #c3d1db;
+        --accent: #1db3a3;
+        --accent-dark: #24d6c2;
+        --accent-soft: #113732;
+        --amber: #e0af3e;
+        --amber-soft: #3a2f14;
+        --danger: #e0685a;
+        --danger-soft: #3a2320;
+        --success: #35b56e;
+        --bg: #10161c;
+        --card: #1a222b;
+        --line: #2c3946;
+        --text: #dfe6ea;
+        --muted: #8a9aa7;
+        --shadow: 0 10px 30px -14px rgba(0,0,0,0.5);
+    }
+    body.dark-mode { background: var(--bg); }
+    body.dark-mode .monthly-table th { background-color: #0a3e38; }
+    body.dark-mode select, body.dark-mode input, body.dark-mode textarea { background-color: #222c36; }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
@@ -284,13 +306,17 @@
 <body>
 
 <div class="container" id="appContainer">
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px;">
+        <button class="btn-secondary" id="langToggleBtn" onclick="toggleLanguage()" style="margin-top:0; padding:8px 14px; font-size:13px;">English</button>
+        <button class="btn-secondary" id="darkModeToggleBtn" onclick="toggleDarkMode()" style="margin-top:0; padding:8px 14px; font-size:13px;">🌙</button>
+    </div>
     <header>
         <div class="brand-row">
             <span class="brand-dot"></span>
-            <span style="font-size:12.5px; font-weight:700; color:var(--accent-dark); letter-spacing:.3px;">نظام العيادة الذكي</span>
+            <span style="font-size:12.5px; font-weight:700; color:var(--accent-dark); letter-spacing:.3px;" data-i18n="brandLine">نظام العيادة الذكي</span>
         </div>
-        <h1>سستم جدول حالات العيادة</h1>
-        <p>منظومة تصنيف وتوثيق الحالات — عيادات الطوارئ الطبية</p>
+        <h1 data-i18n="mainTitle">سستم جدول حالات العيادة</h1>
+        <p data-i18n="mainSubtitle">منظومة تصنيف وتوثيق الحالات — عيادات الطوارئ الطبية</p>
     </header>
 
     <div class="pulse-wrap" aria-hidden="true">
@@ -303,14 +329,14 @@
 
     <!-- مبدّل التبويبات — يظهر أول ما تفتح الصفحة، قبل تسجيل الدخول -->
     <div class="tab-switcher">
-        <button class="tab-btn active" id="tabBtnAddPatient" onclick="switchTab('addPatient')">➕ إضافة المريض</button>
-        <button class="tab-btn" id="tabBtnMonthlyStats" onclick="switchTab('monthlyStats')">📊 الإحصائية الشهرية</button>
-        <button class="tab-btn" id="tabBtnManageEmployees" onclick="switchTab('manageEmployees')" style="display:none;">🛠️ إدارة الموظفين</button>
+        <button class="tab-btn active" id="tabBtnAddPatient" onclick="switchTab('addPatient')" data-i18n="tabAddPatient">➕ إضافة المريض</button>
+        <button class="tab-btn" id="tabBtnMonthlyStats" onclick="switchTab('monthlyStats')" data-i18n="tabStats">📊 الإحصائية الشهرية</button>
+        <button class="tab-btn" id="tabBtnManageEmployees" onclick="switchTab('manageEmployees')" style="display:none;" data-i18n="tabManageEmployees">🛠️ إدارة الموظفين</button>
     </div>
 
     <div class="server-status checking" id="serverStatus">
         <span class="dot2" id="serverStatusDot"></span>
-        <span id="serverStatusText">يتم التحقق من حالة السيرفر...</span>
+        <span id="serverStatusText" data-i18n="serverChecking">يتم التحقق من حالة السيرفر...</span>
     </div>
 
     <div class="alert-message alert-danger" id="errorMessage" role="alert" style="display:none;"></div>
@@ -318,62 +344,62 @@
 
     <!-- شاشة تحقق مؤقتة — تمنع "ومضة" شاشة تسجيل الدخول قبل ما نتأكد من الجلسة المحفوظة -->
     <div class="auth-screen" id="authCheckingScreen" style="text-align:center; color: var(--muted);">
-        جاري التحقق من الجلسة...
+        <span data-i18n="checkingSession">جاري التحقق من الجلسة...</span>
     </div>
 
     <!-- شاشة تسجيل الدخول -->
     <div class="auth-screen" id="loginScreen" style="display:none;">
-        <div class="auth-title">تسجيل الدخول إلى النظام</div>
+        <div class="auth-title" data-i18n="loginTitle">تسجيل الدخول إلى النظام</div>
         <div class="form-grid">
             <div class="form-group">
-                <label for="loginEmpId">الرقم الوظيفي / Emp ID</label>
+                <label for="loginEmpId" data-i18n="empIdLabel">الرقم الوظيفي / Emp ID</label>
                 <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this); checkLoginEmpIdPreview();" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label for="loginPin">الرمز السري / Password</label>
+                <label for="loginPin" data-i18n="passwordLabel">الرمز السري / Password</label>
                 <input type="password" id="loginPin" placeholder="******">
             </div>
         </div>
         <div class="form-group" id="loginClinicShiftPreviewGroup" style="display:none;">
-            <label>العيادة والشفت المسجلة</label>
+            <label data-i18n="clinicShiftPreviewLabel">العيادة والشفت المسجلة</label>
             <input type="text" id="loginClinicShiftPreview" disabled style="background:#e9edf0; color:var(--muted); cursor:not-allowed;">
         </div>
-        <button class="btn-primary" id="loginBtn" onclick="handleLogin()">تسجيل الدخول وتأكيد الهوية</button>
+        <button class="btn-primary" id="loginBtn" onclick="handleLogin()" data-i18n="loginBtn">تسجيل الدخول وتأكيد الهوية</button>
         <div class="auth-links">
-            <span onclick="switchAuthScreen('registerScreen')">إنشاء حساب جديد</span>
-            <span onclick="switchAuthScreen('forgotScreen')">استرجاع الرمز</span>
+            <span onclick="switchAuthScreen('registerScreen')" data-i18n="createAccountLink">إنشاء حساب جديد</span>
+            <span onclick="switchAuthScreen('forgotScreen')" data-i18n="forgotPinLink">استرجاع الرمز</span>
         </div>
     </div>
 
     <!-- شاشة إنشاء حساب -->
     <div class="auth-screen" id="registerScreen" style="display: none;">
-        <div class="auth-title">تسجيل موظف جديد برقم وظيفي</div>
+        <div class="auth-title" data-i18n="registerTitle">تسجيل موظف جديد برقم وظيفي</div>
         <div class="form-grid">
             <div class="form-group">
-                <label for="regEmpId">الرقم الوظيفي (4 أرقام)</label>
+                <label for="regEmpId" data-i18n="empIdRegLabel">الرقم الوظيفي (4 أرقام)</label>
                 <input type="number" id="regEmpId" placeholder="1234" oninput="limitFourDigits(this)" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label for="regPhone">رقم الهاتف للتأكيد والتواصل</label>
+                <label for="regPhone" data-i18n="phoneLabel">رقم الهاتف للتأكيد والتواصل</label>
                 <input type="tel" id="regPhone" placeholder="99988877">
             </div>
             <div class="form-group">
-                <label for="regCivilId">الرقم المدني</label>
+                <label for="regCivilId" data-i18n="civilIdLabel">الرقم المدني</label>
                 <input type="text" id="regCivilId" placeholder="الرقم المدني" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label for="regEmail">البريد الإلكتروني</label>
+                <label for="regEmail" data-i18n="emailLabel">البريد الإلكتروني</label>
                 <input type="email" id="regEmail" placeholder="name@example.com">
             </div>
             <div class="form-group">
-                <label for="regClinic">اختر العيادة</label>
+                <label for="regClinic" data-i18n="chooseClinicLabel">اختر العيادة</label>
                 <select id="regClinic">
-                    <option value="عيادة الف">عيادة الف (Clinic A)</option>
-                    <option value="عيادة باء">عيادة باء (Clinic B)</option>
+                    <option value="عيادة الف" data-i18n="clinicA">عيادة الف (Clinic A)</option>
+                    <option value="عيادة باء" data-i18n="clinicB">عيادة باء (Clinic B)</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="regShift">اختر الشفت / الفترة</label>
+                <label for="regShift" data-i18n="chooseShiftLabel">اختر الشفت / الفترة</label>
                 <select id="regShift">
                     <option value="شفت الف صباحي">شفت الف صباحي (A-Morning)</option>
                     <option value="شفت الف مسائي">شفت الف مسائي (A-Evening)</option>
@@ -384,41 +410,41 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="regPin">اختر الرمز السري</label>
+                <label for="regPin" data-i18n="choosePinLabel">اختر الرمز السري</label>
                 <input type="password" id="regPin" placeholder="******">
             </div>
         </div>
-        <button class="btn-primary" id="registerBtn" onclick="handleRegister()">اعتماد وحفظ الحساب الجديد</button>
-        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة للدخول</span></div>
+        <button class="btn-primary" id="registerBtn" onclick="handleRegister()" data-i18n="registerBtn">اعتماد وحفظ الحساب الجديد</button>
+        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')" data-i18n="backToLogin">العودة للدخول</span></div>
     </div>
 
     <!-- شاشة استرجاع الرمز -->
     <div class="auth-screen" id="forgotScreen" style="display: none;">
-        <div class="auth-title">استرجاع وتحديث الرمز الخاص</div>
+        <div class="auth-title" data-i18n="forgotTitle">استرجاع وتحديث الرمز الخاص</div>
         <div class="form-grid">
             <div class="form-group">
-                <label for="forgotEmpId">الرقم الوظيفي الخاص بك</label>
+                <label for="forgotEmpId" data-i18n="empIdLabel2">الرقم الوظيفي الخاص بك</label>
                 <input type="number" id="forgotEmpId" placeholder="1234" oninput="limitFourDigits(this)" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label for="forgotPhone">رقم الهاتف المسجل بالمنظومة</label>
+                <label for="forgotPhone" data-i18n="phoneRegisteredLabel">رقم الهاتف المسجل بالمنظومة</label>
                 <input type="tel" id="forgotPhone" placeholder="99988877">
             </div>
             <div class="form-group">
-                <label for="forgotCivilId">الرقم المدني المسجل</label>
+                <label for="forgotCivilId" data-i18n="civilIdRegisteredLabel">الرقم المدني المسجل</label>
                 <input type="text" id="forgotCivilId" placeholder="الرقم المدني" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label for="forgotEmail">البريد الإلكتروني المسجل</label>
+                <label for="forgotEmail" data-i18n="emailRegisteredLabel">البريد الإلكتروني المسجل</label>
                 <input type="email" id="forgotEmail" placeholder="name@example.com">
             </div>
             <div class="form-group">
-                <label for="forgotNewPin">أدخل الرمز السري الجديد</label>
+                <label for="forgotNewPin" data-i18n="newPinLabel">أدخل الرمز السري الجديد</label>
                 <input type="password" id="forgotNewPin" placeholder="******">
             </div>
         </div>
-        <button class="btn-primary btn-admin" id="forgotBtn" onclick="handleForgot()">تحديث الرمز بالهاتف والتحقق</button>
-        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')">العودة للدخول</span></div>
+        <button class="btn-primary btn-admin" id="forgotBtn" onclick="handleForgot()" data-i18n="forgotBtn">تحديث الرمز بالهاتف والتحقق</button>
+        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')" data-i18n="backToLogin">العودة للدخول</span></div>
     </div>
 
     <!-- لوحة التحكم الرئيسية -->
@@ -427,7 +453,7 @@
         <!-- ===== قسم إضافة المريض ===== -->
         <div id="addPatientSection">
             <div class="auth-screen">
-                <div class="auth-title">إضافة مريض جديد</div>
+                <div class="auth-title" data-i18n="addPatientTitle">إضافة مريض جديد</div>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="patientName">اسم المريض</label>
@@ -512,7 +538,7 @@
         <!-- ===== قسم عرض المرضى (للمسؤول) — يظهر بدل قسم إضافة المريض ===== -->
         <div id="adminPatientsSection" style="display:none;">
             <div class="auth-screen">
-                <div class="auth-title">عرض المرضى حسب التاريخ</div>
+                <div class="auth-title" data-i18n="viewPatientsTitle">عرض المرضى حسب التاريخ</div>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="patientsViewDate">التاريخ</label>
@@ -554,7 +580,7 @@
 
         <!-- ===== قسم الإحصائية الشهرية ===== -->
         <div id="monthlyStatsSection">
-            <div class="auth-title" style="border:none;">الإحصائية الشهرية</div>
+            <div class="auth-title" style="border:none;" data-i18n="statsTitle">الإحصائية الشهرية</div>
 
             <!-- ===== إدخال/تعديل الإحصائية اليدوية — للمسؤول فقط ===== -->
             <div class="auth-screen" id="statsEntryPanel" style="display:none;">
@@ -720,7 +746,7 @@
 
         <!-- ===== قسم إدارة الموظفين (للمسؤول فقط) ===== -->
         <div id="manageEmployeesSection" style="display:none;">
-            <div class="auth-title" style="border:none;">إدارة الموظفين — تعديل العيادة والشفت</div>
+            <div class="auth-title" style="border:none;" data-i18n="manageEmployeesTitle">إدارة الموظفين — تعديل العيادة والشفت</div>
             <div class="report-section">
                 <table class="monthly-table" id="employeesTable">
                     <thead>
@@ -735,7 +761,7 @@
             </div>
         </div>
 
-        <button class="btn-secondary" onclick="logout()">تسجيل الخروج</button>
+        <button class="btn-secondary" onclick="logout()" data-i18n="logoutBtn">تسجيل الخروج</button>
     </div>
 
     <div class="footer-note">جميع البيانات تُحفظ وتُوثّق آليًا لحظة الضغط على زر الحفظ</div>
@@ -760,6 +786,99 @@ window.addEventListener("error", (e) => {
 });
 
 let session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
+
+/* ---------- اللغة (عربي / إنجليزي) والمود الليلي ---------- */
+
+const TRANSLATIONS = {
+    en: {
+        brandLine: "Smart Clinic System",
+        mainTitle: "Clinic Case Log System",
+        mainSubtitle: "Case classification & documentation — Emergency medical clinics",
+        tabAddPatient: "➕ Add Patient",
+        tabStats: "📊 Monthly Statistics",
+        tabManageEmployees: "🛠️ Manage Employees",
+        serverChecking: "Checking server status...",
+        checkingSession: "Checking session...",
+        loginTitle: "Login to the System",
+        empIdLabel: "Employee ID",
+        passwordLabel: "Password",
+        clinicShiftPreviewLabel: "Registered Clinic & Shift",
+        loginBtn: "Login & Verify",
+        createAccountLink: "Create New Account",
+        forgotPinLink: "Recover Password",
+        registerTitle: "Register New Employee",
+        empIdRegLabel: "Employee ID (4 digits)",
+        phoneLabel: "Phone Number (for verification)",
+        civilIdLabel: "Civil ID",
+        emailLabel: "Email",
+        chooseClinicLabel: "Choose Clinic",
+        clinicA: "Clinic A",
+        clinicB: "Clinic B",
+        chooseShiftLabel: "Choose Shift / Period",
+        choosePinLabel: "Choose Password",
+        registerBtn: "Confirm & Save New Account",
+        backToLogin: "Back to Login",
+        forgotTitle: "Recover & Reset Password",
+        empIdLabel2: "Your Employee ID",
+        phoneRegisteredLabel: "Registered Phone Number",
+        civilIdRegisteredLabel: "Registered Civil ID",
+        emailRegisteredLabel: "Registered Email",
+        newPinLabel: "Enter New Password",
+        forgotBtn: "Verify & Reset Password",
+        addPatientTitle: "Add New Patient",
+        viewPatientsTitle: "View Patients by Date",
+        statsTitle: "Monthly Statistics",
+        manageEmployeesTitle: "Manage Employees — Edit Clinic & Shift",
+        logoutBtn: "Logout"
+    }
+};
+
+function applyLanguage(lang) {
+    const html = document.documentElement;
+    if (lang === "en") {
+        html.setAttribute("lang", "en");
+        html.setAttribute("dir", "ltr");
+        document.getElementById("langToggleBtn").textContent = "عربي";
+    } else {
+        html.setAttribute("lang", "ar");
+        html.setAttribute("dir", "rtl");
+        document.getElementById("langToggleBtn").textContent = "English";
+    }
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (lang === "en" && TRANSLATIONS.en[key]) {
+            if (!el.dataset.arOriginal) el.dataset.arOriginal = el.textContent;
+            el.textContent = TRANSLATIONS.en[key];
+        } else if (el.dataset.arOriginal) {
+            el.textContent = el.dataset.arOriginal;
+        }
+    });
+
+    localStorage.setItem("clinicLang", lang);
+}
+
+function toggleLanguage() {
+    const current = localStorage.getItem("clinicLang") || "ar";
+    applyLanguage(current === "ar" ? "en" : "ar");
+}
+
+function toggleDarkMode() {
+    const isDark = document.body.classList.toggle("dark-mode");
+    document.getElementById("darkModeToggleBtn").textContent = isDark ? "☀️" : "🌙";
+    localStorage.setItem("clinicDarkMode", isDark ? "1" : "0");
+}
+
+// نطبّق تفضيلات اللغة والمود المحفوظة فور تحميل الصفحة
+(function initPreferences() {
+    const savedLang = localStorage.getItem("clinicLang") || "ar";
+    applyLanguage(savedLang);
+
+    if (localStorage.getItem("clinicDarkMode") === "1") {
+        document.body.classList.add("dark-mode");
+        document.getElementById("darkModeToggleBtn").textContent = "☀️";
+    }
+})();
 
 /* ---------- أدوات مساعدة عامة ---------- */
 
@@ -1632,7 +1751,7 @@ function renderReportTable(rows) {
     const body = document.getElementById("reportTableBody");
     body.innerHTML = "";
 
-    const colCount = session.isAdmin ? 5 : 14; // للمسؤول: تاريخ/رقم وظيفي/عيادة/شفت/إجراءات بس
+    const colCount = 14; // نفس عدد الأعمدة للجميع الآن (الإجمالي وكل الحالات تظهر عند الكل)
 
     if (!rows.length) {
         body.innerHTML = `<tr class="empty-row"><td colspan="${colCount}">لا توجد بيانات مسجلة بعد لـ${currentReportScopeLabel()}</td></tr>`;
@@ -1650,21 +1769,19 @@ function renderReportTable(rows) {
             tr.appendChild(td);
         });
 
-        // أعمدة الإجمالي وكل الحالات تظهر للمسعفين فقط — المسؤول يشوف جدول مختصر ويعدّل عن طريق زر "تعديل"
-        if (!session.isAdmin) {
-            const totalTd = document.createElement("td");
-            totalTd.className = "cell-total";
-            totalTd.textContent = r.total_daily;
-            tr.appendChild(totalTd);
+        // أعمدة الإجمالي وكل الحالات تظهر للجميع الآن (نفس الجدول للمسعفين والمسؤول)
+        const totalTd = document.createElement("td");
+        totalTd.className = "cell-total";
+        totalTd.textContent = r.total_daily;
+        tr.appendChild(totalTd);
 
-            REPORT_EDIT_FIELDS.forEach(key => {
-                const td = document.createElement("td");
-                td.className = "cell-" + key;
-                td.textContent = r[key];
-                td.dataset.value = r[key];
-                tr.appendChild(td);
-            });
-        }
+        REPORT_EDIT_FIELDS.forEach(key => {
+            const td = document.createElement("td");
+            td.className = "cell-" + key;
+            td.textContent = r[key];
+            td.dataset.value = r[key];
+            tr.appendChild(td);
+        });
 
         // عمود الإجراءات — التعديل والحذف متاحين للمسؤول فقط (يراقب ويعدّل، ما يضيف)
         const actionsTd = document.createElement("td");
@@ -1678,12 +1795,9 @@ function renderReportTable(rows) {
         body.appendChild(tr);
     });
 
-    // عمود "إجراءات" وأعمدة الإجمالي/الحالات تظهر حسب نوع الحساب
+    // عمود "إجراءات" يظهر للمسؤول فقط — أعمدة الإجمالي/الحالات تظهر للجميع الآن
     const actionsHeader = document.getElementById("reportActionsHeader");
     if (actionsHeader) actionsHeader.style.display = session.isAdmin ? "" : "none";
-    document.querySelectorAll(".th-stat-category").forEach(th => {
-        th.style.display = session.isAdmin ? "none" : "";
-    });
 }
 
 // يفتح لوحة العدادات (نفس اللي يستخدمها المسعفين للإضافة) معبّاة ببيانات الصف
@@ -1951,6 +2065,7 @@ async function loadAllEmployees() {
                 <td class="cell-emp-shift" data-value="${emp.shift}">${emp.shift || "-"}</td>
                 <td class="cell-actions">
                     <button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button>
+                    <button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">حذف حساب</button>
                 </td>
             `;
             body.appendChild(tr);
@@ -1990,7 +2105,7 @@ function cancelEmployeeEditRow(btn) {
     clinicTd.textContent = clinicTd.dataset.value || "-";
     shiftTd.textContent = shiftTd.dataset.value || "-";
     const actionsTd = tr.querySelector(".cell-actions");
-    actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button>`;
+    actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button><button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">حذف حساب</button>`;
 }
 
 async function saveEmployeeEditRow(btn) {
@@ -2011,7 +2126,7 @@ async function saveEmployeeEditRow(btn) {
             shiftTd.textContent = shift;
             tr.classList.remove("editing");
             const actionsTd = tr.querySelector(".cell-actions");
-            actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button>`;
+            actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button><button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">حذف حساب</button>`;
             showSuccess("تم تحديث بيانات الموظف بنجاح");
         } else {
             showError("تعذر حفظ التعديل");
@@ -2020,6 +2135,32 @@ async function saveEmployeeEditRow(btn) {
     } catch (e) {
         showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
         setBusy(btn, false, "حفظ");
+    }
+}
+
+async function deleteEmployeeRow(btn) {
+    const tr = btn.closest("tr");
+    const empId = tr.dataset.empId;
+
+    if (!confirm(`هل أنت متأكد من حذف حساب الموظف رقم ${empId} نهائيًا؟ هذا الإجراء لا يمكن التراجع عنه.`)) return;
+
+    setBusy(btn, true, "حذف حساب");
+    try {
+        const result = await apiPost("DELETE_EMPLOYEE", { token: session.token, emp_id: empId });
+        if (result.status === "SUCCESS") {
+            tr.remove();
+            showSuccess("تم حذف حساب الموظف بنجاح");
+            const body = document.getElementById("employeesTableBody");
+            if (!body.children.length) {
+                body.innerHTML = `<tr class="empty-row"><td colspan="5">ما فيه موظفين مسجلين بعد</td></tr>`;
+            }
+        } else {
+            showError("تعذر حذف الحساب");
+            setBusy(btn, false, "حذف حساب");
+        }
+    } catch (e) {
+        showError("تعذر الاتصال بالسيرفر أثناء الحذف");
+        setBusy(btn, false, "حذف حساب");
     }
 }
 
