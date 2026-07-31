@@ -21,11 +21,19 @@
         --accent-soft: #e3f5f2;
         --amber: #b8860b;
         --amber-soft: #fdf3d9;
+        --amber-border: #f0dfa0;
         --danger: #c0392b;
         --danger-soft: #fbe7e5;
+        --danger-border: #f2c4bd;
         --success: #1f8b4c;
         --bg: #eef2f4;
+        --bg-glow-1: #dff3f0;
+        --bg-glow-2: #e7edf3;
         --card: #ffffff;
+        --surface: #f7f9fa;
+        --surface-2: #eceff1;
+        --input-bg: #ffffff;
+        --accent-border: #b9e6df;
         --line: #dfe6ea;
         --text: #22323f;
         --muted: #708494;
@@ -34,34 +42,52 @@
     }
 
     body.dark-mode {
-        --ink: #eef2f4;
-        --ink-soft: #c3d1db;
-        --accent: #1db3a3;
-        --accent-dark: #24d6c2;
-        --accent-soft: #113732;
-        --amber: #e0af3e;
-        --amber-soft: #3a2f14;
-        --danger: #e0685a;
-        --danger-soft: #3a2320;
-        --success: #35b56e;
-        --bg: #10161c;
-        --card: #1a222b;
-        --line: #2c3946;
-        --text: #dfe6ea;
-        --muted: #8a9aa7;
-        --shadow: 0 10px 30px -14px rgba(0,0,0,0.5);
+        --ink: #eef3f6;
+        --ink-soft: #b9c8d4;
+        --accent: #2dd4bf;
+        --accent-dark: #5eead4;
+        --accent-soft: #0f3d38;
+        --amber: #f0b94f;
+        --amber-soft: #3d2f10;
+        --amber-border: #6b5420;
+        --danger: #f0796a;
+        --danger-soft: #3d201c;
+        --danger-border: #6b3830;
+        --success: #4ade80;
+        --bg: #0b1116;
+        --bg-glow-1: #0f2a26;
+        --bg-glow-2: #14202c;
+        --card: #161d24;
+        --surface: #1c242c;
+        --surface-2: #232d36;
+        --input-bg: #1c242c;
+        --accent-border: #1d5951;
+        --line: #2a3540;
+        --text: #dde5ea;
+        --muted: #8296a3;
+        --shadow: 0 12px 34px -14px rgba(0,0,0,0.6);
     }
-    body.dark-mode { background: var(--bg); }
-    body.dark-mode .monthly-table th { background-color: #0a3e38; }
-    body.dark-mode select, body.dark-mode input, body.dark-mode textarea { background-color: #222c36; }
+    body.dark-mode .monthly-table th { background-color: #06211e; color: #d7fbf5; }
+    body.dark-mode .row-edit:hover { background: #144742; }
+    body.dark-mode .row-delete:hover { background: #4a2a24; }
+    body.dark-mode .btn-minus:hover:not(:disabled) { background-color: #4a2a24; }
+    body.dark-mode .btn-plus:hover:not(:disabled) { background-color: #144742; }
+    body.dark-mode .row-cancel:hover { background: #2c3844; }
+    body.dark-mode .btn-primary:disabled { background-color: #3a444d; }
+    body.dark-mode .btn-admin:hover:not(:disabled) { background-color: #b8860b; }
+    body.dark-mode .row-save:hover { background: #1f9d5c; }
+    body.dark-mode ::placeholder { color: #5c6b76; }
+    body.dark-mode .brand-dot, body.dark-mode .dot.active { box-shadow: 0 0 0 5px var(--accent-soft); }
+    body.dark-mode .server-status.offline, body.dark-mode .alert-danger { color: var(--danger); }
+    body.dark-mode .server-status.checking { color: var(--amber); }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
         font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
         background:
-            radial-gradient(1200px 500px at 15% -10%, #dff3f0 0%, transparent 60%),
-            radial-gradient(900px 500px at 100% 0%, #e7edf3 0%, transparent 55%),
+            radial-gradient(1200px 500px at 15% -10%, var(--bg-glow-1) 0%, transparent 60%),
+            radial-gradient(900px 500px at 100% 0%, var(--bg-glow-2) 0%, transparent 55%),
             var(--bg);
         color: var(--text);
         padding: 28px 16px;
@@ -97,7 +123,7 @@
     /* ===== شريط الحالة ===== */
     .status-bar {
         display: flex; justify-content: space-between; align-items: center;
-        background: #f5f8f9; padding: 12px 20px; border-radius: 10px;
+        background: var(--surface); padding: 12px 20px; border-radius: 10px;
         margin-bottom: 24px; font-size: 13.5px; font-weight: 600; border: 1px solid var(--line);
     }
     .status-indicator { display: flex; align-items: center; gap: 8px; color: var(--ink-soft); }
@@ -108,21 +134,21 @@
     /* ===== شريط حالة السيرفر ===== */
     .server-status {
         display: flex; align-items: center; justify-content: center; gap: 9px;
-        background: #f5f8f9; border: 1px solid var(--line); border-radius: 10px;
+        background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
         padding: 11px 16px; margin-bottom: 16px; font-size: 13.5px; font-weight: 700;
         transition: background-color .2s, border-color .2s, color .2s;
     }
     .server-status .dot2 { width: 9px; height: 9px; border-radius: 50%; background: #b7c2ca; flex-shrink: 0; }
-    .server-status.checking { color: #8a6d1f; background: #fdf3d9; border-color: #f0dfa0; }
+    .server-status.checking { color: #8a6d1f; background: var(--amber-soft); border-color: var(--amber-border); }
     .server-status.checking .dot2 { background: #d4a017; animation: blink-status 1s infinite; }
-    .server-status.online { color: var(--accent-dark); background: var(--accent-soft); border-color: #b9e6df; }
+    .server-status.online { color: var(--accent-dark); background: var(--accent-soft); border-color: var(--accent-border); }
     .server-status.online .dot2 { background: var(--success); box-shadow: 0 0 0 4px rgba(31,139,76,0.15); }
-    .server-status.offline { color: #7d241a; background: var(--danger-soft); border-color: #f2c4bd; }
+    .server-status.offline { color: #7d241a; background: var(--danger-soft); border-color: var(--danger-border); }
     .server-status.offline .dot2 { background: var(--danger); }
     @keyframes blink-status { 50% { opacity: .35; } }
 
     /* ===== شاشات الدخول ===== */
-    .auth-screen { background: #f7f9fa; padding: 26px; border-radius: var(--radius); margin-bottom: 24px; border: 1px solid var(--line); }
+    .auth-screen { background: var(--surface); padding: 26px; border-radius: var(--radius); margin-bottom: 24px; border: 1px solid var(--line); }
     .auth-title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
     .auth-title::before { content: ''; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; display: inline-block; }
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 6px; }
@@ -130,7 +156,7 @@
     label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--ink-soft); font-size: 13.5px; }
     select, input, textarea {
         width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 9px;
-        font-size: 15px; background-color: #fff; outline: none; color: var(--text);
+        font-size: 15px; background-color: var(--input-bg); outline: none; color: var(--text);
         font-family: inherit; transition: border-color .15s, box-shadow .15s;
     }
     textarea { resize: vertical; }
@@ -142,15 +168,15 @@
 
     /* ===== تنبيهات ===== */
     .alert-message { padding: 14px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14.5px; font-weight: 600; text-align: center; border: 1px solid transparent; }
-    .alert-danger { background-color: var(--danger-soft); color: #7d241a; border-color: #f2c4bd; }
-    .alert-success { background-color: var(--accent-soft); color: var(--accent-dark); border-color: #b9e6df; }
+    .alert-danger { background-color: var(--danger-soft); color: #7d241a; border-color: var(--danger-border); }
+    .alert-success { background-color: var(--accent-soft); color: var(--accent-dark); border-color: var(--accent-border); }
 
     /* ===== لوحة التحكم ===== */
     #mainDashboard { display: none; }
 
     /* ===== مبدّل التبويبات (إضافة المريض / الإحصائية الشهرية) ===== */
     .tab-switcher {
-        display: flex; margin-bottom: 20px; background: #f0f3f5; border: 1.5px solid var(--line);
+        display: flex; margin-bottom: 20px; background: var(--surface-2); border: 1.5px solid var(--line);
         border-radius: 12px; padding: 4px; gap: 4px;
     }
     .tab-btn {
@@ -159,11 +185,11 @@
         cursor: pointer; font-family: inherit; transition: background-color .15s, color .15s, box-shadow .15s;
     }
     .tab-btn:hover:not(.active) { color: var(--ink); }
-    .tab-btn.active { background: #fff; color: var(--accent-dark); box-shadow: 0 2px 8px -2px rgba(15,41,66,0.18); }
+    .tab-btn.active { background: var(--card); color: var(--accent-dark); box-shadow: 0 2px 8px -2px rgba(15,41,66,0.18); }
 
-    .case-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; text-align: center; transition: transform .15s, box-shadow .15s; }
+    .case-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; text-align: center; transition: transform .15s, box-shadow .15s; }
     .case-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-    .case-card.total-card { background: linear-gradient(160deg, var(--accent-soft), #fff); border: 1.5px solid #b9e6df; }
+    .case-card.total-card { background: linear-gradient(160deg, var(--accent-soft), var(--card)); border: 1.5px solid var(--accent-border); }
     .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-top: 8px; margin-bottom: 16px; }
     .counter-controls { display: flex; align-items: center; justify-content: center; gap: 14px; }
     .btn-counter {
@@ -190,7 +216,7 @@
     .btn-primary:disabled { background-color: #a9b7bf; cursor: not-allowed; }
 
     .btn-secondary {
-        background-color: #fff; color: var(--ink-soft); border: 1.5px solid var(--line); padding: 11px 18px;
+        background-color: var(--card); color: var(--ink-soft); border: 1.5px solid var(--line); padding: 11px 18px;
         font-size: 14px; font-weight: 700; border-radius: 10px; cursor: pointer; margin-top: 10px; font-family: inherit;
     }
     .btn-secondary:hover { border-color: var(--ink-soft); color: var(--ink); }
@@ -203,15 +229,15 @@
     #adminPatientsSection { display: none; }
 
     /* ===== قسم الإحصائية الشهرية ===== */
-    #monthlyStatsSection { background: var(--amber-soft); border: 1px solid #f0dfa0; border-radius: var(--radius); padding: 22px; display: none; }
+    #monthlyStatsSection { background: var(--amber-soft); border: 1px solid var(--amber-border); border-radius: var(--radius); padding: 22px; display: none; }
     .report-section { background: white; border: 1px solid var(--line); padding: 20px; border-radius: var(--radius); margin-top: 18px; overflow-x: auto; }
     .report-title { font-size: 16.5px; font-weight: 700; color: var(--ink); margin-bottom: 14px; text-align: center; }
 
     .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 900px; }
     .monthly-table th, .monthly-table td { border: 1px solid var(--line); padding: 9px 10px; text-align: center; font-size: 13px; }
     .monthly-table th { background-color: var(--ink); color: white; font-weight: 700; }
-    .monthly-table tr:nth-child(even) { background-color: #f7f9fa; }
-    .monthly-table tr.editing { background-color: #fdf3d9; }
+    .monthly-table tr:nth-child(even) { background-color: var(--surface); }
+    .monthly-table tr.editing { background-color: var(--amber-soft); }
     .row-input {
         width: 60px; padding: 4px 6px; border: 1.5px solid var(--accent); border-radius: 6px;
         font-size: 13px; text-align: center; font-family: inherit;
@@ -226,14 +252,14 @@
     .row-delete:hover { background: #f6d2cc; }
     .row-save { background: var(--success); color: #fff; }
     .row-save:hover { background: #17703c; }
-    .row-cancel { background: #eceff1; color: var(--ink-soft); }
+    .row-cancel { background: var(--surface-2); color: var(--ink-soft); }
     .row-cancel:hover { background: #dfe4e7; }
     .cell-actions { white-space: nowrap; }
 
     /* ===== قسم الإحصائيات البيانية ===== */
     .stats-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
     .btn-stat {
-        flex: 1; min-width: 180px; background: #fff; color: var(--ink-soft);
+        flex: 1; min-width: 180px; background: var(--card); color: var(--ink-soft);
         border: 1.5px solid var(--line); padding: 12px 14px; font-size: 13.5px; font-weight: 700;
         border-radius: 10px; cursor: pointer; font-family: inherit; transition: border-color .15s, color .15s, background-color .15s;
     }
@@ -241,7 +267,7 @@
     .btn-stat.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
     .chart-card {
-        background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+        background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
         padding: 20px; margin-top: 16px;
     }
     .chart-card-title { font-size: 15.5px; font-weight: 700; color: var(--ink); margin-bottom: 14px; text-align: center; }
@@ -252,10 +278,10 @@
         display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 6px;
     }
     .combined-total-card {
-        background: linear-gradient(160deg, var(--accent-soft), #fff); border: 1.5px solid #b9e6df;
+        background: linear-gradient(160deg, var(--accent-soft), var(--card)); border: 1.5px solid var(--accent-border);
         border-radius: 12px; padding: 18px 26px; text-align: center; min-width: 160px;
     }
-    .combined-total-card.grand { background: linear-gradient(160deg, var(--amber-soft), #fff); border-color: #f0dfa0; }
+    .combined-total-card.grand { background: linear-gradient(160deg, var(--amber-soft), var(--card)); border-color: var(--amber-border); }
     .combined-total-card .label { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
     .combined-total-card .value { font-size: 28px; font-weight: 700; color: var(--accent-dark); }
     .combined-total-card.grand .value { color: var(--amber); }
@@ -352,11 +378,11 @@
         <div class="auth-title" data-i18n="loginTitle">تسجيل الدخول إلى النظام</div>
         <div class="form-grid">
             <div class="form-group">
-                <label for="loginEmpId" data-i18n="empIdLabel">الرقم الوظيفي / Emp ID</label>
+                <label for="loginEmpId" data-i18n="empIdLabel">الرقم الوظيفي</label>
                 <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this); checkLoginEmpIdPreview();" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label for="loginPin" data-i18n="passwordLabel">الرمز السري / Password</label>
+                <label for="loginPin" data-i18n="passwordLabel">الرمز السري</label>
                 <input type="password" id="loginPin" placeholder="******">
             </div>
         </div>
@@ -394,19 +420,19 @@
             <div class="form-group">
                 <label for="regClinic" data-i18n="chooseClinicLabel">اختر العيادة</label>
                 <select id="regClinic">
-                    <option value="عيادة الف" data-i18n="clinicA">عيادة الف (Clinic A)</option>
-                    <option value="عيادة باء" data-i18n="clinicB">عيادة باء (Clinic B)</option>
+                    <option value="عيادة الف" data-i18n="clinicA">عيادة الف</option>
+                    <option value="عيادة باء" data-i18n="clinicB">عيادة باء</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="regShift" data-i18n="chooseShiftLabel">اختر الشفت / الفترة</label>
                 <select id="regShift">
-                    <option value="شفت الف صباحي">شفت الف صباحي (A-Morning)</option>
-                    <option value="شفت الف مسائي">شفت الف مسائي (A-Evening)</option>
-                    <option value="شفت باء صباحي">شفت باء صباحي (B-Morning)</option>
-                    <option value="شفت باء مسائي">شفت باء مسائي (B-Evening)</option>
-                    <option value="شفت جيم صباحي">شفت جيم صباحي (C-Morning)</option>
-                    <option value="شفت جيم مسائي">شفت جيم مسائي (C-Evening)</option>
+                    <option value="شفت الف صباحي" data-i18n="shiftAMorning">شفت الف صباحي</option>
+                    <option value="شفت الف مسائي" data-i18n="shiftAEvening">شفت الف مسائي</option>
+                    <option value="شفت باء صباحي" data-i18n="shiftBMorning">شفت باء صباحي</option>
+                    <option value="شفت باء مسائي" data-i18n="shiftBEvening">شفت باء مسائي</option>
+                    <option value="شفت جيم صباحي" data-i18n="shiftCMorning">شفت جيم صباحي</option>
+                    <option value="شفت جيم مسائي" data-i18n="shiftCEvening">شفت جيم مسائي</option>
                 </select>
             </div>
             <div class="form-group">
@@ -456,15 +482,15 @@
                 <div class="auth-title" data-i18n="addPatientTitle">إضافة مريض جديد</div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="patientName">اسم المريض</label>
+                        <label for="patientName" data-i18n="patientNameLabel">اسم المريض</label>
                         <input type="text" id="patientName" placeholder="اسم المريض">
                     </div>
                     <div class="form-group">
-                        <label for="patientCivilId">الرقم المدني</label>
+                        <label for="patientCivilId" data-i18n="civilIdLabel">الرقم المدني</label>
                         <input type="text" id="patientCivilId" placeholder="الرقم المدني" inputmode="numeric">
                     </div>
                     <div class="form-group">
-                        <label for="patientCondition">الحالة</label>
+                        <label for="patientCondition" data-i18n="conditionLabel">الحالة</label>
                         <select id="patientCondition" onchange="toggleOtherConditionBox()">
                             <option value="حالات طبية">حالات طبية</option>
                             <option value="ضغط الدم">ضغط الدم</option>
@@ -481,34 +507,34 @@
                         </select>
                     </div>
                     <div class="form-group" id="patientConditionOtherGroup" style="display:none;">
-                        <label for="patientConditionOther">اكتب الحالة</label>
+                        <label for="patientConditionOther" data-i18n="writeConditionLabel">اكتب الحالة</label>
                         <input type="text" id="patientConditionOther" placeholder="اكتب نوع الحالة">
                     </div>
                     <div class="form-group">
-                        <label for="patientBP">الضغط</label>
+                        <label for="patientBP" data-i18n="bpLabel">الضغط</label>
                         <input type="text" id="patientBP" placeholder="مثال: 120/80">
                     </div>
                     <div class="form-group">
-                        <label for="patientSugar">السكر</label>
+                        <label for="patientSugar" data-i18n="sugarLabel">السكر</label>
                         <input type="text" id="patientSugar" placeholder="mg/dL">
                     </div>
                     <div class="form-group">
-                        <label for="patientTemp">الحرارة</label>
+                        <label for="patientTemp" data-i18n="tempLabel">الحرارة</label>
                         <input type="text" id="patientTemp" placeholder="°C">
                     </div>
                     <div class="form-group">
-                        <label for="patientTimeHour">الوقت (نظام 24 ساعة)</label>
+                        <label for="patientTimeHour" data-i18n="time24Label">الوقت (نظام 24 ساعة)</label>
                         <div style="display:flex; gap:8px;">
                             <select id="patientTimeHour" style="flex:1;"></select>
                             <select id="patientTimeMinute" style="flex:1;"></select>
                         </div>
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
-                        <label for="patientAction">التعامل</label>
+                        <label for="patientAction" data-i18n="treatmentLabel">التعامل</label>
                         <textarea id="patientAction" rows="3" placeholder="اكتب شنو كان التعامل مع الحالة..."></textarea>
                     </div>
                 </div>
-                <button class="btn-primary" id="savePatientBtn" onclick="savePatient()">حفظ بيانات المريض</button>
+                <button class="btn-primary" id="savePatientBtn" onclick="savePatient()" data-i18n="savePatientBtn">حفظ بيانات المريض</button>
             </div>
 
             <div class="report-section" id="todayPatientsReportSection">
@@ -518,20 +544,20 @@
                 </div>
                 <div class="report-title" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
                     <span>مرضى اليوم — نفس عيادتك وشفتك (<span id="todayPatientCount">0</span>)</span>
-                    <button class="row-btn row-edit" onclick="loadTodayShiftPatients()">🔄 تحديث</button>
+                    <button class="row-btn row-edit" onclick="loadTodayShiftPatients()" data-i18n="refreshBtn">🔄 تحديث</button>
                 </div>
                 <table class="monthly-table" id="todayPatientsTable">
                     <thead>
                         <tr>
-                            <th>الوقت</th><th>اسم المريض</th><th>الرقم المدني</th><th>الحالة</th>
-                            <th>الضغط</th><th>السكر</th><th>الحرارة</th><th>التعامل</th><th>الرقم الوظيفي</th>
+                            <th data-i18n="timeColLabel">الوقت</th><th data-i18n="patientNameLabel">اسم المريض</th><th data-i18n="civilIdLabel">الرقم المدني</th><th data-i18n="conditionLabel">الحالة</th>
+                            <th data-i18n="bpLabel">الضغط</th><th data-i18n="sugarLabel">السكر</th><th data-i18n="tempLabel">الحرارة</th><th data-i18n="treatmentLabel">التعامل</th><th data-i18n="empIdColLabel">الرقم الوظيفي</th>
                         </tr>
                     </thead>
                     <tbody id="todayPatientsBody">
                         <tr class="empty-row"><td colspan="9">لم تتم إضافة أي مريض بعد اليوم لنفس عيادتك وشفتك</td></tr>
                     </tbody>
                 </table>
-                <button class="btn-secondary" onclick="printSection('todayPatientsReportSection', 'todayPatientsPrintDate', 'مرضى_اليوم')">🖨️ طباعة / حفظ PDF</button>
+                <button class="btn-secondary" onclick="printSection('todayPatientsReportSection', 'todayPatientsPrintDate', 'مرضى_اليوم')" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
             </div>
         </div>
 
@@ -541,19 +567,19 @@
                 <div class="auth-title" data-i18n="viewPatientsTitle">عرض المرضى حسب التاريخ</div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="patientsViewDate">التاريخ</label>
+                        <label for="patientsViewDate" data-i18n="dateLabel">التاريخ</label>
                         <input type="date" id="patientsViewDate">
                     </div>
                     <div class="form-group">
-                        <label for="patientsViewClinic">اختر العيادة</label>
+                        <label for="patientsViewClinic" data-i18n="chooseClinicLabel">اختر العيادة</label>
                         <select id="patientsViewClinic">
-                            <option value="all">كل العيادات (All Clinics)</option>
-                            <option value="عيادة الف">عيادة الف (Clinic A)</option>
-                            <option value="عيادة باء">عيادة باء (Clinic B)</option>
+                            <option value="all" data-i18n="allClinicsOption">كل العيادات</option>
+                            <option value="عيادة الف" data-i18n="clinicA">عيادة الف</option>
+                            <option value="عيادة باء" data-i18n="clinicB">عيادة باء</option>
                         </select>
                     </div>
                 </div>
-                <button class="btn-primary btn-admin" onclick="loadPatientsByDate()">عرض المرضى</button>
+                <button class="btn-primary btn-admin" onclick="loadPatientsByDate()" data-i18n="viewPatientsBtn">عرض المرضى</button>
             </div>
 
             <div class="report-section" id="patientsByDateSection" style="display:none;">
@@ -565,16 +591,16 @@
                 <table class="monthly-table" id="patientsByDateTable">
                     <thead>
                         <tr>
-                            <th>الوقت</th><th>اسم المريض</th><th>الرقم المدني</th><th>الحالة</th>
-                            <th>الضغط</th><th>السكر</th><th>الحرارة</th><th>التعامل</th>
-                            <th>العيادة</th><th>الشفت</th><th>الرقم الوظيفي</th><th class="th-actions">إجراءات</th>
+                            <th data-i18n="timeColLabel">الوقت</th><th data-i18n="patientNameLabel">اسم المريض</th><th data-i18n="civilIdLabel">الرقم المدني</th><th data-i18n="conditionLabel">الحالة</th>
+                            <th data-i18n="bpLabel">الضغط</th><th data-i18n="sugarLabel">السكر</th><th data-i18n="tempLabel">الحرارة</th><th data-i18n="treatmentLabel">التعامل</th>
+                            <th data-i18n="clinicLabel">العيادة</th><th data-i18n="shiftLabel">الشفت</th><th data-i18n="empIdColLabel">الرقم الوظيفي</th><th class="th-actions" data-i18n="actionsLabel">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="patientsByDateBody">
                         <tr class="empty-row"><td colspan="12">اختر تاريخًا واضغط "عرض المرضى"</td></tr>
                     </tbody>
                 </table>
-                <button class="btn-secondary" onclick="printSection('patientsByDateSection', 'patientsByDatePrintDate', 'تقرير_المرضى')">🖨️ طباعة / حفظ PDF</button>
+                <button class="btn-secondary" onclick="printSection('patientsByDateSection', 'patientsByDatePrintDate', 'تقرير_المرضى')" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
             </div>
         </div>
 
@@ -587,25 +613,25 @@
                 <div class="auth-title" id="statsEntryPanelTitle">إدخال إحصائية اليوم</div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="statsEntryDate">التاريخ</label>
+                        <label for="statsEntryDate" data-i18n="dateLabel">التاريخ</label>
                         <input type="date" id="statsEntryDate" onchange="loadStatsEntryCounters()">
                     </div>
                     <div class="form-group">
-                        <label for="statsEntryClinic">العيادة</label>
+                        <label for="statsEntryClinic" data-i18n="clinicLabel">العيادة</label>
                         <select id="statsEntryClinic" onchange="loadStatsEntryCounters()">
-                            <option value="عيادة الف">عيادة الف (Clinic A)</option>
-                            <option value="عيادة باء">عيادة باء (Clinic B)</option>
+                            <option value="عيادة الف" data-i18n="clinicA">عيادة الف</option>
+                            <option value="عيادة باء" data-i18n="clinicB">عيادة باء</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="statsEntryShift">الشفت</label>
+                        <label for="statsEntryShift" data-i18n="shiftLabel">الشفت</label>
                         <select id="statsEntryShift" onchange="loadStatsEntryCounters()">
-                            <option value="شفت الف صباحي">شفت الف صباحي (A-Morning)</option>
-                            <option value="شفت الف مسائي">شفت الف مسائي (A-Evening)</option>
-                            <option value="شفت باء صباحي">شفت باء صباحي (B-Morning)</option>
-                            <option value="شفت باء مسائي">شفت باء مسائي (B-Evening)</option>
-                            <option value="شفت جيم صباحي">شفت جيم صباحي (C-Morning)</option>
-                            <option value="شفت جيم مسائي">شفت جيم مسائي (C-Evening)</option>
+                            <option value="شفت الف صباحي" data-i18n="shiftAMorning">شفت الف صباحي</option>
+                            <option value="شفت الف مسائي" data-i18n="shiftAEvening">شفت الف مسائي</option>
+                            <option value="شفت باء صباحي" data-i18n="shiftBMorning">شفت باء صباحي</option>
+                            <option value="شفت باء مسائي" data-i18n="shiftBEvening">شفت باء مسائي</option>
+                            <option value="شفت جيم صباحي" data-i18n="shiftCMorning">شفت جيم صباحي</option>
+                            <option value="شفت جيم مسائي" data-i18n="shiftCEvening">شفت جيم مسائي</option>
                         </select>
                     </div>
                 </div>
@@ -683,7 +709,7 @@
                     </div>
                 </div>
 
-                <button class="btn-primary btn-admin" id="saveStatsBtn" onclick="saveDailyStats()">حفظ الإحصائية</button>
+                <button class="btn-primary btn-admin" id="saveStatsBtn" onclick="saveDailyStats()" data-i18n="saveStatsBtn">حفظ الإحصائية</button>
             </div>
 
             <div id="monthlyStatsAdminControls">
@@ -693,20 +719,20 @@
                 </div>
 
                 <div class="form-group" id="dailyReportDateGroup">
-                    <label for="dailyReportDate">اختر تاريخ الإحصائية اليومية</label>
+                    <label for="dailyReportDate" data-i18n="chooseDailyDateLabel">اختر تاريخ الإحصائية اليومية</label>
                     <input type="date" id="dailyReportDate" onchange="loadMonthlyReport()">
                 </div>
 
                 <div class="form-group">
-                    <label for="adminClinicSelect">اختر العيادة لعرض تقريرها</label>
+                    <label for="adminClinicSelect" data-i18n="chooseClinicForReportLabel">اختر العيادة لعرض تقريرها</label>
                     <select id="adminClinicSelect" onchange="loadMonthlyReport()">
-                        <option value="all">كل العيادات (All Clinics)</option>
-                        <option value="عيادة الف">عيادة الف (Clinic A)</option>
-                        <option value="عيادة باء">عيادة باء (Clinic B)</option>
+                        <option value="all" data-i18n="allClinicsOption">كل العيادات</option>
+                        <option value="عيادة الف" data-i18n="clinicA">عيادة الف</option>
+                        <option value="عيادة باء" data-i18n="clinicB">عيادة باء</option>
                     </select>
                 </div>
 
-                <button class="btn-primary btn-admin" id="loadReportBtn" onclick="loadMonthlyReport()">جلب إحصائية اليوم</button>
+                <button class="btn-primary btn-admin" id="loadReportBtn" onclick="loadMonthlyReport()" data-i18n="loadDailyReportBtn">جلب إحصائية اليوم</button>
 
                 <div class="stats-controls">
                     <button class="btn-stat" id="btnPieChart" onclick="showCaseTypeChart('doughnut')">📊 نسب الحالات (دائري)</button>
@@ -733,14 +759,14 @@
                 <table class="monthly-table" id="reportTable">
                     <thead>
                         <tr>
-                            <th>التاريخ</th><th>الرقم الوظيفي</th><th>العيادة</th><th>الشفت</th><th class="th-stat-category">الإجمالي</th>
-                            <th class="th-stat-category">حالات طبية</th><th class="th-stat-category">ضغط الدم</th><th class="th-stat-category">السكر</th><th class="th-stat-category">صداع</th><th class="th-stat-category">علامات حيوية</th>
-                            <th class="th-stat-category">إصابات</th><th class="th-stat-category">حروق</th><th class="th-stat-category">نقل مستشفى</th><th class="th-actions" id="reportActionsHeader">إجراءات</th>
+                            <th data-i18n="dateLabel">التاريخ</th><th data-i18n="empIdColLabel">الرقم الوظيفي</th><th data-i18n="clinicLabel">العيادة</th><th data-i18n="shiftLabel">الشفت</th><th class="th-stat-category" data-i18n="totalLabel">الإجمالي</th>
+                            <th class="th-stat-category" data-i18n="sickCasesLabel">حالات طبية</th><th class="th-stat-category" data-i18n="bloodPressureLabel">ضغط الدم</th><th class="th-stat-category">السكر</th><th class="th-stat-category" data-i18n="headacheLabel">صداع</th><th class="th-stat-category" data-i18n="vitalSignsLabel">علامات حيوية</th>
+                            <th class="th-stat-category" data-i18n="injuriesLabel">إصابات</th><th class="th-stat-category" data-i18n="burnsLabel">حروق</th><th class="th-stat-category" data-i18n="hospitalTransferLabel">نقل مستشفى</th><th class="th-actions" id="reportActionsHeader" data-i18n="actionsLabel">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="reportTableBody"></tbody>
                 </table>
-                <button class="btn-secondary" onclick="printSection('reportSection', 'printDate', 'التقرير_الشهري')">🖨️ طباعة / حفظ PDF</button>
+                <button class="btn-secondary" onclick="printSection('reportSection', 'printDate', 'التقرير_الشهري')" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
             </div>
         </div>
 
@@ -751,7 +777,7 @@
                 <table class="monthly-table" id="employeesTable">
                     <thead>
                         <tr>
-                            <th>الرقم الوظيفي</th><th>رقم الهاتف</th><th>العيادة الحالية</th><th>الشفت الحالي</th><th class="th-actions">إجراءات</th>
+                            <th data-i18n="empIdColLabel">الرقم الوظيفي</th><th data-i18n="phoneColLabel">رقم الهاتف</th><th data-i18n="currentClinicLabel">العيادة الحالية</th><th data-i18n="currentShiftLabel">الشفت الحالي</th><th class="th-actions" data-i18n="actionsLabel">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="employeesTableBody">
@@ -814,6 +840,13 @@ const TRANSLATIONS = {
         chooseClinicLabel: "Choose Clinic",
         clinicA: "Clinic A",
         clinicB: "Clinic B",
+        allClinicsOption: "All Clinics",
+        shiftAMorning: "Shift A — Morning",
+        shiftAEvening: "Shift A — Evening",
+        shiftBMorning: "Shift B — Morning",
+        shiftBEvening: "Shift B — Evening",
+        shiftCMorning: "Shift C — Morning",
+        shiftCEvening: "Shift C — Evening",
         chooseShiftLabel: "Choose Shift / Period",
         choosePinLabel: "Choose Password",
         registerBtn: "Confirm & Save New Account",
@@ -829,7 +862,40 @@ const TRANSLATIONS = {
         viewPatientsTitle: "View Patients by Date",
         statsTitle: "Monthly Statistics",
         manageEmployeesTitle: "Manage Employees — Edit Clinic & Shift",
-        logoutBtn: "Logout"
+        logoutBtn: "Logout",
+        patientNameLabel: "Patient Name",
+        conditionLabel: "Condition",
+        writeConditionLabel: "Enter Condition",
+        bpLabel: "Blood Pressure",
+        sugarLabel: "Sugar",
+        tempLabel: "Temperature",
+        time24Label: "Time (24-hour)",
+        treatmentLabel: "Treatment",
+        dateLabel: "Date",
+        clinicLabel: "Clinic",
+        shiftLabel: "Shift",
+        chooseDailyDateLabel: "Choose Daily Stats Date",
+        chooseClinicForReportLabel: "Choose Clinic for Report",
+        timeColLabel: "Time",
+        empIdColLabel: "Employee ID",
+        phoneColLabel: "Phone Number",
+        currentClinicLabel: "Current Clinic",
+        currentShiftLabel: "Current Shift",
+        actionsLabel: "Actions",
+        totalLabel: "Total",
+        sickCasesLabel: "Medical Cases",
+        bloodPressureLabel: "Blood Pressure",
+        headacheLabel: "Headache",
+        vitalSignsLabel: "Vital Signs",
+        injuriesLabel: "Injuries",
+        burnsLabel: "Burns",
+        hospitalTransferLabel: "Hospital Transfer",
+        savePatientBtn: "Save Patient Data",
+        refreshBtn: "🔄 Refresh",
+        printSaveBtn: "🖨️ Print / Save PDF",
+        viewPatientsBtn: "View Patients",
+        saveStatsBtn: "Save Statistics",
+        loadDailyReportBtn: "Load Daily Report"
     }
 };
 
@@ -861,12 +927,39 @@ function applyLanguage(lang) {
 function toggleLanguage() {
     const current = localStorage.getItem("clinicLang") || "ar";
     applyLanguage(current === "ar" ? "en" : "ar");
+    refreshDynamicContentForLanguage();
+}
+
+// يعيد رسم أي جدول ديناميكي ظاهر حاليًا عشان أزرار تعديل/حذف/حفظ تتحدث فورًا للغة الجديدة
+function refreshDynamicContentForLanguage() {
+    if (!session.token) return;
+    if (document.getElementById("addPatientSection").style.display !== "none") {
+        loadTodayShiftPatients();
+    }
+    if (document.getElementById("adminPatientsSection").style.display !== "none" &&
+        document.getElementById("patientsByDateSection").style.display !== "none") {
+        loadPatientsByDate();
+    }
+    if (document.getElementById("monthlyStatsSection").style.display !== "none") {
+        loadMonthlyReport();
+    }
+    if (document.getElementById("manageEmployeesSection").style.display !== "none") {
+        loadAllEmployees();
+    }
 }
 
 function toggleDarkMode() {
     const isDark = document.body.classList.toggle("dark-mode");
     document.getElementById("darkModeToggleBtn").textContent = isDark ? "☀️" : "🌙";
     localStorage.setItem("clinicDarkMode", isDark ? "1" : "0");
+}
+
+// مساعد صغير للنصوص اللي تُبنى ديناميكيًا بالجافاسكربت (أزرار الجداول: تعديل/حذف/حفظ/إلغاء)
+const JS_TEXT_AR = { edit: "تعديل", delete: "حذف", save: "حفظ", cancel: "إلغاء", deleteAccount: "حذف حساب" };
+const JS_TEXT_EN = { edit: "Edit", delete: "Delete", save: "Save", cancel: "Cancel", deleteAccount: "Delete Account" };
+function t(key) {
+    const lang = localStorage.getItem("clinicLang") || "ar";
+    return (lang === "en" ? JS_TEXT_EN[key] : JS_TEXT_AR[key]) || JS_TEXT_AR[key] || key;
 }
 
 // نطبّق تفضيلات اللغة والمود المحفوظة فور تحميل الصفحة
@@ -1787,8 +1880,8 @@ function renderReportTable(rows) {
         const actionsTd = document.createElement("td");
         actionsTd.className = "cell-actions";
         actionsTd.innerHTML = session.isAdmin
-            ? `<button class="row-btn row-edit" onclick="editStatsRow('${r.date}', '${r.clinic}', '${r.shift}')">تعديل</button>
-               <button class="row-btn row-delete" onclick="deleteRow(this)">حذف</button>`
+            ? `<button class="row-btn row-edit" onclick="editStatsRow('${r.date}', '${r.clinic}', '${r.shift}')">${t('edit')}</button>
+               <button class="row-btn row-delete" onclick="deleteRow(this)">${t('delete')}</button>`
             : "";
         tr.appendChild(actionsTd);
 
@@ -1900,8 +1993,8 @@ function renderPatientsByDateTable(rows) {
         const actionsTd = document.createElement("td");
         actionsTd.className = "cell-actions";
         actionsTd.innerHTML = `
-            <button class="row-btn row-edit" onclick="startEditPatientRow(this)">تعديل</button>
-            <button class="row-btn row-delete" onclick="deletePatientRow(this)">حذف</button>
+            <button class="row-btn row-edit" onclick="startEditPatientRow(this)">${t('edit')}</button>
+            <button class="row-btn row-delete" onclick="deletePatientRow(this)">${t('delete')}</button>
         `;
         tr.appendChild(actionsTd);
 
@@ -1944,8 +2037,8 @@ function startEditPatientRow(btn) {
 
     const actionsTd = tr.querySelector(".cell-actions");
     actionsTd.innerHTML = `
-        <button class="row-btn row-save" onclick="savePatientEditRow(this)">حفظ</button>
-        <button class="row-btn row-cancel" onclick="cancelPatientEditRow(this)">إلغاء</button>
+        <button class="row-btn row-save" onclick="savePatientEditRow(this)">${t('save')}</button>
+        <button class="row-btn row-cancel" onclick="cancelPatientEditRow(this)">${t('cancel')}</button>
     `;
 }
 
@@ -1958,8 +2051,8 @@ function cancelPatientEditRow(btn) {
     });
     const actionsTd = tr.querySelector(".cell-actions");
     actionsTd.innerHTML = `
-        <button class="row-btn row-edit" onclick="startEditPatientRow(this)">تعديل</button>
-        <button class="row-btn row-delete" onclick="deletePatientRow(this)">حذف</button>
+        <button class="row-btn row-edit" onclick="startEditPatientRow(this)">${t('edit')}</button>
+        <button class="row-btn row-delete" onclick="deletePatientRow(this)">${t('delete')}</button>
     `;
 }
 
@@ -1997,8 +2090,8 @@ async function savePatientEditRow(btn) {
             tr.classList.remove("editing");
             const actionsTd = tr.querySelector(".cell-actions");
             actionsTd.innerHTML = `
-                <button class="row-btn row-edit" onclick="startEditPatientRow(this)">تعديل</button>
-                <button class="row-btn row-delete" onclick="deletePatientRow(this)">حذف</button>
+                <button class="row-btn row-edit" onclick="startEditPatientRow(this)">${t('edit')}</button>
+                <button class="row-btn row-delete" onclick="deletePatientRow(this)">${t('delete')}</button>
             `;
             showSuccess("تم تحديث بيانات المريض بنجاح");
         } else {
@@ -2064,8 +2157,8 @@ async function loadAllEmployees() {
                 <td class="cell-emp-clinic" data-value="${emp.clinic}">${emp.clinic || "-"}</td>
                 <td class="cell-emp-shift" data-value="${emp.shift}">${emp.shift || "-"}</td>
                 <td class="cell-actions">
-                    <button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button>
-                    <button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">حذف حساب</button>
+                    <button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">${t('edit')}</button>
+                    <button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">${t('deleteAccount')}</button>
                 </td>
             `;
             body.appendChild(tr);
@@ -2092,8 +2185,8 @@ function startEditEmployeeRow(btn) {
 
     const actionsTd = tr.querySelector(".cell-actions");
     actionsTd.innerHTML = `
-        <button class="row-btn row-save" onclick="saveEmployeeEditRow(this)">حفظ</button>
-        <button class="row-btn row-cancel" onclick="cancelEmployeeEditRow(this)">إلغاء</button>
+        <button class="row-btn row-save" onclick="saveEmployeeEditRow(this)">${t('save')}</button>
+        <button class="row-btn row-cancel" onclick="cancelEmployeeEditRow(this)">${t('cancel')}</button>
     `;
 }
 
@@ -2105,7 +2198,7 @@ function cancelEmployeeEditRow(btn) {
     clinicTd.textContent = clinicTd.dataset.value || "-";
     shiftTd.textContent = shiftTd.dataset.value || "-";
     const actionsTd = tr.querySelector(".cell-actions");
-    actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button><button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">حذف حساب</button>`;
+    actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">${t('edit')}</button><button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">${t('deleteAccount')}</button>`;
 }
 
 async function saveEmployeeEditRow(btn) {
@@ -2126,7 +2219,7 @@ async function saveEmployeeEditRow(btn) {
             shiftTd.textContent = shift;
             tr.classList.remove("editing");
             const actionsTd = tr.querySelector(".cell-actions");
-            actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">تعديل</button><button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">حذف حساب</button>`;
+            actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">${t('edit')}</button><button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">${t('deleteAccount')}</button>`;
             showSuccess("تم تحديث بيانات الموظف بنجاح");
         } else {
             showError("تعذر حفظ التعديل");
