@@ -80,6 +80,7 @@
     body.dark-mode .brand-dot, body.dark-mode .dot.active { box-shadow: 0 0 0 5px var(--accent-soft); }
     body.dark-mode .server-status.offline, body.dark-mode .alert-danger { color: var(--danger); }
     body.dark-mode .server-status.checking { color: var(--amber); }
+    body.dark-mode { color-scheme: dark; }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -230,7 +231,7 @@
 
     /* ===== قسم الإحصائية الشهرية ===== */
     #monthlyStatsSection { background: var(--amber-soft); border: 1px solid var(--amber-border); border-radius: var(--radius); padding: 22px; display: none; }
-    .report-section { background: white; border: 1px solid var(--line); padding: 20px; border-radius: var(--radius); margin-top: 18px; overflow-x: auto; }
+    .report-section { background: var(--card); border: 1px solid var(--line); padding: 20px; border-radius: var(--radius); margin-top: 18px; overflow-x: auto; }
     .report-title { font-size: 16.5px; font-weight: 700; color: var(--ink); margin-bottom: 14px; text-align: center; }
 
     .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 900px; }
@@ -388,7 +389,7 @@
         </div>
         <div class="form-group" id="loginClinicShiftPreviewGroup" style="display:none;">
             <label data-i18n="clinicShiftPreviewLabel">العيادة والشفت المسجلة</label>
-            <input type="text" id="loginClinicShiftPreview" disabled style="background:#e9edf0; color:var(--muted); cursor:not-allowed;">
+            <input type="text" id="loginClinicShiftPreview" disabled style="background:var(--surface-2); color:var(--muted); cursor:not-allowed;">
         </div>
         <button class="btn-primary" id="loginBtn" onclick="handleLogin()" data-i18n="loginBtn">تسجيل الدخول وتأكيد الهوية</button>
         <div class="auth-links">
