@@ -313,12 +313,13 @@
     /* ===== تنسيق الطباعة / حفظ PDF من المتصفح مباشرة (أي قسم يُعطى كلاس print-target) ===== */
     .print-only-header { display: none; }
     @media print {
-        body * { visibility: hidden; }
-        .print-target, .print-target * { visibility: visible; }
-        .print-target {
-            position: absolute; left: 0; top: 0; width: 100%;
-            border: none; box-shadow: none; padding: 0;
-        }
+        /* بدل حيلة visibility + position:absolute (كانت تنكسر مع تحويل الصفحة لوضع أفقي
+           landscape بمتصفحات الجوال وتطلع شاشة فاضية) — نستخدم display بدل كذا، اللي
+           يخلي المحتوى بترتيبه الطبيعي بالصفحة بدون أي تموضع يدوي ممكن ينكسر */
+        body * { display: none !important; }
+        .print-target, .print-target * { display: revert !important; }
+
+        .print-target { border: none !important; box-shadow: none !important; padding: 0 !important; }
 
         /* مهم: نفرض ألوان واضحة (أسود على أبيض) دايمًا عند الطباعة، بغض النظر عن المود
            الليلي — لأن أغلب المتصفحات لا تطبع خلفيات الصفحة افتراضيًا، فلو كان المود
@@ -333,7 +334,7 @@
 
         .print-target .btn-secondary { display: none !important; }
         .print-target .print-only-header {
-            display: block; text-align: center; border-bottom: 3px solid #000;
+            display: block !important; text-align: center; border-bottom: 3px solid #000;
             padding-bottom: 12px; margin-bottom: 16px;
         }
         .print-only-header h2 { color: #000; font-size: 20px; margin-bottom: 4px; }
