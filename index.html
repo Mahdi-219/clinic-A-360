@@ -83,7 +83,7 @@
     body.dark-mode { color-scheme: dark; }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
     body {
         font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
         background:
@@ -93,6 +93,8 @@
         color: var(--text);
         padding: 28px 16px;
         min-height: 100vh;
+        width: 100%;
+        overflow-x: hidden;
         display: flex;
         justify-content: center;
         align-items: flex-start;
@@ -317,13 +319,25 @@
             position: absolute; left: 0; top: 0; width: 100%;
             border: none; box-shadow: none; padding: 0;
         }
+
+        /* مهم: نفرض ألوان واضحة (أسود على أبيض) دايمًا عند الطباعة، بغض النظر عن المود
+           الليلي — لأن أغلب المتصفحات لا تطبع خلفيات الصفحة افتراضيًا، فلو كان المود
+           الليلي مفعّل يطلع نص فاتح على ورق أبيض = يبين وكأنها صفحة فاضية */
+        .print-target, .print-target * {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border-color: #999 !important;
+            box-shadow: none !important;
+        }
+        .monthly-table th { background-color: #222 !important; color: #fff !important; }
+
         .print-target .btn-secondary { display: none !important; }
         .print-target .print-only-header {
-            display: block; text-align: center; border-bottom: 3px solid var(--ink);
+            display: block; text-align: center; border-bottom: 3px solid #000;
             padding-bottom: 12px; margin-bottom: 16px;
         }
-        .print-only-header h2 { color: var(--ink); font-size: 20px; margin-bottom: 4px; }
-        .print-only-header p { color: #555; font-size: 12px; }
+        .print-only-header h2 { color: #000; font-size: 20px; margin-bottom: 4px; }
+        .print-only-header p { color: #555 !important; font-size: 12px; }
         .monthly-table { min-width: 0; width: 100%; }
         .cell-actions, .th-actions { display: none !important; }
         @page { size: A4 landscape; margin: 12mm; }
