@@ -318,7 +318,7 @@
            كان يسبب صفحة فاضية تمامًا). محتوى #printStage نسخة مستقلة من القسم
            المطلوب طباعته، تُبنى وقت الطباعة نفسها، وتُعرض بترتيبها الطبيعي */
         body > *:not(#printStage) { display: none !important; }
-        #printStage { display: block !important; background: #fff !important; color: #000 !important; }
+        #printStage { display: block !important; background: #fff !important; color: #000 !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
 
         #printStage, #printStage * {
             background: #ffffff !important;
@@ -337,7 +337,15 @@
         #printStage .print-only-header p { color: #555 !important; font-size: 12px; }
         #printStage .monthly-table { min-width: 0; width: 100%; }
         #printStage .cell-actions, #printStage .th-actions { display: none !important; }
-        @page { size: A4 landscape; margin: 12mm; }
+        /* ما نفرض حجم/اتجاه ورقة معيّن (كان فيه "landscape A4" ثابت بالكود، وهذا يتعارض
+           لو اخترت أنت يدويًا اتجاه أو مقاس مختلف بنافذة الطباعة — نسيب الخيار لك بالكامل،
+           والجدول أصلاً مرن (width:100%) فيتكيف مع أي مقاس تختاره */
+        @page { margin: 12mm; }
+
+        /* نفرض خلفية بيضاء صافية للصفحة نفسها (مو بس منطقة الطباعة) — خلفية الصفحة
+           الأصلية فيها تدرّج لوني (وممكن تكون غامقة لو المود الليلي كان مفعّل) وهذا
+           كان يسبب طباعة سوداء أو غريبة بمتصفحات معيّنة خصوصًا بالاتجاه الأفقي */
+        html, body { background: #ffffff !important; }
     }
 </style>
 </head>
