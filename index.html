@@ -308,52 +308,12 @@
     :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
     /* أثناء التقاط صورة PDF، نخفي زر التصدير حتى لا يظهر داخل الملف الناتج */
-    .pdf-exporting .print-target .btn-secondary { display: none !important; }
 
-    /* ===== تنسيق الطباعة / حفظ PDF من المتصفح مباشرة (أي قسم يُعطى كلاس print-target) ===== */
-    .print-only-header { display: none; }
-    @media print {
-        /* نخفي كل شي إلا #printStage — أبسط وأضمن طريقة، ما تحتاج أي خاصية CSS حديثة
-           (بعض متصفحات الجوال ما تدعم display:revert اللي كنا نستخدمها قبل، وهذا
-           كان يسبب صفحة فاضية تمامًا). محتوى #printStage نسخة مستقلة من القسم
-           المطلوب طباعته، تُبنى وقت الطباعة نفسها، وتُعرض بترتيبها الطبيعي */
-        body > *:not(#printStage) { display: none !important; }
-        #printStage { display: block !important; background: #fff !important; color: #000 !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
-
-        #printStage, #printStage * {
-            background: #ffffff !important;
-            color: #000000 !important;
-            border-color: #999 !important;
-            box-shadow: none !important;
-        }
-        #printStage .monthly-table th { background-color: #222 !important; color: #fff !important; }
-
-        #printStage .btn-secondary { display: none !important; }
-        #printStage .print-only-header {
-            display: block !important; text-align: center; border-bottom: 3px solid #000;
-            padding-bottom: 12px; margin-bottom: 16px;
-        }
-        #printStage .print-only-header h2 { color: #000; font-size: 20px; margin-bottom: 4px; }
-        #printStage .print-only-header p { color: #555 !important; font-size: 12px; }
-        #printStage .monthly-table { min-width: 0; width: 100%; }
-        #printStage .cell-actions, #printStage .th-actions { display: none !important; }
-        /* ما نفرض حجم/اتجاه ورقة معيّن (كان فيه "landscape A4" ثابت بالكود، وهذا يتعارض
-           لو اخترت أنت يدويًا اتجاه أو مقاس مختلف بنافذة الطباعة — نسيب الخيار لك بالكامل،
-           والجدول أصلاً مرن (width:100%) فيتكيف مع أي مقاس تختاره */
-        @page { margin: 12mm; }
-
-        /* نفرض خلفية بيضاء صافية للصفحة نفسها (مو بس منطقة الطباعة) — خلفية الصفحة
-           الأصلية فيها تدرّج لوني (وممكن تكون غامقة لو المود الليلي كان مفعّل) وهذا
-           كان يسبب طباعة سوداء أو غريبة بمتصفحات معيّنة خصوصًا بالاتجاه الأفقي */
-        html, body { background: #ffffff !important; }
-    }
+    /* ملاحظة: الطباعة/حفظ PDF ما تعتمد على @media print هنا — تفتح نافذة مستقلة
+       نظيفة وتطبع منها مباشرة (أضمن بكثير عبر أندرويد وآيفون، شوف printSection بالجافاسكربت) */
 </style>
 </head>
 <body>
-
-<!-- منطقة مخصصة للطباعة بس — نستنسخ فيها محتوى القسم المطلوب طباعته وقت الحاجة،
-     بدل محاولة "إظهار" القسم الأصلي مكانه (كانت تنكسر بمتصفحات الجوال) -->
-<div id="printStage" style="display:none;"></div>
 
 <div class="container" id="appContainer">
     <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px;">
@@ -2293,43 +2253,61 @@ function printSection(sectionId, dateElId, filenamePrefix) {
     const dateEl = document.getElementById(dateElId);
     if (dateEl) dateEl.textContent = "تاريخ الطباعة: " + new Date().toLocaleDateString("ar-EG");
 
-    // اسم الملف المقترح عند الحفظ يكون دايمًا بتاريخ اليوم الفعلي، بغض النظر عن التاريخ المعروض بالتقرير
-    document.title = `${filenamePrefix}_${todayDateStringLocal()}`;
-
-    // نستنسخ القسم كامل بمحتواه الحالي (بعد تحديث تاريخ الطباعة) ونحطه بمنطقة الطباعة
-    // المخصصة — هذا أضمن من محاولة "نظهر" القسم الأصلي مكانه (كانت تنكسر بمتصفحات
-    // الجوال، خصوصًا مع تحويل الاتجاه لأفقي landscape)
-    const stage = document.getElementById("printStage");
-    stage.innerHTML = "";
+    // نستنسخ القسم ونشيل منه أي أزرار/معرّفات — المحتوى المطبوع بس، بدون تشابك مع باقي الصفحة
     const clone = section.cloneNode(true);
-    // نشيل أي id مكرر من النسخة عشان ما يصير تعارض معرّفات بالصفحة
-    if (clone.id) clone.removeAttribute("id");
+    clone.querySelectorAll(".btn-secondary").forEach(b => b.remove());
     clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
-    stage.appendChild(clone);
 
-    // ملاحظة: ما ننظّف منطقة الطباعة مباشرة بعد window.print() لأن بعض متصفحات
-    // الجوال تعالج الطباعة بشكل غير متزامن — التنظيف الفوري كان يمسح المحتوى قبل ما
-    // يخلص تجهيز الطباعة فعليًا. نعتمد على afterprint، ومهلة احتياطية (10 ثواني).
-    try {
-        window.print();
-    } catch (e) {
-        showError("تعذر فتح نافذة الطباعة");
-        document.title = ORIGINAL_PAGE_TITLE;
-        stage.innerHTML = "";
+    const fileTitle = `${filenamePrefix}_${todayDateStringLocal()}`;
+
+    // نفتح نافذة/تبويب مستقل نظيف (بدون المود الليلي، التدرجات اللونية، أو أي تعقيد من
+    // الصفحة الأصلية) ونطبع منه مباشرة — هذا أضمن بكثير من محاولة إخفاء/إظهار أجزاء من
+    // نفس الصفحة المعقدة، خصوصًا إن سفاري بالآيفون يتعامل بشكل مختلف مع window.print()
+    // على صفحة فيها CSS معقد ومتغيرات ألوان (مود ليلي)
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+        showError("يرجى السماح بالنوافذ المنبثقة (Pop-ups) لهذا الموقع من إعدادات المتصفح عشان تقدر تطبع");
+        return;
     }
 
-    clearTimeout(window._printCleanupTimer);
-    window._printCleanupTimer = setTimeout(() => {
-        document.title = ORIGINAL_PAGE_TITLE;
-        stage.innerHTML = "";
-    }, 10000);
-}
+    printWindow.document.open();
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${fileTitle}</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif;
+        color: #000; background: #fff; margin: 0; padding: 16px;
+    }
+    .print-only-header { display: block; text-align: center; border-bottom: 3px solid #000; padding-bottom: 12px; margin-bottom: 16px; }
+    .print-only-header h2 { font-size: 20px; margin-bottom: 4px; }
+    .print-only-header p { color: #555; font-size: 12px; margin: 0; }
+    .report-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #999; padding: 8px 9px; text-align: center; font-size: 12.5px; }
+    th { background-color: #222 !important; color: #fff !important; font-weight: 700; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr:nth-child(even) { background-color: #f5f5f5; }
+    .btn-secondary, .cell-actions, .th-actions, .row-btn { display: none !important; }
+    @page { margin: 12mm; }
+</style>
+</head>
+<body>${clone.innerHTML}</body>
+</html>`);
+    printWindow.document.close();
 
-window.addEventListener("afterprint", () => {
-    document.title = ORIGINAL_PAGE_TITLE;
-    const stage = document.getElementById("printStage");
-    if (stage) stage.innerHTML = "";
-});
+    // ننتظر تحميل المحتوى فعليًا قبل ما نطبع (بعض متصفحات الجوال، خصوصًا سفاري،
+    // تحتاج مهلة بسيطة بعد كتابة المحتوى قبل ما تقدر تطبعه صح)
+    printWindow.onload = () => {
+        setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+        }, 250);
+    };
+}
 </script>
 </body>
 </html>
