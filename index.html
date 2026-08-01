@@ -313,39 +313,39 @@
     /* ===== تنسيق الطباعة / حفظ PDF من المتصفح مباشرة (أي قسم يُعطى كلاس print-target) ===== */
     .print-only-header { display: none; }
     @media print {
-        /* بدل حيلة visibility + position:absolute (كانت تنكسر مع تحويل الصفحة لوضع أفقي
-           landscape بمتصفحات الجوال وتطلع شاشة فاضية) — نستخدم display بدل كذا، اللي
-           يخلي المحتوى بترتيبه الطبيعي بالصفحة بدون أي تموضع يدوي ممكن ينكسر */
-        body * { display: none !important; }
-        .print-target, .print-target * { display: revert !important; }
+        /* نخفي كل شي إلا #printStage — أبسط وأضمن طريقة، ما تحتاج أي خاصية CSS حديثة
+           (بعض متصفحات الجوال ما تدعم display:revert اللي كنا نستخدمها قبل، وهذا
+           كان يسبب صفحة فاضية تمامًا). محتوى #printStage نسخة مستقلة من القسم
+           المطلوب طباعته، تُبنى وقت الطباعة نفسها، وتُعرض بترتيبها الطبيعي */
+        body > *:not(#printStage) { display: none !important; }
+        #printStage { display: block !important; background: #fff !important; color: #000 !important; }
 
-        .print-target { border: none !important; box-shadow: none !important; padding: 0 !important; }
-
-        /* مهم: نفرض ألوان واضحة (أسود على أبيض) دايمًا عند الطباعة، بغض النظر عن المود
-           الليلي — لأن أغلب المتصفحات لا تطبع خلفيات الصفحة افتراضيًا، فلو كان المود
-           الليلي مفعّل يطلع نص فاتح على ورق أبيض = يبين وكأنها صفحة فاضية */
-        .print-target, .print-target * {
+        #printStage, #printStage * {
             background: #ffffff !important;
             color: #000000 !important;
             border-color: #999 !important;
             box-shadow: none !important;
         }
-        .monthly-table th { background-color: #222 !important; color: #fff !important; }
+        #printStage .monthly-table th { background-color: #222 !important; color: #fff !important; }
 
-        .print-target .btn-secondary { display: none !important; }
-        .print-target .print-only-header {
+        #printStage .btn-secondary { display: none !important; }
+        #printStage .print-only-header {
             display: block !important; text-align: center; border-bottom: 3px solid #000;
             padding-bottom: 12px; margin-bottom: 16px;
         }
-        .print-only-header h2 { color: #000; font-size: 20px; margin-bottom: 4px; }
-        .print-only-header p { color: #555 !important; font-size: 12px; }
-        .monthly-table { min-width: 0; width: 100%; }
-        .cell-actions, .th-actions { display: none !important; }
+        #printStage .print-only-header h2 { color: #000; font-size: 20px; margin-bottom: 4px; }
+        #printStage .print-only-header p { color: #555 !important; font-size: 12px; }
+        #printStage .monthly-table { min-width: 0; width: 100%; }
+        #printStage .cell-actions, #printStage .th-actions { display: none !important; }
         @page { size: A4 landscape; margin: 12mm; }
     }
 </style>
 </head>
 <body>
+
+<!-- منطقة مخصصة للطباعة بس — نستنسخ فيها محتوى القسم المطلوب طباعته وقت الحاجة،
+     بدل محاولة "إظهار" القسم الأصلي مكانه (كانت تنكسر بمتصفحات الجوال) -->
+<div id="printStage" style="display:none;"></div>
 
 <div class="container" id="appContainer">
     <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px;">
@@ -2281,37 +2281,46 @@ function printSection(sectionId, dateElId, filenamePrefix) {
     const section = document.getElementById(sectionId);
     if (!section) { showError("تعذر تجهيز الطباعة، حاول تحديث الصفحة"); return; }
 
-    document.querySelectorAll(".print-target").forEach(el => el.classList.remove("print-target"));
-    section.classList.add("print-target");
+    // نحدّث نص التاريخ على النسخة الأصلية أولاً، عشان ينسخ وياه فورًا بالخطوة الجاية
+    const dateEl = document.getElementById(dateElId);
+    if (dateEl) dateEl.textContent = "تاريخ الطباعة: " + new Date().toLocaleDateString("ar-EG");
 
     // اسم الملف المقترح عند الحفظ يكون دايمًا بتاريخ اليوم الفعلي، بغض النظر عن التاريخ المعروض بالتقرير
     document.title = `${filenamePrefix}_${todayDateStringLocal()}`;
 
-    const dateEl = document.getElementById(dateElId);
-    if (dateEl) dateEl.textContent = "تاريخ الطباعة: " + new Date().toLocaleDateString("ar-EG");
+    // نستنسخ القسم كامل بمحتواه الحالي (بعد تحديث تاريخ الطباعة) ونحطه بمنطقة الطباعة
+    // المخصصة — هذا أضمن من محاولة "نظهر" القسم الأصلي مكانه (كانت تنكسر بمتصفحات
+    // الجوال، خصوصًا مع تحويل الاتجاه لأفقي landscape)
+    const stage = document.getElementById("printStage");
+    stage.innerHTML = "";
+    const clone = section.cloneNode(true);
+    // نشيل أي id مكرر من النسخة عشان ما يصير تعارض معرّفات بالصفحة
+    if (clone.id) clone.removeAttribute("id");
+    clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+    stage.appendChild(clone);
 
-    // ملاحظة: ما ننظّف (نشيل print-target) مباشرة بعد window.print() لأن بعض متصفحات
+    // ملاحظة: ما ننظّف منطقة الطباعة مباشرة بعد window.print() لأن بعض متصفحات
     // الجوال تعالج الطباعة بشكل غير متزامن — التنظيف الفوري كان يمسح المحتوى قبل ما
-    // يخلص تجهيز الطباعة فعليًا، فيطلع صفحة فاضية بالجوال. نعتمد على afterprint فقط،
-    // ومهلة احتياطية (10 ثواني) في حال المتصفح ما يدعم afterprint أصلًا.
+    // يخلص تجهيز الطباعة فعليًا. نعتمد على afterprint، ومهلة احتياطية (10 ثواني).
     try {
         window.print();
     } catch (e) {
         showError("تعذر فتح نافذة الطباعة");
         document.title = ORIGINAL_PAGE_TITLE;
-        document.querySelectorAll(".print-target").forEach(el => el.classList.remove("print-target"));
+        stage.innerHTML = "";
     }
 
     clearTimeout(window._printCleanupTimer);
     window._printCleanupTimer = setTimeout(() => {
         document.title = ORIGINAL_PAGE_TITLE;
-        document.querySelectorAll(".print-target").forEach(el => el.classList.remove("print-target"));
+        stage.innerHTML = "";
     }, 10000);
 }
 
 window.addEventListener("afterprint", () => {
     document.title = ORIGINAL_PAGE_TITLE;
-    document.querySelectorAll(".print-target").forEach(el => el.classList.remove("print-target"));
+    const stage = document.getElementById("printStage");
+    if (stage) stage.innerHTML = "";
 });
 </script>
 </body>
