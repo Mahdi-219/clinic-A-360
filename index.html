@@ -474,6 +474,13 @@
                         <input type="text" id="patientCivilId" placeholder="الرقم المدني" inputmode="numeric">
                     </div>
                     <div class="form-group">
+                        <label for="patientGender" data-i18n="genderLabel">الجنس</label>
+                        <select id="patientGender">
+                            <option value="ذكر" data-i18n="genderMale">ذكر</option>
+                            <option value="أنثى" data-i18n="genderFemale">أنثى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="patientCondition" data-i18n="conditionLabel">الحالة</label>
                         <select id="patientCondition" onchange="toggleOtherConditionBox()">
                             <option value="حالات طبية">حالات طبية</option>
@@ -533,12 +540,12 @@
                 <table class="monthly-table" id="todayPatientsTable">
                     <thead>
                         <tr>
-                            <th data-i18n="timeColLabel">الوقت</th><th data-i18n="patientNameLabel">اسم المريض</th><th data-i18n="civilIdLabel">الرقم المدني</th><th data-i18n="conditionLabel">الحالة</th>
+                            <th data-i18n="timeColLabel">الوقت</th><th data-i18n="patientNameLabel">اسم المريض</th><th data-i18n="civilIdLabel">الرقم المدني</th><th data-i18n="genderLabel">الجنس</th><th data-i18n="conditionLabel">الحالة</th>
                             <th data-i18n="bpLabel">الضغط</th><th data-i18n="sugarLabel">السكر</th><th data-i18n="tempLabel">الحرارة</th><th data-i18n="treatmentLabel">التعامل</th><th data-i18n="empIdColLabel">الرقم الوظيفي</th>
                         </tr>
                     </thead>
                     <tbody id="todayPatientsBody">
-                        <tr class="empty-row"><td colspan="9">لم تتم إضافة أي مريض بعد اليوم لنفس عيادتك وشفتك</td></tr>
+                        <tr class="empty-row"><td colspan="10">لم تتم إضافة أي مريض بعد اليوم لنفس عيادتك وشفتك</td></tr>
                     </tbody>
                 </table>
                 <button class="btn-secondary" onclick="printSection('todayPatientsReportSection', 'todayPatientsPrintDate', 'مرضى_اليوم')" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
@@ -575,13 +582,13 @@
                 <table class="monthly-table" id="patientsByDateTable">
                     <thead>
                         <tr>
-                            <th data-i18n="timeColLabel">الوقت</th><th data-i18n="patientNameLabel">اسم المريض</th><th data-i18n="civilIdLabel">الرقم المدني</th><th data-i18n="conditionLabel">الحالة</th>
+                            <th data-i18n="timeColLabel">الوقت</th><th data-i18n="patientNameLabel">اسم المريض</th><th data-i18n="civilIdLabel">الرقم المدني</th><th data-i18n="genderLabel">الجنس</th><th data-i18n="conditionLabel">الحالة</th>
                             <th data-i18n="bpLabel">الضغط</th><th data-i18n="sugarLabel">السكر</th><th data-i18n="tempLabel">الحرارة</th><th data-i18n="treatmentLabel">التعامل</th>
                             <th data-i18n="clinicLabel">العيادة</th><th data-i18n="shiftLabel">الشفت</th><th data-i18n="empIdColLabel">الرقم الوظيفي</th><th class="th-actions" data-i18n="actionsLabel">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="patientsByDateBody">
-                        <tr class="empty-row"><td colspan="12">اختر تاريخًا واضغط "عرض المرضى"</td></tr>
+                        <tr class="empty-row"><td colspan="13">اختر تاريخًا واضغط "عرض المرضى"</td></tr>
                     </tbody>
                 </table>
                 <button class="btn-secondary" onclick="printSection('patientsByDateSection', 'patientsByDatePrintDate', 'تقرير_المرضى')" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
@@ -848,6 +855,9 @@ const TRANSLATIONS = {
         manageEmployeesTitle: "Manage Employees — Edit Clinic & Shift",
         logoutBtn: "Logout",
         patientNameLabel: "Patient Name",
+        genderLabel: "Gender",
+        genderMale: "Male",
+        genderFemale: "Female",
         conditionLabel: "Condition",
         writeConditionLabel: "Enter Condition",
         bpLabel: "Blood Pressure",
@@ -1351,6 +1361,7 @@ async function savePatient() {
 
     const name = document.getElementById("patientName").value.trim();
     const civilId = document.getElementById("patientCivilId").value.trim();
+    const gender = document.getElementById("patientGender").value;
     const conditionSelect = document.getElementById("patientCondition").value;
     const condition = conditionSelect === "__other__"
         ? document.getElementById("patientConditionOther").value.trim()
@@ -1376,6 +1387,7 @@ async function savePatient() {
             shift: session.shift,
             patient_name: name,
             civil_id: civilId,
+            gender,
             condition,
             blood_pressure: bp,
             sugar,
@@ -1409,6 +1421,7 @@ function toggleOtherConditionBox() {
 function clearPatientForm() {
     document.getElementById("patientName").value = "";
     document.getElementById("patientCivilId").value = "";
+    document.getElementById("patientGender").selectedIndex = 0;
     document.getElementById("patientCondition").selectedIndex = 0;
     document.getElementById("patientConditionOther").value = "";
     document.getElementById("patientConditionOtherGroup").style.display = "none";
@@ -1438,7 +1451,7 @@ function renderTodayPatientsTable(rows) {
     document.getElementById("todayPatientCount").textContent = rows.length;
 
     if (!rows.length) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="9">لم تتم إضافة أي مريض بعد اليوم لنفس عيادتك وشفتك</td></tr>`;
+        body.innerHTML = `<tr class="empty-row"><td colspan="10">لم تتم إضافة أي مريض بعد اليوم لنفس عيادتك وشفتك</td></tr>`;
         return;
     }
 
@@ -1448,6 +1461,7 @@ function renderTodayPatientsTable(rows) {
             <td>${p.time || "-"}</td>
             <td>${p.patient_name}</td>
             <td>${p.civil_id}</td>
+            <td>${p.gender || "-"}</td>
             <td>${p.condition}</td>
             <td>${p.blood_pressure || "-"}</td>
             <td>${p.sugar || "-"}</td>
@@ -1919,6 +1933,7 @@ async function deleteRow(btn) {
 /* ---------- عرض المرضى حسب التاريخ (للمسؤول) ---------- */
 
 const PATIENT_CONDITION_OPTIONS = ["حالات طبية", "ضغط الدم", "ضغط زايد", "ضغط ناقص", "سكر زايد", "سكر ناقص", "صداع", "علامات حيوية", "إصابات", "حروق", "نقل مستشفى"];
+const PATIENT_GENDER_OPTIONS = ["ذكر", "أنثى"];
 
 async function loadPatientsByDate() {
     const date = document.getElementById("patientsViewDate").value;
@@ -1943,14 +1958,14 @@ async function loadPatientsByDate() {
     }
 }
 
-const PATIENT_ROW_FIELDS = ["time", "patient_name", "civil_id", "condition", "blood_pressure", "sugar", "temperature", "treatment"];
+const PATIENT_ROW_FIELDS = ["time", "patient_name", "civil_id", "gender", "condition", "blood_pressure", "sugar", "temperature", "treatment"];
 
 function renderPatientsByDateTable(rows) {
     const body = document.getElementById("patientsByDateBody");
     body.innerHTML = "";
 
     if (!rows.length) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="12">لا يوجد مرضى مسجلون بهذا التاريخ</td></tr>`;
+        body.innerHTML = `<tr class="empty-row"><td colspan="13">لا يوجد مرضى مسجلون بهذا التاريخ</td></tr>`;
         return;
     }
 
@@ -2004,6 +2019,10 @@ function startEditPatientRow(btn) {
                 <select class="row-input cond-select" onchange="this.nextElementSibling.style.display = this.value === '__other__' ? 'block' : 'none';">${optionsHTML}</select>
                 <input type="text" class="row-input cond-other" placeholder="اكتب الحالة" value="${isKnown ? "" : val}" style="display:${isKnown ? "none" : "block"}; margin-top:4px;">
             `;
+        } else if (key === "gender") {
+            const optionsHTML = PATIENT_GENDER_OPTIONS.map(o =>
+                `<option value="${o}" ${o === val ? "selected" : ""}>${o}</option>`).join("");
+            td.innerHTML = `<select class="row-input gender-select">${optionsHTML}</select>`;
         } else if (key === "time") {
             const [h, m] = (val || "00:00").split(":");
             const hourOpts = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"))
@@ -2056,6 +2075,8 @@ async function savePatientEditRow(btn) {
             updated[key] = selectVal === "__other__"
                 ? cell.querySelector(".cond-other").value.trim()
                 : selectVal;
+        } else if (key === "gender") {
+            updated[key] = cell.querySelector(".gender-select").value;
         } else {
             const field = cell.querySelector("input, select");
             updated[key] = field.value.trim();
@@ -2102,7 +2123,7 @@ async function deletePatientRow(btn) {
             showSuccess("تم حذف المريض بنجاح");
             const body = document.getElementById("patientsByDateBody");
             if (!body.children.length) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="12">لا يوجد مرضى مسجلون بهذا التاريخ</td></tr>`;
+                body.innerHTML = `<tr class="empty-row"><td colspan="13">لا يوجد مرضى مسجلون بهذا التاريخ</td></tr>`;
             }
         } else {
             showError("تعذر حذف السجل");
