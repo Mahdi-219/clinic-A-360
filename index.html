@@ -395,7 +395,7 @@
             </div>
             <div class="form-group">
                 <label for="regCivilId" data-i18n="civilIdLabel">الرقم المدني</label>
-                <input type="text" id="regCivilId" placeholder="الرقم المدني" inputmode="numeric">
+                <input type="text" id="regCivilId" placeholder="الرقم المدني" inputmode="numeric" maxlength="12" oninput="limitTwelveDigits(this)">
             </div>
             <div class="form-group">
                 <label for="regEmail" data-i18n="emailLabel">البريد الإلكتروني</label>
@@ -442,7 +442,7 @@
             </div>
             <div class="form-group">
                 <label for="forgotCivilId" data-i18n="civilIdRegisteredLabel">الرقم المدني المسجل</label>
-                <input type="text" id="forgotCivilId" placeholder="الرقم المدني" inputmode="numeric">
+                <input type="text" id="forgotCivilId" placeholder="الرقم المدني" inputmode="numeric" maxlength="12" oninput="limitTwelveDigits(this)">
             </div>
             <div class="form-group">
                 <label for="forgotEmail" data-i18n="emailRegisteredLabel">البريد الإلكتروني المسجل</label>
@@ -471,7 +471,7 @@
                     </div>
                     <div class="form-group">
                         <label for="patientCivilId" data-i18n="civilIdLabel">الرقم المدني</label>
-                        <input type="text" id="patientCivilId" placeholder="الرقم المدني" inputmode="numeric">
+                        <input type="text" id="patientCivilId" placeholder="الرقم المدني" inputmode="numeric" maxlength="12" oninput="limitTwelveDigits(this); checkReturningPatient();">
                     </div>
                     <div class="form-group">
                         <label for="patientGender" data-i18n="genderLabel">الجنس</label>
@@ -483,18 +483,19 @@
                     <div class="form-group">
                         <label for="patientCondition" data-i18n="conditionLabel">الحالة</label>
                         <select id="patientCondition" onchange="toggleOtherConditionBox()">
-                            <option value="حالات طبية">حالات طبية</option>
-                            <option value="ضغط الدم">ضغط الدم</option>
-                            <option value="ضغط زايد">ضغط زايد</option>
-                            <option value="ضغط ناقص">ضغط ناقص</option>
-                            <option value="سكر زايد">سكر زايد</option>
-                            <option value="سكر ناقص">سكر ناقص</option>
-                            <option value="صداع">صداع</option>
-                            <option value="علامات حيوية">علامات حيوية</option>
-                            <option value="إصابات">إصابات</option>
-                            <option value="حروق">حروق</option>
-                            <option value="نقل مستشفى">نقل مستشفى</option>
-                            <option value="__other__">أخرى (اكتب الحالة)</option>
+                            <option value="حالات طبية" data-i18n="condSickCases">حالات طبية</option>
+                            <option value="ضغط الدم" data-i18n="condBloodPressure">ضغط الدم</option>
+                            <option value="ارتفاع ضغط" data-i18n="condHypertension">ارتفاع ضغط</option>
+                            <option value="انخفاض ضغط" data-i18n="condHypotension">انخفاض ضغط</option>
+                            <option value="قياس سكر الدم" data-i18n="condBloodSugar">قياس سكر الدم</option>
+                            <option value="ارتفاع سكر الدم" data-i18n="condHyperglycemia">ارتفاع سكر الدم</option>
+                            <option value="انخفاض سكر الدم" data-i18n="condHypoglycemia">انخفاض سكر الدم</option>
+                            <option value="صداع" data-i18n="condHeadache">صداع</option>
+                            <option value="علامات حيوية" data-i18n="condVitalSigns">علامات حيوية</option>
+                            <option value="إصابات" data-i18n="condInjuries">إصابات</option>
+                            <option value="حروق" data-i18n="condBurns">حروق</option>
+                            <option value="نقل مستشفى" data-i18n="condHospitalTransfer">نقل مستشفى</option>
+                            <option value="__other__" data-i18n="condOther">أخرى (اكتب الحالة)</option>
                         </select>
                     </div>
                     <div class="form-group" id="patientConditionOtherGroup" style="display:none;">
@@ -858,6 +859,19 @@ const TRANSLATIONS = {
         genderLabel: "Gender",
         genderMale: "Male",
         genderFemale: "Female",
+        condSickCases: "Medical Cases",
+        condBloodPressure: "Blood Pressure",
+        condHypertension: "Hypertension",
+        condHypotension: "Hypotension",
+        condBloodSugar: "Blood Sugar",
+        condHyperglycemia: "Hyperglycemia",
+        condHypoglycemia: "Hypoglycemia",
+        condHeadache: "Headache",
+        condVitalSigns: "Vital Signs",
+        condInjuries: "Injuries",
+        condBurns: "Burns",
+        condHospitalTransfer: "Hospital Transfer",
+        condOther: "Other (specify)",
         conditionLabel: "Condition",
         writeConditionLabel: "Enter Condition",
         bpLabel: "Blood Pressure",
@@ -971,6 +985,10 @@ function t(key) {
 
 function limitFourDigits(input) {
     if (input.value.length > 4) input.value = input.value.slice(0, 4);
+}
+
+function limitTwelveDigits(input) {
+    if (input.value.length > 12) input.value = input.value.slice(0, 12);
 }
 
 // بمجرد ما يكتمل الرقم الوظيفي (4 أرقام) بشاشة الدخول، نجيب عيادته وشفته
@@ -1374,6 +1392,7 @@ async function savePatient() {
 
     if (!name || !civilId) { showError("الرجاء إدخال اسم المريض والرقم المدني"); return; }
     if (conditionSelect === "__other__" && !condition) { showError("الرجاء كتابة نوع الحالة"); return; }
+    if (civilId.length > 12) { showError("الرقم المدني يجب ألا يتجاوز 12 رقمًا"); return; }
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
     setBusy(btn, true, "حفظ بيانات المريض");
@@ -1410,6 +1429,27 @@ async function savePatient() {
     } finally {
         setBusy(btn, false, "حفظ بيانات المريض");
     }
+}
+
+// يبحث عن آخر بيانات محفوظة لنفس الرقم المدني (مريض متكرر) ويعبّي الاسم والجنس تلقائيًا
+// حتى لا يُعاد كتابتهم يدويًا في كل زيارة
+let returningPatientTimer = null;
+function checkReturningPatient() {
+    clearTimeout(returningPatientTimer);
+    const civilId = document.getElementById("patientCivilId").value.trim();
+    if (civilId.length < 5) return; // ما نبحث إلا بعد رقم مدني معقول الطول
+
+    returningPatientTimer = setTimeout(async () => {
+        try {
+            const result = await apiGet({ action: "GET_PATIENT_BY_CIVIL_ID", token: session.token, civil_id: civilId });
+            if (result && result.status === "FOUND") {
+                document.getElementById("patientName").value = result.patient_name || "";
+                if (result.gender) document.getElementById("patientGender").value = result.gender;
+            }
+        } catch (e) {
+            // تجاهل بصمت — لو تعذر البحث، الموظف يكمل التعبئة يدويًا كالمعتاد
+        }
+    }, 400);
 }
 
 function toggleOtherConditionBox() {
@@ -1932,7 +1972,7 @@ async function deleteRow(btn) {
 
 /* ---------- عرض المرضى حسب التاريخ (للمسؤول) ---------- */
 
-const PATIENT_CONDITION_OPTIONS = ["حالات طبية", "ضغط الدم", "ضغط زايد", "ضغط ناقص", "سكر زايد", "سكر ناقص", "صداع", "علامات حيوية", "إصابات", "حروق", "نقل مستشفى"];
+const PATIENT_CONDITION_OPTIONS = ["حالات طبية", "ضغط الدم", "ارتفاع ضغط", "انخفاض ضغط", "قياس سكر الدم", "ارتفاع سكر الدم", "انخفاض سكر الدم", "صداع", "علامات حيوية", "إصابات", "حروق", "نقل مستشفى"];
 const PATIENT_GENDER_OPTIONS = ["ذكر", "أنثى"];
 
 async function loadPatientsByDate() {
