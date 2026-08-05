@@ -159,7 +159,7 @@
     label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--ink-soft); font-size: 13.5px; }
     select, input, textarea {
         width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 9px;
-        font-size: 15px; background-color: var(--input-bg); outline: none; color: var(--text);
+        font-size: 16px; background-color: var(--input-bg); outline: none; color: var(--text);
         font-family: inherit; transition: border-color .15s, box-shadow .15s;
     }
     textarea { resize: vertical; }
@@ -606,7 +606,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="statsEntryDate" data-i18n="dateLabel">التاريخ</label>
-                        <input type="date" id="statsEntryDate" onchange="loadStatsEntryCounters()">
+                        <input type="date" id="statsEntryDate" readonly style="background:var(--surface-2); color:var(--muted); cursor:not-allowed;">
                     </div>
                     <div class="form-group">
                         <label for="statsEntryClinic" data-i18n="clinicLabel">العيادة</label>
@@ -705,14 +705,9 @@
             </div>
 
             <div id="monthlyStatsAdminControls">
-                <div class="tab-switcher" style="margin-bottom:16px;">
-                    <button class="tab-btn active" id="scopeBtnDaily" onclick="setReportScope('daily')">📆 إحصائية اليوم</button>
-                    <button class="tab-btn" id="scopeBtnMonthly" onclick="setReportScope('monthly')">🗓️ الإحصائية الشهرية</button>
-                </div>
-
-                <div class="form-group" id="dailyReportDateGroup">
-                    <label for="dailyReportDate" data-i18n="chooseDailyDateLabel">اختر تاريخ الإحصائية اليومية</label>
-                    <input type="date" id="dailyReportDate" onchange="loadMonthlyReport()">
+                <div class="form-group" id="reportMonthGroup">
+                    <label for="reportMonth" data-i18n="chooseMonthLabel">اختر الشهر</label>
+                    <input type="month" id="reportMonth" onchange="loadMonthlyReport()">
                 </div>
 
                 <div class="form-group">
@@ -724,10 +719,11 @@
                     </select>
                 </div>
 
-                <button class="btn-primary btn-admin" id="loadReportBtn" onclick="loadMonthlyReport()" data-i18n="loadDailyReportBtn">جلب إحصائية اليوم</button>
+                <button class="btn-primary btn-admin" id="loadReportBtn" onclick="loadMonthlyReport()" data-i18n="loadMonthlyReportBtn">جلب التقرير الشهري</button>
 
                 <div class="stats-controls">
                     <button class="btn-stat" id="btnPieChart" onclick="showCaseTypeChart('doughnut')">📊 نسب الحالات (دائري)</button>
+
                     <button class="btn-stat" id="btnBarSingle" onclick="showCaseTypeChart('bar')">📶 نسب الحالات (أعمدة)</button>
                     <button class="btn-stat" id="btnBarChart" onclick="showBarChart()">📶 مقارنة العيادتين</button>
                     <button class="btn-stat" id="btnCombinedTotal" onclick="showCombinedTotal()">🏥 إجمالي العيادتين معًا</button>
@@ -747,7 +743,7 @@
                     <h2>تقرير حالات العيادة</h2>
                     <p id="printDate"></p>
                 </div>
-                <div class="report-title" id="reportTableTitle">إحصائية اليوم لكل الشفتات</div>
+                <div class="report-title" id="reportTableTitle" data-i18n="monthlyReportTitle">التقرير الشهري لكل الشفتات</div>
                 <table class="monthly-table" id="reportTable">
                     <thead>
                         <tr>
@@ -882,7 +878,7 @@ const TRANSLATIONS = {
         dateLabel: "Date",
         clinicLabel: "Clinic",
         shiftLabel: "Shift",
-        chooseDailyDateLabel: "Choose Daily Stats Date",
+        chooseMonthLabel: "Choose Month",
         chooseClinicForReportLabel: "Choose Clinic for Report",
         timeColLabel: "Time",
         empIdColLabel: "Employee ID",
@@ -903,7 +899,8 @@ const TRANSLATIONS = {
         printSaveBtn: "🖨️ Print / Save PDF",
         viewPatientsBtn: "View Patients",
         saveStatsBtn: "Save Statistics",
-        loadDailyReportBtn: "Load Daily Report"
+        loadMonthlyReportBtn: "Load Monthly Report",
+        monthlyReportTitle: "Monthly Report — All Shifts"
     }
 };
 
@@ -982,6 +979,12 @@ function t(key) {
 })();
 
 /* ---------- أدوات مساعدة عامة ---------- */
+
+// يمنع حقن HTML/سكربتات لو موظف كتب اسم مريض أو رقم هاتف يحتوي على أكواد —
+// لازم تُستخدم على أي نص أدخله مستخدم قبل ما ينحط بالصفحة عبر innerHTML
+function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
 
 function limitFourDigits(input) {
     if (input.value.length > 4) input.value = input.value.slice(0, 4);
@@ -1364,7 +1367,7 @@ function populateTimeSelect(selectEl, count) {
 }
 populateTimeSelect(document.getElementById("patientTimeHour"), 24);
 populateTimeSelect(document.getElementById("patientTimeMinute"), 60);
-document.getElementById("dailyReportDate").value = new Date().toLocaleDateString("en-CA");
+document.getElementById("reportMonth").value = new Date().toLocaleDateString("en-CA").substring(0, 7);
 
 function setDefaultPatientTime() {
     const now = new Date();
@@ -1498,48 +1501,32 @@ function renderTodayPatientsTable(rows) {
     // الأحدث فوق
     body.innerHTML = rows.slice().reverse().map(p => `
         <tr>
-            <td>${p.time || "-"}</td>
-            <td>${p.patient_name}</td>
-            <td>${p.civil_id}</td>
-            <td>${p.gender || "-"}</td>
-            <td>${p.condition}</td>
-            <td>${p.blood_pressure || "-"}</td>
-            <td>${p.sugar || "-"}</td>
-            <td>${p.temperature || "-"}</td>
-            <td>${p.treatment || "-"}</td>
-            <td>${p.emp_id}</td>
+            <td>${escapeHtml(p.time) || "-"}</td>
+            <td>${escapeHtml(p.patient_name)}</td>
+            <td>${escapeHtml(p.civil_id)}</td>
+            <td>${escapeHtml(p.gender) || "-"}</td>
+            <td>${escapeHtml(p.condition)}</td>
+            <td>${escapeHtml(p.blood_pressure) || "-"}</td>
+            <td>${escapeHtml(p.sugar) || "-"}</td>
+            <td>${escapeHtml(p.temperature) || "-"}</td>
+            <td>${escapeHtml(p.treatment) || "-"}</td>
+            <td>${escapeHtml(p.emp_id)}</td>
         </tr>
     `).join("");
 }
 
 /* ---------- التقرير: يومي أو شهري ---------- */
 
-let currentReportScope = "daily"; // القيمة الافتراضية عند فتح القسم
-
-function setReportScope(scope) {
-    currentReportScope = scope;
-    const isDaily = scope === "daily";
-    document.getElementById("scopeBtnDaily").classList.toggle("active", isDaily);
-    document.getElementById("scopeBtnMonthly").classList.toggle("active", !isDaily);
-    document.getElementById("loadReportBtn").textContent = isDaily ? "جلب إحصائية اليوم" : "جلب التقرير الشهري";
-    document.getElementById("reportTableTitle").textContent = isDaily ? "إحصائية اليوم لكل الشفتات" : "التقرير الشهري لكل الشفتات";
-
-    // حقل اختيار التاريخ يظهر بس بوضع "إحصائية اليوم"
-    document.getElementById("dailyReportDateGroup").style.display = isDaily ? "block" : "none";
-    if (isDaily && !document.getElementById("dailyReportDate").value) {
-        document.getElementById("dailyReportDate").value = todayDateStringLocal();
-    }
-
-    // نحدّث تلقائيًا بالنطاق الجديد بدل ما ننتظر ضغطة يدوية
-    loadMonthlyReport();
-}
-
 function currentReportAction() {
-    return currentReportScope === "daily" ? "GET_DAILY_REPORT" : "GET_MONTHLY_REPORT";
+    return "GET_MONTHLY_REPORT";
 }
 
 function currentReportScopeLabel() {
-    return currentReportScope === "daily" ? "اليوم" : "الشهر";
+    return "الشهر";
+}
+
+function currentReportMonth() {
+    return document.getElementById("reportMonth").value || todayDateStringLocal().substring(0, 7);
 }
 
 /* ---------- الإحصائية اليدوية (للمسؤول فقط) ---------- */
@@ -1636,12 +1623,7 @@ async function loadMonthlyReport() {
     if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
 
     const clinic = document.getElementById("adminClinicSelect").value;
-    const params = { action: currentReportAction(), token: session.token, clinic };
-
-    // بوضع "إحصائية اليوم" نرسل التاريخ المختار — نفس اليوم اللي يختاره المستخدم يُعرض فورًا
-    if (currentReportScope === "daily") {
-        params.date = document.getElementById("dailyReportDate").value || todayDateStringLocal();
-    }
+    const params = { action: currentReportAction(), token: session.token, clinic, month: currentReportMonth() };
 
     try {
         const result = await apiGet(params);
@@ -1697,7 +1679,7 @@ function setActiveStatBtn(id) {
 // يجلب بيانات عيادة معينة (أو الكل) ويرجع مجموع كل نوع حالة + الإجمالي العام
 // (يحترم النطاق الحالي: يومي أو شهري)
 async function fetchClinicTotals(clinicValue) {
-    const result = await apiGet({ action: currentReportAction(), token: session.token, clinic: clinicValue });
+    const result = await apiGet({ action: currentReportAction(), token: session.token, clinic: clinicValue, month: currentReportMonth() });
     if (!Array.isArray(result)) return null;
 
     const totals = Object.fromEntries(REPORT_EDIT_FIELDS.map(k => [k, 0]));
@@ -2057,7 +2039,7 @@ function startEditPatientRow(btn) {
                 + `<option value="__other__" ${selectVal === "__other__" ? "selected" : ""}>أخرى (اكتب الحالة)</option>`;
             td.innerHTML = `
                 <select class="row-input cond-select" onchange="this.nextElementSibling.style.display = this.value === '__other__' ? 'block' : 'none';">${optionsHTML}</select>
-                <input type="text" class="row-input cond-other" placeholder="اكتب الحالة" value="${isKnown ? "" : val}" style="display:${isKnown ? "none" : "block"}; margin-top:4px;">
+                <input type="text" class="row-input cond-other" placeholder="اكتب الحالة" value="${isKnown ? "" : escapeHtml(val)}" style="display:${isKnown ? "none" : "block"}; margin-top:4px;">
             `;
         } else if (key === "gender") {
             const optionsHTML = PATIENT_GENDER_OPTIONS.map(o =>
@@ -2074,7 +2056,7 @@ function startEditPatientRow(btn) {
                 <select class="row-input time-minute-select">${minOpts}</select>
             </div>`;
         } else {
-            td.innerHTML = `<input type="text" class="row-input" value="${val}">`;
+            td.innerHTML = `<input type="text" class="row-input" value="${escapeHtml(val)}">`;
         }
     });
 
@@ -2197,10 +2179,10 @@ async function loadAllEmployees() {
             const tr = document.createElement("tr");
             tr.dataset.empId = emp.emp_id;
             tr.innerHTML = `
-                <td>${emp.emp_id}</td>
-                <td>${emp.phone || "-"}</td>
-                <td class="cell-emp-clinic" data-value="${emp.clinic}">${emp.clinic || "-"}</td>
-                <td class="cell-emp-shift" data-value="${emp.shift}">${emp.shift || "-"}</td>
+                <td>${escapeHtml(emp.emp_id)}</td>
+                <td>${escapeHtml(emp.phone) || "-"}</td>
+                <td class="cell-emp-clinic" data-value="${escapeHtml(emp.clinic)}">${escapeHtml(emp.clinic) || "-"}</td>
+                <td class="cell-emp-shift" data-value="${escapeHtml(emp.shift)}">${escapeHtml(emp.shift) || "-"}</td>
                 <td class="cell-actions">
                     <button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">${t('edit')}</button>
                     <button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">${t('deleteAccount')}</button>
