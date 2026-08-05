@@ -349,6 +349,11 @@
         <span id="serverStatusText" data-i18n="serverChecking">يتم التحقق من حالة السيرفر...</span>
     </div>
 
+    <div class="server-status" id="dutyTeamBanner" style="display:none; background: var(--accent-soft); color: var(--accent-dark); border-color: var(--accent-border);">
+        <span>🕐</span>
+        <span id="dutyTeamBannerText"></span>
+    </div>
+
     <div class="alert-message alert-danger" id="errorMessage" role="alert" style="display:none;"></div>
     <div class="alert-message alert-success" id="successMessage" role="status" style="display:none;"></div>
 
@@ -579,8 +584,9 @@
                     <h2>تقرير المرضى</h2>
                     <p id="patientsByDatePrintDate"></p>
                 </div>
-                <div class="report-title">قائمة المرضى</div>
-                <table class="monthly-table" id="patientsByDateTable">
+
+                <div class="report-title"><span data-i18n="morningShiftTitle">🌅 شفت صباحي</span> (<span id="morningPatientCount">0</span>)</div>
+                <table class="monthly-table" id="patientsByDateMorningTable">
                     <thead>
                         <tr>
                             <th data-i18n="timeColLabel">الوقت</th><th data-i18n="patientNameLabel">اسم المريض</th><th data-i18n="civilIdLabel">الرقم المدني</th><th data-i18n="genderLabel">الجنس</th><th data-i18n="conditionLabel">الحالة</th>
@@ -588,10 +594,25 @@
                             <th data-i18n="clinicLabel">العيادة</th><th data-i18n="shiftLabel">الشفت</th><th data-i18n="empIdColLabel">الرقم الوظيفي</th><th class="th-actions" data-i18n="actionsLabel">إجراءات</th>
                         </tr>
                     </thead>
-                    <tbody id="patientsByDateBody">
+                    <tbody id="patientsByDateMorningBody">
                         <tr class="empty-row"><td colspan="13">اختر تاريخًا واضغط "عرض المرضى"</td></tr>
                     </tbody>
                 </table>
+
+                <div class="report-title" style="margin-top:22px;"><span data-i18n="eveningShiftTitle">🌙 شفت مسائي</span> (<span id="eveningPatientCount">0</span>)</div>
+                <table class="monthly-table" id="patientsByDateEveningTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="timeColLabel">الوقت</th><th data-i18n="patientNameLabel">اسم المريض</th><th data-i18n="civilIdLabel">الرقم المدني</th><th data-i18n="genderLabel">الجنس</th><th data-i18n="conditionLabel">الحالة</th>
+                            <th data-i18n="bpLabel">الضغط</th><th data-i18n="sugarLabel">السكر</th><th data-i18n="tempLabel">الحرارة</th><th data-i18n="treatmentLabel">التعامل</th>
+                            <th data-i18n="clinicLabel">العيادة</th><th data-i18n="shiftLabel">الشفت</th><th data-i18n="empIdColLabel">الرقم الوظيفي</th><th class="th-actions" data-i18n="actionsLabel">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientsByDateEveningBody">
+                        <tr class="empty-row"><td colspan="13">اختر تاريخًا واضغط "عرض المرضى"</td></tr>
+                    </tbody>
+                </table>
+
                 <button class="btn-secondary" onclick="printSection('patientsByDateSection', 'patientsByDatePrintDate', 'تقرير_المرضى')" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
             </div>
         </div>
@@ -848,6 +869,8 @@ const TRANSLATIONS = {
         forgotBtn: "Verify & Reset Password",
         addPatientTitle: "Add New Patient",
         viewPatientsTitle: "View Patients by Date",
+        morningShiftTitle: "🌅 Morning Shift",
+        eveningShiftTitle: "🌙 Evening Shift",
         statsTitle: "Monthly Statistics",
         manageEmployeesTitle: "Manage Employees — Edit Clinic & Shift",
         logoutBtn: "Logout",
@@ -1120,6 +1143,19 @@ async function checkServerStatus() {
 
 checkServerStatus();
 
+async function updateDutyTeamBanner() {
+    if (API_URL.includes("PASTE_YOUR")) return;
+    try {
+        const result = await apiGet({ action: "GET_ON_DUTY_TEAM" });
+        if (result && result.on_duty_team) {
+            const banner = document.getElementById("dutyTeamBanner");
+            document.getElementById("dutyTeamBannerText").textContent = `الفريق المناوب اليوم: شفت ${result.on_duty_team}`;
+            banner.style.display = "flex";
+        }
+    } catch (e) { /* تجاهل بصمت */ }
+}
+updateDutyTeamBanner();
+
 /* ---------- استمرارية تسجيل الدخول عبر الريفرش (localStorage) ---------- */
 
 const SESSION_STORAGE_KEY = "clinicSession";
@@ -1201,6 +1237,8 @@ async function handleLogin() {
 
             persistSession();
             enterDashboard();
+        } else if (result.status === "WRONG_SHIFT_DAY") {
+            showError(`اليوم مو شفتك — الفريق المناوب اليوم هو "شفت ${result.on_duty_team}". حسابك مسجّل على شفت "${result.your_team}".`);
         } else {
             showError("الرقم الوظيفي أو الرمز السري غير صحيح");
         }
@@ -1982,45 +2020,60 @@ async function loadPatientsByDate() {
 
 const PATIENT_ROW_FIELDS = ["time", "patient_name", "civil_id", "gender", "condition", "blood_pressure", "sugar", "temperature", "treatment"];
 
-function renderPatientsByDateTable(rows) {
-    const body = document.getElementById("patientsByDateBody");
-    body.innerHTML = "";
+function buildPatientRow(r) {
+    const tr = document.createElement("tr");
+    tr.dataset.id = r.id;
 
-    if (!rows.length) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="13">لا يوجد مرضى مسجلون بهذا التاريخ</td></tr>`;
-        return;
+    PATIENT_ROW_FIELDS.forEach((key, idx) => {
+        const td = document.createElement("td");
+        td.className = "cell-p-" + idx;
+        const val = r[key] ?? "";
+        td.textContent = val === "" ? "-" : val;
+        td.dataset.value = val;
+        tr.appendChild(td);
+    });
+
+    // حقول للعرض فقط (غير قابلة للتعديل): العيادة، الشفت، الرقم الوظيفي
+    [r.clinic, r.shift, r.emp_id].forEach(val => {
+        const td = document.createElement("td");
+        td.textContent = val ?? "";
+        tr.appendChild(td);
+    });
+
+    const actionsTd = document.createElement("td");
+    actionsTd.className = "cell-actions";
+    actionsTd.innerHTML = `
+        <button class="row-btn row-edit" onclick="startEditPatientRow(this)">${t('edit')}</button>
+        <button class="row-btn row-delete" onclick="deletePatientRow(this)">${t('delete')}</button>
+    `;
+    tr.appendChild(actionsTd);
+    return tr;
+}
+
+// كل شفت يطلع بجدوله الخاص وحصري — بلا اختلاط بين الصباحي والمسائي
+function renderPatientsByDateTable(rows) {
+    const morningBody = document.getElementById("patientsByDateMorningBody");
+    const eveningBody = document.getElementById("patientsByDateEveningBody");
+    morningBody.innerHTML = "";
+    eveningBody.innerHTML = "";
+
+    const morningRows = rows.filter(r => (r.shift || "").includes("صباحي"));
+    const eveningRows = rows.filter(r => (r.shift || "").includes("مسائي"));
+
+    document.getElementById("morningPatientCount").textContent = morningRows.length;
+    document.getElementById("eveningPatientCount").textContent = eveningRows.length;
+
+    if (!morningRows.length) {
+        morningBody.innerHTML = `<tr class="empty-row"><td colspan="13">لا يوجد مرضى مسجلون بالشفت الصباحي بهذا التاريخ</td></tr>`;
+    } else {
+        morningRows.forEach(r => morningBody.appendChild(buildPatientRow(r)));
     }
 
-    rows.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.dataset.id = r.id;
-
-        PATIENT_ROW_FIELDS.forEach((key, idx) => {
-            const td = document.createElement("td");
-            td.className = "cell-p-" + idx;
-            const val = r[key] ?? "";
-            td.textContent = val === "" ? "-" : val;
-            td.dataset.value = val;
-            tr.appendChild(td);
-        });
-
-        // حقول للعرض فقط (غير قابلة للتعديل): العيادة، الشفت، الرقم الوظيفي
-        [r.clinic, r.shift, r.emp_id].forEach(val => {
-            const td = document.createElement("td");
-            td.textContent = val ?? "";
-            tr.appendChild(td);
-        });
-
-        const actionsTd = document.createElement("td");
-        actionsTd.className = "cell-actions";
-        actionsTd.innerHTML = `
-            <button class="row-btn row-edit" onclick="startEditPatientRow(this)">${t('edit')}</button>
-            <button class="row-btn row-delete" onclick="deletePatientRow(this)">${t('delete')}</button>
-        `;
-        tr.appendChild(actionsTd);
-
-        body.appendChild(tr);
-    });
+    if (!eveningRows.length) {
+        eveningBody.innerHTML = `<tr class="empty-row"><td colspan="13">لا يوجد مرضى مسجلون بالشفت المسائي بهذا التاريخ</td></tr>`;
+    } else {
+        eveningRows.forEach(r => eveningBody.appendChild(buildPatientRow(r)));
+    }
 }
 
 function startEditPatientRow(btn) {
@@ -2134,6 +2187,7 @@ async function savePatientEditRow(btn) {
 async function deletePatientRow(btn) {
     const tr = btn.closest("tr");
     const id = tr.dataset.id;
+    const body = tr.parentElement; // نحفظ مرجع الجدول (صباحي أو مسائي) قبل ما نحذف الصف
 
     if (!confirm("هل أنت متأكد من حذف بيانات هذا المريض نهائيًا؟")) return;
 
@@ -2143,9 +2197,8 @@ async function deletePatientRow(btn) {
         if (result.status === "SUCCESS") {
             tr.remove();
             showSuccess("تم حذف المريض بنجاح");
-            const body = document.getElementById("patientsByDateBody");
             if (!body.children.length) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="13">لا يوجد مرضى مسجلون بهذا التاريخ</td></tr>`;
+                body.innerHTML = `<tr class="empty-row"><td colspan="13">لا يوجد مرضى مسجلون بهذا الشفت بهذا التاريخ</td></tr>`;
             }
         } else {
             showError("تعذر حذف السجل");
