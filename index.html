@@ -625,6 +625,10 @@
         <div id="monthlyStatsSection">
             <div class="auth-title" style="border:none;" data-i18n="statsTitle">الإحصائية الشهرية</div>
 
+            <div class="alert-message alert-success" id="statsEntryMorningNote" style="display:none;" data-i18n="eveningOnlyStatsNote">
+                إدخال إحصائية اليوم متاح بالشفت المسائي بس — تقدر تشوف الجدول تحت.
+            </div>
+
             <!-- ===== إدخال/تعديل الإحصائية اليدوية — للمسؤول فقط ===== -->
             <div class="auth-screen" id="statsEntryPanel" style="display:none;">
                 <div class="auth-title" id="statsEntryPanelTitle">إدخال إحصائية اليوم</div>
@@ -876,6 +880,7 @@ const TRANSLATIONS = {
         morningShiftTitle: "🌅 Morning Shift",
         eveningShiftTitle: "🌙 Evening Shift",
         statsTitle: "Monthly Statistics",
+        eveningOnlyStatsNote: "Today's statistics entry is available on the evening shift only — you can view the table below.",
         manageEmployeesTitle: "Manage Employees — Edit Clinic & Shift",
         logoutBtn: "Logout",
         patientNameLabel: "Patient Name",
@@ -1378,12 +1383,13 @@ function switchTab(tab) {
     document.getElementById("tabBtnMonthlyStats").classList.toggle("active", isMonthlyStats);
     document.getElementById("tabBtnManageEmployees").classList.toggle("active", isManageEmployees);
 
-    // لوحة إدخال الإحصائية اليدوية (العدادات +/-) صارت للمسعفين (هم يضيفون) —
-    // لوحة التحكم بالتقرير (نطاق يومي/شهري، تاريخ، عيادة، زر جلب، رسوم بيانية) تبقى للمسؤول
-    // (يراقب ويعدّل الجدول بس، ما يضيف عن طريق العدادات)
-    document.getElementById("statsEntryPanel").style.display = (isMonthlyStats && !isAdmin) ? "block" : "none";
+    // لوحة إدخال الإحصائية اليدوية (العدادات +/-) صارت للمسعفين — بس الشفت المسائي بس
+    // (حسب طلب المسؤول: إحصائية اليوم تُدخل مرة وحدة بنهاية اليوم، بالشفت المسائي)
+    const isEveningShift = !!(session.shift && session.shift.indexOf("مسائي") !== -1);
+    document.getElementById("statsEntryPanel").style.display = (isMonthlyStats && !isAdmin && isEveningShift) ? "block" : "none";
+    document.getElementById("statsEntryMorningNote").style.display = (isMonthlyStats && !isAdmin && !isEveningShift) ? "block" : "none";
     document.getElementById("monthlyStatsAdminControls").style.display = (isMonthlyStats && isAdmin) ? "block" : "none";
-    if (isMonthlyStats && !isAdmin && !document.getElementById("statsEntryDate").value) {
+    if (isMonthlyStats && !isAdmin && isEveningShift && !document.getElementById("statsEntryDate").value) {
         document.getElementById("statsEntryDate").value = todayDateStringLocal();
         document.getElementById("statsEntryClinic").value = session.clinic || "عيادة الف";
         document.getElementById("statsEntryShift").value = session.shift || document.getElementById("statsEntryShift").value;
