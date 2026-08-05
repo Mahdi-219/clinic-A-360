@@ -520,11 +520,15 @@
                         <input type="text" id="patientTemp" placeholder="°C">
                     </div>
                     <div class="form-group">
-                        <label for="patientTimeHour" data-i18n="time24Label">الوقت (نظام 24 ساعة)</label>
+                        <label for="patientTimeHour" data-i18n="hourLabel">الساعة</label>
                         <div style="display:flex; gap:8px;">
                             <select id="patientTimeHour" style="flex:1;"></select>
                             <select id="patientTimeMinute" style="flex:1;"></select>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="patientDateDisplay" data-i18n="dateLabel">التاريخ</label>
+                        <input type="text" id="patientDateDisplay" readonly style="background:var(--surface-2); color:var(--muted); cursor:not-allowed;">
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label for="patientAction" data-i18n="treatmentLabel">التعامل</label>
@@ -896,7 +900,7 @@ const TRANSLATIONS = {
         bpLabel: "Blood Pressure",
         sugarLabel: "Sugar",
         tempLabel: "Temperature",
-        time24Label: "Time (24-hour)",
+        hourLabel: "Time",
         treatmentLabel: "Treatment",
         dateLabel: "Date",
         clinicLabel: "Clinic",
@@ -1411,6 +1415,10 @@ function setDefaultPatientTime() {
     const now = new Date();
     document.getElementById("patientTimeHour").value = String(now.getHours()).padStart(2, "0");
     document.getElementById("patientTimeMinute").value = String(now.getMinutes()).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const yyyy = now.getFullYear();
+    document.getElementById("patientDateDisplay").value = `${dd}/${mm}/${yyyy}`;
 }
 
 /* ---------- إضافة مريض ---------- */
