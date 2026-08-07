@@ -1,7 +1,25 @@
-const CACHE_NAME = "clinic-app-cache-v1";
+const CACHE_NAME = "clinic-app-cache-v3";
 const FILES_TO_CACHE = [
+  "./",
   "./index.html",
   "./manifest.json",
+  "./css/styles.css",
+  "./js/config.js",
+  "./js/utils.js",
+  "./js/i18n.js",
+  "./js/api.js",
+  "./js/session.js",
+  "./js/dashboard.js",
+  "./js/auth.js",
+  "./js/patients.js",
+  "./js/stats.js",
+  "./js/charts.js",
+  "./js/employees.js",
+  "./js/print.js",
+  "./js/main.js",
+  "./icons/favicon.ico",
+  "./icons/favicon-32.png",
+  "./icons/apple-touch-icon.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];

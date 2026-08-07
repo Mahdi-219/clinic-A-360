@@ -5,325 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>360 Clinic | سستم جدول حالات العيادة</title>
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="theme-color" content="#0d9488">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="360 Clinic">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-    :root {
-        --ink: #0f2942;
-        --ink-soft: #345169;
-        --accent: #0d9488;
-        --accent-dark: #0b6b62;
-        --accent-soft: #e3f5f2;
-        --amber: #b8860b;
-        --amber-soft: #fdf3d9;
-        --amber-border: #f0dfa0;
-        --danger: #c0392b;
-        --danger-soft: #fbe7e5;
-        --danger-border: #f2c4bd;
-        --success: #1f8b4c;
-        --bg: #eef2f4;
-        --bg-glow-1: #dff3f0;
-        --bg-glow-2: #e7edf3;
-        --card: #ffffff;
-        --surface: #f7f9fa;
-        --surface-2: #eceff1;
-        --input-bg: #ffffff;
-        --accent-border: #b9e6df;
-        --line: #dfe6ea;
-        --text: #22323f;
-        --muted: #708494;
-        --radius: 14px;
-        --shadow: 0 10px 30px -14px rgba(15,41,66,0.18);
-    }
-
-    body.dark-mode {
-        --ink: #eef3f6;
-        --ink-soft: #b9c8d4;
-        --accent: #2dd4bf;
-        --accent-dark: #5eead4;
-        --accent-soft: #0f3d38;
-        --amber: #f0b94f;
-        --amber-soft: #3d2f10;
-        --amber-border: #6b5420;
-        --danger: #f0796a;
-        --danger-soft: #3d201c;
-        --danger-border: #6b3830;
-        --success: #4ade80;
-        --bg: #0b1116;
-        --bg-glow-1: #0f2a26;
-        --bg-glow-2: #14202c;
-        --card: #161d24;
-        --surface: #1c242c;
-        --surface-2: #232d36;
-        --input-bg: #1c242c;
-        --accent-border: #1d5951;
-        --line: #2a3540;
-        --text: #dde5ea;
-        --muted: #8296a3;
-        --shadow: 0 12px 34px -14px rgba(0,0,0,0.6);
-    }
-    body.dark-mode .monthly-table th { background-color: #06211e; color: #d7fbf5; }
-    body.dark-mode .row-edit:hover { background: #144742; }
-    body.dark-mode .row-delete:hover { background: #4a2a24; }
-    body.dark-mode .btn-minus:hover:not(:disabled) { background-color: #4a2a24; }
-    body.dark-mode .btn-plus:hover:not(:disabled) { background-color: #144742; }
-    body.dark-mode .row-cancel:hover { background: #2c3844; }
-    body.dark-mode .btn-primary:disabled { background-color: #3a444d; }
-    body.dark-mode .btn-admin:hover:not(:disabled) { background-color: #b8860b; }
-    body.dark-mode .row-save:hover { background: #1f9d5c; }
-    body.dark-mode ::placeholder { color: #5c6b76; }
-    body.dark-mode .brand-dot, body.dark-mode .dot.active { box-shadow: 0 0 0 5px var(--accent-soft); }
-    body.dark-mode .server-status.offline, body.dark-mode .alert-danger { color: var(--danger); }
-    body.dark-mode .server-status.checking { color: var(--amber); }
-    body.dark-mode { color-scheme: dark; }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
-    body {
-        font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
-        background:
-            radial-gradient(1200px 500px at 15% -10%, var(--bg-glow-1) 0%, transparent 60%),
-            radial-gradient(900px 500px at 100% 0%, var(--bg-glow-2) 0%, transparent 55%),
-            var(--bg);
-        color: var(--text);
-        padding: 28px 16px;
-        min-height: 100vh;
-        width: 100%;
-        overflow-x: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-    }
-    h1, h2, .display-font { font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif; }
-
-    .container {
-        width: 100%;
-        max-width: 1080px;
-        background: var(--card);
-        border-radius: 20px;
-        box-shadow: var(--shadow);
-        padding: 34px;
-        border: 1px solid var(--line);
-    }
-
-    /* ===== الترويسة + النبضة (العنصر المميز) ===== */
-    header { text-align: center; margin-bottom: 6px; }
-    .brand-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
-    .brand-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
-    header h1 { color: var(--ink); font-size: 27px; font-weight: 700; letter-spacing: -0.2px; }
-    header p { color: var(--muted); font-size: 14.5px; margin-top: 4px; }
-
-    .pulse-wrap { width: 100%; height: 34px; margin: 18px 0 22px; overflow: hidden; }
-    .pulse-wrap svg { width: 200%; height: 100%; animation: pulse-scroll 7s linear infinite; }
-    @media (prefers-reduced-motion: reduce) { .pulse-wrap svg { animation: none; } }
-    @keyframes pulse-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-    /* ===== شريط الحالة ===== */
-    .status-bar {
-        display: flex; justify-content: space-between; align-items: center;
-        background: var(--surface); padding: 12px 20px; border-radius: 10px;
-        margin-bottom: 24px; font-size: 13.5px; font-weight: 600; border: 1px solid var(--line);
-    }
-    .status-indicator { display: flex; align-items: center; gap: 8px; color: var(--ink-soft); }
-    .dot { width: 9px; height: 9px; background-color: #b7c2ca; border-radius: 50%; display: inline-block; transition: background-color .25s; }
-    .dot.active { background-color: var(--success); box-shadow: 0 0 0 4px rgba(31,139,76,0.15); }
-    #activeUserDisplay { color: var(--ink); }
-
-    /* ===== شريط حالة السيرفر ===== */
-    .server-status {
-        display: flex; align-items: center; justify-content: center; gap: 9px;
-        background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-        padding: 11px 16px; margin-bottom: 16px; font-size: 13.5px; font-weight: 700;
-        transition: background-color .2s, border-color .2s, color .2s;
-    }
-    .server-status .dot2 { width: 9px; height: 9px; border-radius: 50%; background: #b7c2ca; flex-shrink: 0; }
-    .server-status.checking { color: #8a6d1f; background: var(--amber-soft); border-color: var(--amber-border); }
-    .server-status.checking .dot2 { background: #d4a017; animation: blink-status 1s infinite; }
-    .server-status.online { color: var(--accent-dark); background: var(--accent-soft); border-color: var(--accent-border); }
-    .server-status.online .dot2 { background: var(--success); box-shadow: 0 0 0 4px rgba(31,139,76,0.15); }
-    .server-status.offline { color: #7d241a; background: var(--danger-soft); border-color: var(--danger-border); }
-    .server-status.offline .dot2 { background: var(--danger); }
-    @keyframes blink-status { 50% { opacity: .35; } }
-
-    /* ===== شاشات الدخول ===== */
-    .auth-screen { background: var(--surface); padding: 26px; border-radius: var(--radius); margin-bottom: 24px; border: 1px solid var(--line); }
-    .auth-title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
-    .auth-title::before { content: ''; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; display: inline-block; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 6px; }
-    .form-group { margin-bottom: 10px; }
-    label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--ink-soft); font-size: 13.5px; }
-    select, input, textarea {
-        width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 9px;
-        font-size: 16px; background-color: var(--input-bg); outline: none; color: var(--text);
-        font-family: inherit; transition: border-color .15s, box-shadow .15s;
-    }
-    textarea { resize: vertical; }
-    select:focus, input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-
-    .auth-links { display: flex; gap: 18px; margin-top: 12px; font-size: 13px; }
-    .auth-links span { color: var(--accent-dark); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-    .auth-links span:hover { color: var(--ink); }
-
-    /* ===== تنبيهات ===== */
-    .alert-message { padding: 14px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14.5px; font-weight: 600; text-align: center; border: 1px solid transparent; }
-    .alert-danger { background-color: var(--danger-soft); color: #7d241a; border-color: var(--danger-border); }
-    .alert-success { background-color: var(--accent-soft); color: var(--accent-dark); border-color: var(--accent-border); }
-
-    /* ===== لوحة التحكم ===== */
-    #mainDashboard { display: none; }
-
-    /* ===== مبدّل التبويبات (إضافة المريض / الإحصائية الشهرية) ===== */
-    .tab-switcher {
-        display: flex; margin-bottom: 20px; background: var(--surface-2); border: 1.5px solid var(--line);
-        border-radius: 12px; padding: 4px; gap: 4px;
-    }
-    .tab-btn {
-        flex: 1; background: transparent; color: var(--ink-soft); border: none;
-        padding: 12px 16px; font-size: 14.5px; font-weight: 700; border-radius: 9px;
-        cursor: pointer; font-family: inherit; transition: background-color .15s, color .15s, box-shadow .15s;
-    }
-    .tab-btn:hover:not(.active) { color: var(--ink); }
-    .tab-btn.active { background: var(--card); color: var(--accent-dark); box-shadow: 0 2px 8px -2px rgba(15,41,66,0.18); }
-
-    .case-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; text-align: center; transition: transform .15s, box-shadow .15s; }
-    .case-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-    .case-card.total-card { background: linear-gradient(160deg, var(--accent-soft), var(--card)); border: 1.5px solid var(--accent-border); }
-    .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-top: 8px; margin-bottom: 16px; }
-    .counter-controls { display: flex; align-items: center; justify-content: center; gap: 14px; }
-    .btn-counter {
-        width: 36px; height: 36px; border-radius: 50%; border: none; font-size: 19px; font-weight: 700;
-        cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .1s, background-color .15s;
-    }
-    .btn-counter:active { transform: scale(0.9); }
-    .btn-counter:disabled { opacity: 0.35; cursor: not-allowed; }
-    .btn-minus { background-color: var(--danger-soft); color: var(--danger); }
-    .btn-minus:hover:not(:disabled) { background-color: #f6d2cc; }
-    .btn-plus { background-color: var(--accent-soft); color: var(--accent-dark); }
-    .btn-plus:hover:not(:disabled) { background-color: #cdeee8; }
-    .counter-value { font-size: 21px; font-weight: 700; min-width: 32px; color: var(--ink); }
-    .case-title { font-size: 14.5px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
-    .case-subtitle { font-size: 11.5px; color: var(--muted); margin-bottom: 12px; font-style: italic; letter-spacing: .2px; }
-
-    .btn-primary {
-        background-color: var(--accent); color: white; border: none; padding: 14px 20px; font-size: 15.5px;
-        font-weight: 700; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 16px;
-        font-family: inherit; transition: background-color .15s, transform .1s;
-    }
-    .btn-primary:hover:not(:disabled) { background-color: var(--accent-dark); }
-    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
-    .btn-primary:disabled { background-color: #a9b7bf; cursor: not-allowed; }
-
-    .btn-secondary {
-        background-color: var(--card); color: var(--ink-soft); border: 1.5px solid var(--line); padding: 11px 18px;
-        font-size: 14px; font-weight: 700; border-radius: 10px; cursor: pointer; margin-top: 10px; font-family: inherit;
-    }
-    .btn-secondary:hover { border-color: var(--ink-soft); color: var(--ink); }
-
-    .btn-admin { background-color: var(--amber); }
-    .btn-admin:hover:not(:disabled) { background-color: #96690a; }
-
-    /* ===== قسم إضافة المريض ===== */
-    #addPatientSection { display: block; }
-    #adminPatientsSection { display: none; }
-
-    /* ===== قسم الإحصائية الشهرية ===== */
-    #monthlyStatsSection { background: var(--amber-soft); border: 1px solid var(--amber-border); border-radius: var(--radius); padding: 22px; display: none; }
-    .report-section { background: var(--card); border: 1px solid var(--line); padding: 20px; border-radius: var(--radius); margin-top: 18px; overflow-x: auto; }
-    .report-title { font-size: 16.5px; font-weight: 700; color: var(--ink); margin-bottom: 14px; text-align: center; }
-
-    .monthly-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 900px; }
-    .monthly-table th, .monthly-table td { border: 1px solid var(--line); padding: 9px 10px; text-align: center; font-size: 13px; }
-    .monthly-table th { background-color: var(--ink); color: white; font-weight: 700; }
-    .monthly-table tr:nth-child(even) { background-color: var(--surface); }
-    .monthly-table tr.editing { background-color: var(--amber-soft); }
-    .row-input {
-        width: 60px; padding: 4px 6px; border: 1.5px solid var(--accent); border-radius: 6px;
-        font-size: 13px; text-align: center; font-family: inherit;
-    }
-    .row-btn {
-        border: none; border-radius: 6px; padding: 5px 10px; font-size: 12px; font-weight: 700;
-        cursor: pointer; margin: 0 2px; font-family: inherit;
-    }
-    .row-edit { background: var(--accent-soft); color: var(--accent-dark); }
-    .row-edit:hover { background: #cdeee8; }
-    .row-delete { background: var(--danger-soft); color: var(--danger); }
-    .row-delete:hover { background: #f6d2cc; }
-    .row-save { background: var(--success); color: #fff; }
-    .row-save:hover { background: #17703c; }
-    .row-cancel { background: var(--surface-2); color: var(--ink-soft); }
-    .row-cancel:hover { background: #dfe4e7; }
-    .cell-actions { white-space: nowrap; }
-
-    /* ===== قسم الإحصائيات البيانية ===== */
-    .stats-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-    .btn-stat {
-        flex: 1; min-width: 180px; background: var(--card); color: var(--ink-soft);
-        border: 1.5px solid var(--line); padding: 12px 14px; font-size: 13.5px; font-weight: 700;
-        border-radius: 10px; cursor: pointer; font-family: inherit; transition: border-color .15s, color .15s, background-color .15s;
-    }
-    .btn-stat:hover { border-color: var(--accent); color: var(--accent-dark); background: var(--accent-soft); }
-    .btn-stat.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-    .chart-card {
-        background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-        padding: 20px; margin-top: 16px;
-    }
-    .chart-card-title { font-size: 15.5px; font-weight: 700; color: var(--ink); margin-bottom: 14px; text-align: center; }
-    .chart-canvas-wrap { max-width: 760px; min-height: 420px; margin: 0 auto; position: relative; }
-    .chart-lib-warning { text-align: center; color: var(--danger); font-size: 13px; padding: 20px; }
-
-    .combined-total-box {
-        display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 6px;
-    }
-    .combined-total-card {
-        background: linear-gradient(160deg, var(--accent-soft), var(--card)); border: 1.5px solid var(--accent-border);
-        border-radius: 12px; padding: 18px 26px; text-align: center; min-width: 160px;
-    }
-    .combined-total-card.grand { background: linear-gradient(160deg, var(--amber-soft), var(--card)); border-color: var(--amber-border); }
-    .combined-total-card .label { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
-    .combined-total-card .value { font-size: 28px; font-weight: 700; color: var(--accent-dark); }
-    .combined-total-card.grand .value { color: var(--amber); }
-    .empty-row td { padding: 24px; color: var(--muted); font-style: italic; }
-
-    .footer-note { text-align: center; margin-top: 24px; font-size: 12px; color: var(--muted); }
-
-    .loader { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.5); border-top: 2px solid #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .pdf-header { text-align: center; border-bottom: 3px solid var(--ink); padding-bottom: 15px; margin-bottom: 20px; }
-    .pdf-header h2 { color: var(--ink); font-size: 22px; margin-bottom: 5px; font-weight: 700; }
-    .pdf-header p { color: #555; font-size: 14px; }
-
-    @media (max-width: 480px) {
-        .container { padding: 22px 16px; }
-        header h1 { font-size: 22px; }
-        .tab-switcher { flex-direction: column; }
-    }
-
-    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-
-    /* أثناء التقاط صورة PDF، نخفي زر التصدير حتى لا يظهر داخل الملف الناتج */
-
-    /* ملاحظة: الطباعة/حفظ PDF ما تعتمد على @media print هنا — تفتح نافذة مستقلة
-       نظيفة وتطبع منها مباشرة (أضمن بكثير عبر أندرويد وآيفون، شوف printSection بالجافاسكربت) */
-</style>
 </head>
 <body>
 
+<script>
+    // نطبق المود الليلي المحفوظ قبل أول رسم للصفحة عشان ما تومض بالوضع الفاتح
+    try {
+        if (localStorage.getItem("clinicDarkMode") === "1") document.body.classList.add("dark-mode");
+    } catch (e) {}
+</script>
+
 <div class="container" id="appContainer">
-    <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px;">
-        <button class="btn-secondary" id="langToggleBtn" onclick="toggleLanguage()" style="margin-top:0; padding:8px 14px; font-size:13px;">English</button>
-        <button class="btn-secondary" id="darkModeToggleBtn" onclick="toggleDarkMode()" style="margin-top:0; padding:8px 14px; font-size:13px;">🌙</button>
+    <div class="top-toolbar">
+        <button class="btn-secondary" id="langToggleBtn">English</button>
+        <button class="btn-secondary" id="darkModeToggleBtn">🌙</button>
     </div>
     <header>
         <div class="brand-row">
             <span class="brand-dot"></span>
-            <span style="font-size:12.5px; font-weight:700; color:var(--accent-dark); letter-spacing:.3px;" data-i18n="brandLine">نظام العيادة الذكي</span>
+            <span class="brand-line" data-i18n="brandLine">نظام العيادة الذكي</span>
         </div>
         <h1 data-i18n="mainTitle">سستم جدول حالات العيادة</h1>
         <p data-i18n="mainSubtitle">منظومة تصنيف وتوثيق الحالات — عيادات الطوارئ الطبية</p>
@@ -339,9 +52,9 @@
 
     <!-- مبدّل التبويبات — يظهر أول ما تفتح الصفحة، قبل تسجيل الدخول -->
     <div class="tab-switcher">
-        <button class="tab-btn active" id="tabBtnAddPatient" onclick="switchTab('addPatient')" data-i18n="tabAddPatient">➕ إضافة المريض</button>
-        <button class="tab-btn" id="tabBtnMonthlyStats" onclick="switchTab('monthlyStats')" data-i18n="tabStats">📊 الإحصائية الشهرية</button>
-        <button class="tab-btn" id="tabBtnManageEmployees" onclick="switchTab('manageEmployees')" style="display:none;" data-i18n="tabManageEmployees">🛠️ إدارة الموظفين</button>
+        <button class="tab-btn active" id="tabBtnAddPatient" data-tab="addPatient" data-i18n="tabAddPatient">➕ إضافة المريض</button>
+        <button class="tab-btn" id="tabBtnMonthlyStats" data-tab="monthlyStats" data-i18n="tabStats">📊 الإحصائية الشهرية</button>
+        <button class="tab-btn" id="tabBtnManageEmployees" data-tab="manageEmployees" style="display:none;" data-i18n="tabManageEmployees">🛠️ إدارة الموظفين</button>
     </div>
 
     <div class="server-status checking" id="serverStatus">
@@ -349,7 +62,7 @@
         <span id="serverStatusText" data-i18n="serverChecking">يتم التحقق من حالة السيرفر...</span>
     </div>
 
-    <div class="server-status" id="dutyTeamBanner" style="display:none; background: var(--accent-soft); color: var(--accent-dark); border-color: var(--accent-border);">
+    <div class="server-status server-status--duty" id="dutyTeamBanner" style="display:none;">
         <span>🕐</span>
         <span id="dutyTeamBannerText"></span>
     </div>
@@ -358,7 +71,7 @@
     <div class="alert-message alert-success" id="successMessage" role="status" style="display:none;"></div>
 
     <!-- شاشة تحقق مؤقتة — تمنع "ومضة" شاشة تسجيل الدخول قبل ما نتأكد من الجلسة المحفوظة -->
-    <div class="auth-screen" id="authCheckingScreen" style="text-align:center; color: var(--muted);">
+    <div class="auth-screen auth-checking" id="authCheckingScreen">
         <span data-i18n="checkingSession">جاري التحقق من الجلسة...</span>
     </div>
 
@@ -368,7 +81,7 @@
         <div class="form-grid">
             <div class="form-group">
                 <label for="loginEmpId" data-i18n="empIdLabel">الرقم الوظيفي</label>
-                <input type="number" id="loginEmpId" placeholder="1234" oninput="limitFourDigits(this); checkLoginEmpIdPreview();" inputmode="numeric">
+                <input type="number" id="loginEmpId" placeholder="1234" inputmode="numeric">
             </div>
             <div class="form-group">
                 <label for="loginPin" data-i18n="passwordLabel">الرمز السري</label>
@@ -377,12 +90,12 @@
         </div>
         <div class="form-group" id="loginClinicShiftPreviewGroup" style="display:none;">
             <label data-i18n="clinicShiftPreviewLabel">العيادة والشفت المسجلة</label>
-            <input type="text" id="loginClinicShiftPreview" disabled style="background:var(--surface-2); color:var(--muted); cursor:not-allowed;">
+            <input type="text" id="loginClinicShiftPreview" class="input-readonly" disabled>
         </div>
-        <button class="btn-primary" id="loginBtn" onclick="handleLogin()" data-i18n="loginBtn">تسجيل الدخول وتأكيد الهوية</button>
+        <button class="btn-primary" id="loginBtn" data-i18n="loginBtn">تسجيل الدخول وتأكيد الهوية</button>
         <div class="auth-links">
-            <span onclick="switchAuthScreen('registerScreen')" data-i18n="createAccountLink">إنشاء حساب جديد</span>
-            <span onclick="switchAuthScreen('forgotScreen')" data-i18n="forgotPinLink">استرجاع الرمز</span>
+            <span data-auth-screen="registerScreen" data-i18n="createAccountLink">إنشاء حساب جديد</span>
+            <span data-auth-screen="forgotScreen" data-i18n="forgotPinLink">استرجاع الرمز</span>
         </div>
     </div>
 
@@ -392,7 +105,7 @@
         <div class="form-grid">
             <div class="form-group">
                 <label for="regEmpId" data-i18n="empIdRegLabel">الرقم الوظيفي (4 أرقام)</label>
-                <input type="number" id="regEmpId" placeholder="1234" oninput="limitFourDigits(this)" inputmode="numeric">
+                <input type="number" id="regEmpId" placeholder="1234" inputmode="numeric">
             </div>
             <div class="form-group">
                 <label for="regPhone" data-i18n="phoneLabel">رقم الهاتف للتأكيد والتواصل</label>
@@ -400,7 +113,7 @@
             </div>
             <div class="form-group">
                 <label for="regCivilId" data-i18n="civilIdLabel">الرقم المدني</label>
-                <input type="text" id="regCivilId" placeholder="الرقم المدني" inputmode="numeric" maxlength="12" oninput="limitTwelveDigits(this)">
+                <input type="text" id="regCivilId" placeholder="الرقم المدني" data-i18n-placeholder="civilIdLabel" inputmode="numeric" maxlength="12">
             </div>
             <div class="form-group">
                 <label for="regEmail" data-i18n="emailLabel">البريد الإلكتروني</label>
@@ -429,8 +142,8 @@
                 <input type="password" id="regPin" placeholder="******">
             </div>
         </div>
-        <button class="btn-primary" id="registerBtn" onclick="handleRegister()" data-i18n="registerBtn">اعتماد وحفظ الحساب الجديد</button>
-        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')" data-i18n="backToLogin">العودة للدخول</span></div>
+        <button class="btn-primary" id="registerBtn" data-i18n="registerBtn">اعتماد وحفظ الحساب الجديد</button>
+        <div class="auth-links"><span data-auth-screen="loginScreen" data-i18n="backToLogin">العودة للدخول</span></div>
     </div>
 
     <!-- شاشة استرجاع الرمز -->
@@ -439,7 +152,7 @@
         <div class="form-grid">
             <div class="form-group">
                 <label for="forgotEmpId" data-i18n="empIdLabel2">الرقم الوظيفي الخاص بك</label>
-                <input type="number" id="forgotEmpId" placeholder="1234" oninput="limitFourDigits(this)" inputmode="numeric">
+                <input type="number" id="forgotEmpId" placeholder="1234" inputmode="numeric">
             </div>
             <div class="form-group">
                 <label for="forgotPhone" data-i18n="phoneRegisteredLabel">رقم الهاتف المسجل بالمنظومة</label>
@@ -447,7 +160,7 @@
             </div>
             <div class="form-group">
                 <label for="forgotCivilId" data-i18n="civilIdRegisteredLabel">الرقم المدني المسجل</label>
-                <input type="text" id="forgotCivilId" placeholder="الرقم المدني" inputmode="numeric" maxlength="12" oninput="limitTwelveDigits(this)">
+                <input type="text" id="forgotCivilId" placeholder="الرقم المدني" data-i18n-placeholder="civilIdLabel" inputmode="numeric" maxlength="12">
             </div>
             <div class="form-group">
                 <label for="forgotEmail" data-i18n="emailRegisteredLabel">البريد الإلكتروني المسجل</label>
@@ -458,8 +171,8 @@
                 <input type="password" id="forgotNewPin" placeholder="******">
             </div>
         </div>
-        <button class="btn-primary btn-admin" id="forgotBtn" onclick="handleForgot()" data-i18n="forgotBtn">تحديث الرمز بالهاتف والتحقق</button>
-        <div class="auth-links"><span onclick="switchAuthScreen('loginScreen')" data-i18n="backToLogin">العودة للدخول</span></div>
+        <button class="btn-primary btn-admin" id="forgotBtn" data-i18n="forgotBtn">تحديث الرمز بالهاتف والتحقق</button>
+        <div class="auth-links"><span data-auth-screen="loginScreen" data-i18n="backToLogin">العودة للدخول</span></div>
     </div>
 
     <!-- لوحة التحكم الرئيسية -->
@@ -472,11 +185,11 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="patientName" data-i18n="patientNameLabel">اسم المريض</label>
-                        <input type="text" id="patientName" placeholder="اسم المريض">
+                        <input type="text" id="patientName" placeholder="اسم المريض" data-i18n-placeholder="patientNameLabel">
                     </div>
                     <div class="form-group">
                         <label for="patientCivilId" data-i18n="civilIdLabel">الرقم المدني</label>
-                        <input type="text" id="patientCivilId" placeholder="الرقم المدني" inputmode="numeric" maxlength="12" oninput="limitTwelveDigits(this); checkReturningPatient();">
+                        <input type="text" id="patientCivilId" placeholder="الرقم المدني" data-i18n-placeholder="civilIdLabel" inputmode="numeric" maxlength="12">
                     </div>
                     <div class="form-group">
                         <label for="patientGender" data-i18n="genderLabel">الجنس</label>
@@ -487,7 +200,7 @@
                     </div>
                     <div class="form-group">
                         <label for="patientCondition" data-i18n="conditionLabel">الحالة</label>
-                        <select id="patientCondition" onchange="toggleOtherConditionBox()">
+                        <select id="patientCondition">
                             <option value="حالات طبية" data-i18n="condSickCases">حالات طبية</option>
                             <option value="ضغط الدم" data-i18n="condBloodPressure">ضغط الدم</option>
                             <option value="ارتفاع ضغط" data-i18n="condHypertension">ارتفاع ضغط</option>
@@ -505,11 +218,11 @@
                     </div>
                     <div class="form-group" id="patientConditionOtherGroup" style="display:none;">
                         <label for="patientConditionOther" data-i18n="writeConditionLabel">اكتب الحالة</label>
-                        <input type="text" id="patientConditionOther" placeholder="اكتب نوع الحالة">
+                        <input type="text" id="patientConditionOther" placeholder="اكتب نوع الحالة" data-i18n-placeholder="writeConditionLabel">
                     </div>
                     <div class="form-group">
                         <label for="patientBP" data-i18n="bpLabel">الضغط</label>
-                        <input type="text" id="patientBP" placeholder="مثال: 120/80">
+                        <input type="text" id="patientBP" placeholder="مثال: 120/80" data-i18n-placeholder="bpPlaceholder">
                     </div>
                     <div class="form-group">
                         <label for="patientSugar" data-i18n="sugarLabel">السكر</label>
@@ -521,31 +234,31 @@
                     </div>
                     <div class="form-group">
                         <label for="patientTimeHour" data-i18n="hourLabel">الساعة</label>
-                        <div style="display:flex; gap:8px;">
-                            <select id="patientTimeHour" style="flex:1;"></select>
-                            <select id="patientTimeMinute" style="flex:1;"></select>
+                        <div class="time-picker">
+                            <select id="patientTimeHour"></select>
+                            <select id="patientTimeMinute"></select>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="patientDateDisplay" data-i18n="dateLabel">التاريخ</label>
-                        <input type="text" id="patientDateDisplay" readonly style="background:var(--surface-2); color:var(--muted); cursor:not-allowed;">
+                        <input type="text" id="patientDateDisplay" class="input-readonly" readonly>
                     </div>
-                    <div class="form-group" style="grid-column: 1 / -1;">
+                    <div class="form-group full-width">
                         <label for="patientAction" data-i18n="treatmentLabel">التعامل</label>
-                        <textarea id="patientAction" rows="3" placeholder="اكتب شنو كان التعامل مع الحالة..."></textarea>
+                        <textarea id="patientAction" rows="3" placeholder="اكتب شنو كان التعامل مع الحالة..." data-i18n-placeholder="treatmentPlaceholder"></textarea>
                     </div>
                 </div>
-                <button class="btn-primary" id="savePatientBtn" onclick="savePatient()" data-i18n="savePatientBtn">حفظ بيانات المريض</button>
+                <button class="btn-primary" id="savePatientBtn" data-i18n="savePatientBtn">حفظ بيانات المريض</button>
             </div>
 
             <div class="report-section" id="todayPatientsReportSection">
                 <div class="print-only-header" id="todayPatientsPrintHeader">
-                    <h2>تقرير مرضى اليوم</h2>
+                    <h2 data-i18n="printHeaderToday">تقرير مرضى اليوم</h2>
                     <p id="todayPatientsPrintDate"></p>
                 </div>
-                <div class="report-title" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <div class="report-title report-title-row">
                     <span>مرضى اليوم — نفس عيادتك وشفتك (<span id="todayPatientCount">0</span>)</span>
-                    <button class="row-btn row-edit" onclick="loadTodayShiftPatients()" data-i18n="refreshBtn">🔄 تحديث</button>
+                    <button class="row-btn row-edit" id="todayRefreshBtn" data-i18n="refreshBtn">🔄 تحديث</button>
                 </div>
                 <table class="monthly-table" id="todayPatientsTable">
                     <thead>
@@ -555,10 +268,10 @@
                         </tr>
                     </thead>
                     <tbody id="todayPatientsBody">
-                        <tr class="empty-row"><td colspan="10">لم تتم إضافة أي مريض بعد اليوم لنفس عيادتك وشفتك</td></tr>
+                        <tr class="empty-row"><td colspan="10" data-i18n="noPatientsToday">لم تتم إضافة أي مريض بعد اليوم لنفس عيادتك وشفتك</td></tr>
                     </tbody>
                 </table>
-                <button class="btn-secondary" onclick="printSection('todayPatientsReportSection', 'todayPatientsPrintDate', 'مرضى_اليوم')" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
+                <button class="btn-secondary" data-print-section="todayPatientsReportSection" data-print-date="todayPatientsPrintDate" data-print-filename="مرضى_اليوم" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
             </div>
         </div>
 
@@ -580,12 +293,12 @@
                         </select>
                     </div>
                 </div>
-                <button class="btn-primary btn-admin" onclick="loadPatientsByDate()" data-i18n="viewPatientsBtn">عرض المرضى</button>
+                <button class="btn-primary btn-admin" id="viewPatientsBtn" data-i18n="viewPatientsBtn">عرض المرضى</button>
             </div>
 
             <div class="report-section" id="patientsByDateSection" style="display:none;">
                 <div class="print-only-header" id="patientsByDatePrintHeader">
-                    <h2>تقرير المرضى</h2>
+                    <h2 data-i18n="printHeaderPatients">تقرير المرضى</h2>
                     <p id="patientsByDatePrintDate"></p>
                 </div>
 
@@ -599,11 +312,11 @@
                         </tr>
                     </thead>
                     <tbody id="patientsByDateMorningBody">
-                        <tr class="empty-row"><td colspan="13">اختر تاريخًا واضغط "عرض المرضى"</td></tr>
+                        <tr class="empty-row"><td colspan="13" data-i18n="selectDatePrompt">اختر تاريخًا واضغط "عرض المرضى"</td></tr>
                     </tbody>
                 </table>
 
-                <div class="report-title" style="margin-top:22px;"><span data-i18n="eveningShiftTitle">🌙 شفت مسائي</span> (<span id="eveningPatientCount">0</span>)</div>
+                <div class="report-title report-title-gap"><span data-i18n="eveningShiftTitle">🌙 شفت مسائي</span> (<span id="eveningPatientCount">0</span>)</div>
                 <table class="monthly-table" id="patientsByDateEveningTable">
                     <thead>
                         <tr>
@@ -613,149 +326,41 @@
                         </tr>
                     </thead>
                     <tbody id="patientsByDateEveningBody">
-                        <tr class="empty-row"><td colspan="13">اختر تاريخًا واضغط "عرض المرضى"</td></tr>
+                        <tr class="empty-row"><td colspan="13" data-i18n="selectDatePrompt">اختر تاريخًا واضغط "عرض المرضى"</td></tr>
                     </tbody>
                 </table>
 
-                <button class="btn-secondary" onclick="printSection('patientsByDateSection', 'patientsByDatePrintDate', 'تقرير_المرضى')" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
+                <button class="btn-secondary" data-print-section="patientsByDateSection" data-print-date="patientsByDatePrintDate" data-print-filename="تقرير_المرضى" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
             </div>
         </div>
 
         <!-- ===== قسم الإحصائية الشهرية ===== -->
         <div id="monthlyStatsSection">
-            <div class="auth-title" style="border:none;" data-i18n="statsTitle">الإحصائية الشهرية</div>
-
-            <div class="alert-message alert-success" id="statsEntryMorningNote" style="display:none;" data-i18n="eveningOnlyStatsNote">
-                إدخال إحصائية اليوم متاح بالشفت المسائي بس — تقدر تشوف الجدول تحت.
-            </div>
-
-            <!-- ===== إدخال/تعديل الإحصائية اليدوية — للمسؤول فقط ===== -->
-            <div class="auth-screen" id="statsEntryPanel" style="display:none;">
-                <div class="auth-title" id="statsEntryPanelTitle">إدخال إحصائية اليوم</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="statsEntryDate" data-i18n="dateLabel">التاريخ</label>
-                        <input type="date" id="statsEntryDate" readonly style="background:var(--surface-2); color:var(--muted); cursor:not-allowed;">
-                    </div>
-                    <div class="form-group">
-                        <label for="statsEntryClinic" data-i18n="clinicLabel">العيادة</label>
-                        <select id="statsEntryClinic" onchange="loadStatsEntryCounters()">
-                            <option value="عيادة الف" data-i18n="clinicA">عيادة الف</option>
-                            <option value="عيادة باء" data-i18n="clinicB">عيادة باء</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="statsEntryShift" data-i18n="shiftLabel">الشفت</label>
-                        <select id="statsEntryShift" onchange="loadStatsEntryCounters()">
-                            <option value="شفت الف صباحي" data-i18n="shiftAMorning">شفت الف صباحي</option>
-                            <option value="شفت الف مسائي" data-i18n="shiftAEvening">شفت الف مسائي</option>
-                            <option value="شفت باء صباحي" data-i18n="shiftBMorning">شفت باء صباحي</option>
-                            <option value="شفت باء مسائي" data-i18n="shiftBEvening">شفت باء مسائي</option>
-                            <option value="شفت جيم صباحي" data-i18n="shiftCMorning">شفت جيم صباحي</option>
-                            <option value="شفت جيم مسائي" data-i18n="shiftCEvening">شفت جيم مسائي</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="cases-grid" id="statsCountersGrid">
-                    <div class="case-card total-card">
-                        <div class="case-title" style="color: var(--accent-dark);">الإجمالي</div>
-                        <div class="counter-controls">
-                            <span class="counter-value" id="statsTotalDisplay" style="font-size: 30px; color: var(--accent-dark);">0</span>
-                        </div>
-                    </div>
-                    <div class="case-card">
-                        <div class="case-title">حالات طبية</div>
-                        <div class="counter-controls">
-                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('sick_cases', -1)">−</button>
-                            <span class="counter-value" id="stat_sick_cases">0</span>
-                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('sick_cases', 1)">+</button>
-                        </div>
-                    </div>
-                    <div class="case-card">
-                        <div class="case-title">ضغط الدم</div>
-                        <div class="counter-controls">
-                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('blood_pressure', -1)">−</button>
-                            <span class="counter-value" id="stat_blood_pressure">0</span>
-                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('blood_pressure', 1)">+</button>
-                        </div>
-                    </div>
-                    <div class="case-card">
-                        <div class="case-title">السكر</div>
-                        <div class="counter-controls">
-                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('sugar', -1)">−</button>
-                            <span class="counter-value" id="stat_sugar">0</span>
-                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('sugar', 1)">+</button>
-                        </div>
-                    </div>
-                    <div class="case-card">
-                        <div class="case-title">صداع</div>
-                        <div class="counter-controls">
-                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('headache', -1)">−</button>
-                            <span class="counter-value" id="stat_headache">0</span>
-                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('headache', 1)">+</button>
-                        </div>
-                    </div>
-                    <div class="case-card">
-                        <div class="case-title">علامات حيوية</div>
-                        <div class="counter-controls">
-                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('vital_signs', -1)">−</button>
-                            <span class="counter-value" id="stat_vital_signs">0</span>
-                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('vital_signs', 1)">+</button>
-                        </div>
-                    </div>
-                    <div class="case-card">
-                        <div class="case-title">إصابات</div>
-                        <div class="counter-controls">
-                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('injuries', -1)">−</button>
-                            <span class="counter-value" id="stat_injuries">0</span>
-                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('injuries', 1)">+</button>
-                        </div>
-                    </div>
-                    <div class="case-card">
-                        <div class="case-title">حروق</div>
-                        <div class="counter-controls">
-                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('burns', -1)">−</button>
-                            <span class="counter-value" id="stat_burns">0</span>
-                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('burns', 1)">+</button>
-                        </div>
-                    </div>
-                    <div class="case-card">
-                        <div class="case-title">نقل مستشفى</div>
-                        <div class="counter-controls">
-                            <button class="btn-counter btn-minus" onclick="updateStatsCounter('hospital_transfer', -1)">−</button>
-                            <span class="counter-value" id="stat_hospital_transfer">0</span>
-                            <button class="btn-counter btn-plus" onclick="updateStatsCounter('hospital_transfer', 1)">+</button>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="btn-primary btn-admin" id="saveStatsBtn" onclick="saveDailyStats()" data-i18n="saveStatsBtn">حفظ الإحصائية</button>
-            </div>
+            <div class="auth-title auth-title--plain" data-i18n="statsTitle">الإحصائية الشهرية</div>
 
             <div id="monthlyStatsAdminControls">
                 <div class="form-group" id="reportMonthGroup">
                     <label for="reportMonth" data-i18n="chooseMonthLabel">اختر الشهر</label>
-                    <input type="month" id="reportMonth" onchange="loadMonthlyReport()">
+                    <input type="month" id="reportMonth">
                 </div>
 
                 <div class="form-group">
                     <label for="adminClinicSelect" data-i18n="chooseClinicForReportLabel">اختر العيادة لعرض تقريرها</label>
-                    <select id="adminClinicSelect" onchange="loadMonthlyReport()">
+                    <select id="adminClinicSelect">
                         <option value="all" data-i18n="allClinicsOption">كل العيادات</option>
                         <option value="عيادة الف" data-i18n="clinicA">عيادة الف</option>
                         <option value="عيادة باء" data-i18n="clinicB">عيادة باء</option>
                     </select>
                 </div>
 
-                <button class="btn-primary btn-admin" id="loadReportBtn" onclick="loadMonthlyReport()" data-i18n="loadMonthlyReportBtn">جلب التقرير الشهري</button>
+                <button class="btn-primary btn-admin" id="loadReportBtn" data-i18n="loadMonthlyReportBtn">جلب التقرير الشهري</button>
 
                 <div class="stats-controls">
-                    <button class="btn-stat" id="btnPieChart" onclick="showCaseTypeChart('doughnut')">📊 نسب الحالات (دائري)</button>
+                    <button class="btn-stat" id="btnPieChart" data-chart-type="doughnut" data-i18n="pieChartBtn">📊 نسب الحالات (دائري)</button>
 
-                    <button class="btn-stat" id="btnBarSingle" onclick="showCaseTypeChart('bar')">📶 نسب الحالات (أعمدة)</button>
-                    <button class="btn-stat" id="btnBarChart" onclick="showBarChart()">📶 مقارنة العيادتين</button>
-                    <button class="btn-stat" id="btnCombinedTotal" onclick="showCombinedTotal()">🏥 إجمالي العيادتين معًا</button>
+                    <button class="btn-stat" id="btnBarSingle" data-chart-type="bar" data-i18n="barChartBtn">📶 نسب الحالات (أعمدة)</button>
+                    <button class="btn-stat" id="btnBarChart" data-chart-type="barCompare" data-i18n="barCompareBtn">📶 مقارنة العيادتين</button>
+                    <button class="btn-stat" id="btnCombinedTotal" data-chart-type="combined" data-i18n="combinedTotalBtn">🏥 إجمالي العيادتين معًا</button>
                 </div>
 
                 <div class="chart-card" id="chartCard" style="display:none;">
@@ -769,27 +374,35 @@
 
             <div class="report-section" id="reportSection" style="display:none;">
                 <div class="print-only-header" id="printOnlyHeader">
-                    <h2>تقرير حالات العيادة</h2>
+                    <h2 data-i18n="printHeaderClinic">تقرير حالات العيادة</h2>
                     <p id="printDate"></p>
                 </div>
                 <div class="report-title" id="reportTableTitle" data-i18n="monthlyReportTitle">التقرير الشهري لكل الشفتات</div>
                 <table class="monthly-table" id="reportTable">
                     <thead>
                         <tr>
-                            <th data-i18n="dateLabel">التاريخ</th><th data-i18n="empIdColLabel">الرقم الوظيفي</th><th data-i18n="clinicLabel">العيادة</th><th data-i18n="shiftLabel">الشفت</th><th class="th-stat-category" data-i18n="totalLabel">الإجمالي</th>
-                            <th class="th-stat-category" data-i18n="sickCasesLabel">حالات طبية</th><th class="th-stat-category" data-i18n="bloodPressureLabel">ضغط الدم</th><th class="th-stat-category">السكر</th><th class="th-stat-category" data-i18n="headacheLabel">صداع</th><th class="th-stat-category" data-i18n="vitalSignsLabel">علامات حيوية</th>
-                            <th class="th-stat-category" data-i18n="injuriesLabel">إصابات</th><th class="th-stat-category" data-i18n="burnsLabel">حروق</th><th class="th-stat-category" data-i18n="hospitalTransferLabel">نقل مستشفى</th><th class="th-actions" id="reportActionsHeader" data-i18n="actionsLabel">إجراءات</th>
+                            <th data-i18n="dateLabel">التاريخ</th><th data-i18n="empIdColLabel">الرقم الوظيفي</th><th data-i18n="clinicLabel">العيادة</th><th class="th-stat-category" data-i18n="totalLabel">الإجمالي</th>
+                            <th class="th-stat-category" data-i18n="sickCasesLabel">حالات طبية</th><th class="th-stat-category" data-i18n="bloodPressureLabel">ضغط الدم</th><th class="th-stat-category" data-i18n="sugarColLabel">السكر</th><th class="th-stat-category" data-i18n="headacheLabel">صداع</th><th class="th-stat-category" data-i18n="vitalSignsLabel">علامات حيوية</th>
+                            <th class="th-stat-category" data-i18n="injuriesLabel">إصابات</th><th class="th-stat-category" data-i18n="burnsLabel">حروق</th><th class="th-stat-category" data-i18n="hospitalTransferLabel">نقل مستشفى</th><th class="th-stat-category" data-i18n="otherLabel">أخرى</th>
                         </tr>
                     </thead>
                     <tbody id="reportTableBody"></tbody>
                 </table>
-                <button class="btn-secondary" onclick="printSection('reportSection', 'printDate', 'التقرير_الشهري')" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
+                <button class="btn-secondary" data-print-section="reportSection" data-print-date="printDate" data-print-filename="التقرير_الشهري" data-i18n="printSaveBtn">🖨️ طباعة / حفظ PDF</button>
+                <button class="btn-secondary" id="exportExcelBtn" data-i18n="exportExcelBtn">📥 تصدير Excel</button>
+            </div>
+
+            <!-- تفاصيل يوم معيّن — تُفتح بالضغط على أي صف بالتقرير اليومي -->
+            <div class="report-section" id="dayDetailsPanel" style="display:none;">
+                <div class="report-title" id="dayDetailsTitle">تفاصيل اليوم</div>
+                <div id="dayDetailsContent"></div>
+                <button class="btn-secondary" id="dayDetailsCloseBtn" data-i18n="closeDetailsBtn">إغلاق التفاصيل</button>
             </div>
         </div>
 
         <!-- ===== قسم إدارة الموظفين (للمسؤول فقط) ===== -->
         <div id="manageEmployeesSection" style="display:none;">
-            <div class="auth-title" style="border:none;" data-i18n="manageEmployeesTitle">إدارة الموظفين — تعديل العيادة والشفت</div>
+            <div class="auth-title auth-title--plain" data-i18n="manageEmployeesTitle">إدارة الموظفين — تعديل العيادة والشفت</div>
             <div class="report-section">
                 <table class="monthly-table" id="employeesTable">
                     <thead>
@@ -798,1626 +411,33 @@
                         </tr>
                     </thead>
                     <tbody id="employeesTableBody">
-                        <tr class="empty-row"><td colspan="5">جاري التحميل...</td></tr>
+                        <tr class="empty-row"><td colspan="5" data-i18n="loading">جاري التحميل...</td></tr>
                     </tbody>
                 </table>
             </div>
+            <div class="report-title report-title-gap" data-i18n="sessionsTitle">الجلسات</div>
+            <button class="btn-danger" id="logoutAllBtn" data-i18n="logoutAllBtn">تسجيل خروج جميع الموظفين</button>
         </div>
 
-        <button class="btn-secondary" onclick="logout()" data-i18n="logoutBtn">تسجيل الخروج</button>
+        <button class="btn-secondary" id="logoutBtn" data-i18n="logoutBtn">تسجيل الخروج</button>
     </div>
 
-    <div class="footer-note">جميع البيانات تُحفظ وتُوثّق آليًا لحظة الضغط على زر الحفظ</div>
+    <div class="footer-note" data-i18n="footerNote">جميع البيانات تُحفظ وتُوثّق آليًا لحظة الضغط على زر الحفظ</div>
 </div>
 
-<script>
-/* =========================================================
-   إعدادات الاتصال بالسيرفر (Google Apps Script Web App)
-   استبدل الرابط أدناه برابط الـ Web App الخاص بك بعد النشر
-   ========================================================= */
-const API_URL = "https://script.google.com/macros/s/AKfycbyf6Qxoq0i4RkrauhfrQpeuWa0jPvHolmE0-nwyw5FRQez1qgk7KdgMlQiggBEjnvre/exec";
-
-// حارس عام: أي خطأ JS غير متوقع ينسجل بالكونسول (للمطوّر) ويطلع تنبيه للمستخدم
-// بدل ما تفشل الصفحة بصمت وتطلع فاضية بدون أي رسالة
-window.addEventListener("error", (e) => {
-    console.error("خطأ غير متوقع:", e.error || e.message);
-    const el = document.getElementById("errorMessage");
-    if (el) {
-        el.textContent = "صار خطأ غير متوقع، جرّب تحدّث الصفحة. لو تكرر، بلّغ الأدمن.";
-        el.style.display = "block";
-    }
-});
-
-let session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
-
-/* ---------- اللغة (عربي / إنجليزي) والمود الليلي ---------- */
-
-const TRANSLATIONS = {
-    en: {
-        brandLine: "Smart Clinic System",
-        mainTitle: "Clinic Case Log System",
-        mainSubtitle: "Case classification & documentation — Emergency medical clinics",
-        tabAddPatient: "➕ Add Patient",
-        tabStats: "📊 Monthly Statistics",
-        tabManageEmployees: "🛠️ Manage Employees",
-        serverChecking: "Checking server status...",
-        checkingSession: "Checking session...",
-        loginTitle: "Login to the System",
-        empIdLabel: "Employee ID",
-        passwordLabel: "Password",
-        clinicShiftPreviewLabel: "Registered Clinic & Shift",
-        loginBtn: "Login & Verify",
-        createAccountLink: "Create New Account",
-        forgotPinLink: "Recover Password",
-        registerTitle: "Register New Employee",
-        empIdRegLabel: "Employee ID (4 digits)",
-        phoneLabel: "Phone Number (for verification)",
-        civilIdLabel: "Civil ID",
-        emailLabel: "Email",
-        chooseClinicLabel: "Choose Clinic",
-        clinicA: "Clinic A",
-        clinicB: "Clinic B",
-        allClinicsOption: "All Clinics",
-        shiftAMorning: "Shift A — Morning",
-        shiftAEvening: "Shift A — Evening",
-        shiftBMorning: "Shift B — Morning",
-        shiftBEvening: "Shift B — Evening",
-        shiftCMorning: "Shift C — Morning",
-        shiftCEvening: "Shift C — Evening",
-        chooseShiftLabel: "Choose Shift / Period",
-        choosePinLabel: "Choose Password",
-        registerBtn: "Confirm & Save New Account",
-        backToLogin: "Back to Login",
-        forgotTitle: "Recover & Reset Password",
-        empIdLabel2: "Your Employee ID",
-        phoneRegisteredLabel: "Registered Phone Number",
-        civilIdRegisteredLabel: "Registered Civil ID",
-        emailRegisteredLabel: "Registered Email",
-        newPinLabel: "Enter New Password",
-        forgotBtn: "Verify & Reset Password",
-        addPatientTitle: "Add New Patient",
-        viewPatientsTitle: "View Patients by Date",
-        morningShiftTitle: "🌅 Morning Shift",
-        eveningShiftTitle: "🌙 Evening Shift",
-        statsTitle: "Monthly Statistics",
-        eveningOnlyStatsNote: "Today's statistics entry is available on the evening shift only — you can view the table below.",
-        manageEmployeesTitle: "Manage Employees — Edit Clinic & Shift",
-        logoutBtn: "Logout",
-        patientNameLabel: "Patient Name",
-        genderLabel: "Gender",
-        genderMale: "Male",
-        genderFemale: "Female",
-        condSickCases: "Medical Cases",
-        condBloodPressure: "Blood Pressure",
-        condHypertension: "Hypertension",
-        condHypotension: "Hypotension",
-        condBloodSugar: "Blood Sugar",
-        condHyperglycemia: "Hyperglycemia",
-        condHypoglycemia: "Hypoglycemia",
-        condHeadache: "Headache",
-        condVitalSigns: "Vital Signs",
-        condInjuries: "Injuries",
-        condBurns: "Burns",
-        condHospitalTransfer: "Hospital Transfer",
-        condOther: "Other (specify)",
-        conditionLabel: "Condition",
-        writeConditionLabel: "Enter Condition",
-        bpLabel: "Blood Pressure",
-        sugarLabel: "Sugar",
-        tempLabel: "Temperature",
-        hourLabel: "Time",
-        treatmentLabel: "Treatment",
-        dateLabel: "Date",
-        clinicLabel: "Clinic",
-        shiftLabel: "Shift",
-        chooseMonthLabel: "Choose Month",
-        chooseClinicForReportLabel: "Choose Clinic for Report",
-        timeColLabel: "Time",
-        empIdColLabel: "Employee ID",
-        phoneColLabel: "Phone Number",
-        currentClinicLabel: "Current Clinic",
-        currentShiftLabel: "Current Shift",
-        actionsLabel: "Actions",
-        totalLabel: "Total",
-        sickCasesLabel: "Medical Cases",
-        bloodPressureLabel: "Blood Pressure",
-        headacheLabel: "Headache",
-        vitalSignsLabel: "Vital Signs",
-        injuriesLabel: "Injuries",
-        burnsLabel: "Burns",
-        hospitalTransferLabel: "Hospital Transfer",
-        savePatientBtn: "Save Patient Data",
-        refreshBtn: "🔄 Refresh",
-        printSaveBtn: "🖨️ Print / Save PDF",
-        viewPatientsBtn: "View Patients",
-        saveStatsBtn: "Save Statistics",
-        loadMonthlyReportBtn: "Load Monthly Report",
-        monthlyReportTitle: "Monthly Report — All Shifts"
-    }
-};
-
-function applyLanguage(lang) {
-    const html = document.documentElement;
-    if (lang === "en") {
-        html.setAttribute("lang", "en");
-        html.setAttribute("dir", "ltr");
-        document.getElementById("langToggleBtn").textContent = "عربي";
-    } else {
-        html.setAttribute("lang", "ar");
-        html.setAttribute("dir", "rtl");
-        document.getElementById("langToggleBtn").textContent = "English";
-    }
-
-    document.querySelectorAll("[data-i18n]").forEach(el => {
-        const key = el.getAttribute("data-i18n");
-        if (lang === "en" && TRANSLATIONS.en[key]) {
-            if (!el.dataset.arOriginal) el.dataset.arOriginal = el.textContent;
-            el.textContent = TRANSLATIONS.en[key];
-        } else if (el.dataset.arOriginal) {
-            el.textContent = el.dataset.arOriginal;
-        }
-    });
-
-    localStorage.setItem("clinicLang", lang);
-}
-
-function toggleLanguage() {
-    const current = localStorage.getItem("clinicLang") || "ar";
-    applyLanguage(current === "ar" ? "en" : "ar");
-    refreshDynamicContentForLanguage();
-}
-
-// يعيد رسم أي جدول ديناميكي ظاهر حاليًا عشان أزرار تعديل/حذف/حفظ تتحدث فورًا للغة الجديدة
-function refreshDynamicContentForLanguage() {
-    if (!session.token) return;
-    if (document.getElementById("addPatientSection").style.display !== "none") {
-        loadTodayShiftPatients();
-    }
-    if (document.getElementById("adminPatientsSection").style.display !== "none" &&
-        document.getElementById("patientsByDateSection").style.display !== "none") {
-        loadPatientsByDate();
-    }
-    if (document.getElementById("monthlyStatsSection").style.display !== "none") {
-        loadMonthlyReport();
-    }
-    if (document.getElementById("manageEmployeesSection").style.display !== "none") {
-        loadAllEmployees();
-    }
-}
-
-function toggleDarkMode() {
-    const isDark = document.body.classList.toggle("dark-mode");
-    document.getElementById("darkModeToggleBtn").textContent = isDark ? "☀️" : "🌙";
-    localStorage.setItem("clinicDarkMode", isDark ? "1" : "0");
-}
-
-// مساعد صغير للنصوص اللي تُبنى ديناميكيًا بالجافاسكربت (أزرار الجداول: تعديل/حذف/حفظ/إلغاء)
-const JS_TEXT_AR = { edit: "تعديل", delete: "حذف", save: "حفظ", cancel: "إلغاء", deleteAccount: "حذف حساب" };
-const JS_TEXT_EN = { edit: "Edit", delete: "Delete", save: "Save", cancel: "Cancel", deleteAccount: "Delete Account" };
-function t(key) {
-    const lang = localStorage.getItem("clinicLang") || "ar";
-    return (lang === "en" ? JS_TEXT_EN[key] : JS_TEXT_AR[key]) || JS_TEXT_AR[key] || key;
-}
-
-// نطبّق تفضيلات اللغة والمود المحفوظة فور تحميل الصفحة
-(function initPreferences() {
-    const savedLang = localStorage.getItem("clinicLang") || "ar";
-    applyLanguage(savedLang);
-
-    if (localStorage.getItem("clinicDarkMode") === "1") {
-        document.body.classList.add("dark-mode");
-        document.getElementById("darkModeToggleBtn").textContent = "☀️";
-    }
-})();
-
-/* ---------- أدوات مساعدة عامة ---------- */
-
-// يمنع حقن HTML/سكربتات لو موظف كتب اسم مريض أو رقم هاتف يحتوي على أكواد —
-// لازم تُستخدم على أي نص أدخله مستخدم قبل ما ينحط بالصفحة عبر innerHTML
-function escapeHtml(str) {
-    return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-}
-
-function limitFourDigits(input) {
-    if (input.value.length > 4) input.value = input.value.slice(0, 4);
-}
-
-function limitTwelveDigits(input) {
-    if (input.value.length > 12) input.value = input.value.slice(0, 12);
-}
-
-// بمجرد ما يكتمل الرقم الوظيفي (4 أرقام) بشاشة الدخول، نجيب عيادته وشفته
-// المسجلين ونعرضهم بمربع رصاصي مقفول للعرض فقط (بدون الحاجة لإدخال الرمز السري)
-let empIdPreviewTimer = null;
-function checkLoginEmpIdPreview() {
-    clearTimeout(empIdPreviewTimer);
-    const empId = document.getElementById("loginEmpId").value.trim();
-    const group = document.getElementById("loginClinicShiftPreviewGroup");
-    const preview = document.getElementById("loginClinicShiftPreview");
-
-    if (empId.length !== 4) {
-        group.style.display = "none";
-        return;
-    }
-
-    empIdPreviewTimer = setTimeout(async () => {
-        try {
-            const result = await apiGet({ action: "GET_USER_CLINIC_SHIFT", emp_id: empId });
-            if (result && result.status === "FOUND") {
-                if (result.isAdmin) {
-                    preview.value = "حساب مسؤول";
-                } else {
-                    preview.value = `${result.clinic || "-"} — ${result.shift || "-"}`;
-                }
-                group.style.display = "block";
-            } else {
-                group.style.display = "none";
-            }
-        } catch (e) {
-            group.style.display = "none";
-        }
-    }, 300);
-}
-
-function showError(msg) {
-    const el = document.getElementById("errorMessage");
-    document.getElementById("successMessage").style.display = "none";
-    el.textContent = msg;
-    el.style.display = "block";
-    clearTimeout(el._t);
-    el._t = setTimeout(() => { el.style.display = "none"; }, 5000);
-}
-
-function showSuccess(msg) {
-    const el = document.getElementById("successMessage");
-    document.getElementById("errorMessage").style.display = "none";
-    el.textContent = msg;
-    el.style.display = "block";
-    clearTimeout(el._t);
-    el._t = setTimeout(() => { el.style.display = "none"; }, 5000);
-}
-
-function setBusy(buttonEl, busy, originalText) {
-    if (busy) {
-        buttonEl.disabled = true;
-        buttonEl.dataset.originalText = originalText;
-        buttonEl.innerHTML = '<span class="loader"></span>' + originalText;
-    } else {
-        buttonEl.disabled = false;
-        buttonEl.textContent = buttonEl.dataset.originalText || originalText;
-    }
-}
-
-function switchAuthScreen(screenId) {
-    ["loginScreen", "registerScreen", "forgotScreen"].forEach(id => {
-        document.getElementById(id).style.display = (id === screenId) ? "block" : "none";
-    });
-    document.getElementById("errorMessage").style.display = "none";
-    document.getElementById("successMessage").style.display = "none";
-}
-
-/* تشفير أحادي الاتجاه (SHA-256) من جهة العميل قبل إرسال الرمز السري.
-   هذا لا يغني عن HTTPS ولا عن الحماية على السيرفر، لكنه يمنع
-   وصول الرمز كنص صريح عبر الشبكة أو ظهوره في سجلات الطلبات */
-async function hashPin(pin) {
-    const enc = new TextEncoder().encode(pin);
-    const buf = await crypto.subtle.digest("SHA-256", enc);
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
-/* ---------- طلبات الشبكة ---------- */
-
-async function apiPost(action, payload) {
-    const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" }, // يتجنب preflight مع Apps Script
-        body: JSON.stringify({ action, ...payload })
-    });
-    return res.json();
-}
-
-async function apiGet(params) {
-    const url = new URL(API_URL);
-    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-    const res = await fetch(url.toString());
-    return res.json();
-}
-
-/* ---------- حالة السيرفر (تفحص تلقائيًا عند فتح الصفحة) ---------- */
-
-async function checkServerStatus() {
-    const wrap = document.getElementById("serverStatus");
-    const text = document.getElementById("serverStatusText");
-
-    if (API_URL.includes("PASTE_YOUR")) {
-        wrap.className = "server-status offline";
-        text.textContent = "لم يتم ربط رابط السيرفر بعد (API_URL)";
-        return;
-    }
-
-    try {
-        const result = await apiGet({ action: "PING" });
-        if (result && result.status === "OK") {
-            wrap.className = "server-status online";
-            text.textContent = "🟢 السيرفر متصل ويعمل بشكل طبيعي";
-        } else {
-            wrap.className = "server-status offline";
-            text.textContent = "🔴 السيرفر يستجيب لكن برد غير متوقع";
-        }
-    } catch (e) {
-        wrap.className = "server-status offline";
-        text.textContent = "🔴 تعذر الاتصال بالسيرفر، تحقق من رابط API أو النشر";
-    }
-}
-
-checkServerStatus();
-
-async function updateDutyTeamBanner() {
-    if (API_URL.includes("PASTE_YOUR")) return;
-    try {
-        const result = await apiGet({ action: "GET_ON_DUTY_TEAM" });
-        if (result && result.on_duty_team) {
-            const banner = document.getElementById("dutyTeamBanner");
-            document.getElementById("dutyTeamBannerText").textContent = `الفريق المناوب اليوم: شفت ${result.on_duty_team}`;
-            banner.style.display = "flex";
-        }
-    } catch (e) { /* تجاهل بصمت */ }
-}
-updateDutyTeamBanner();
-
-/* ---------- استمرارية تسجيل الدخول عبر الريفرش (localStorage) ---------- */
-
-const SESSION_STORAGE_KEY = "clinicSession";
-
-function persistSession() {
-    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
-        empId: session.empId, shift: session.shift, clinic: session.clinic,
-        isAdmin: session.isAdmin, token: session.token
-    }));
-}
-
-function clearPersistedSession() {
-    localStorage.removeItem(SESSION_STORAGE_KEY);
-}
-
-// عند فتح الصفحة (أو عمل ريفرش) نتحقق إذا فيه جلسة محفوظة ولسا سارية،
-// ولو صحيحة ندخل مباشرة للوحة التحكم بدون ما نرجع لشاشة تسجيل الدخول
-async function restoreSession() {
-    const saved = localStorage.getItem(SESSION_STORAGE_KEY);
-    if (!saved) { showLoginScreenNow(); return; }
-
-    let parsed;
-    try { parsed = JSON.parse(saved); } catch (e) { clearPersistedSession(); showLoginScreenNow(); return; }
-    if (!parsed || !parsed.token) { clearPersistedSession(); showLoginScreenNow(); return; }
-
-    try {
-        const result = await apiGet({ action: "VALIDATE_SESSION", token: parsed.token });
-        if (result && result.status === "VALID") {
-            session = {
-                empId: parsed.empId, shift: parsed.shift, clinic: parsed.clinic,
-                isAdmin: result.isAdmin, token: parsed.token
-            };
-            enterDashboard(); // هذي تخفي شاشة التحقق ضمنيًا لأنها تخفي كل شاشات auth-screen
-        } else {
-            clearPersistedSession();
-            showLoginScreenNow();
-        }
-    } catch (e) {
-        // تعذر التحقق (مثلاً السيرفر غير متاح مؤقتًا) — نرجع لشاشة الدخول العادية بدل ما تعلق شاشة التحقق للأبد
-        showLoginScreenNow();
-    }
-}
-
-function showLoginScreenNow() {
-    document.getElementById("authCheckingScreen").style.display = "none";
-    switchAuthScreen("loginScreen");
-}
-
-restoreSession();
-
-/* ---------- تسجيل الدخول / التسجيل / استرجاع الرمز ---------- */
-
-async function handleLogin() {
-    const empId = document.getElementById("loginEmpId").value.trim();
-    const pin = document.getElementById("loginPin").value.trim();
-    const btn = document.getElementById("loginBtn");
-
-    if (!empId || !pin) { showError("الرجاء إدخال الرقم الوظيفي والرمز السري"); return; }
-    if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
-
-    setBusy(btn, true, "تسجيل الدخول وتأكيد الهوية");
-    try {
-        const pinHash = await hashPin(pin);
-        const result = await apiPost("VERIFY_LOGIN", { emp_id: empId, pin_hash: pinHash });
-
-        if (result.status === "SUCCESS") {
-            session.empId = empId;
-            session.isAdmin = !!result.isAdmin;
-            session.token = result.token;
-            // العيادة والشفت يجيان من حساب الموظف المسجّل مسبقًا — يدخل بفترته تلقائيًا بدون اختيار كل مرة
-            session.clinic = result.isAdmin ? null : (result.clinic || null);
-            session.shift = result.isAdmin ? null : (result.shift || null);
-
-            if (!session.isAdmin && (!session.clinic || !session.shift)) {
-                showError("حسابك القديم ما فيه عيادة/شفت مسجلة. تواصل مع المسؤول لتحديثها، أو سجّل حساب جديد.");
-                setBusy(btn, false, "تسجيل الدخول وتأكيد الهوية");
-                return;
-            }
-
-            persistSession();
-            enterDashboard();
-        } else if (result.status === "WRONG_SHIFT_DAY") {
-            showError(`اليوم مو شفتك — الفريق المناوب اليوم هو "شفت ${result.on_duty_team}". حسابك مسجّل على شفت "${result.your_team}".`);
-        } else {
-            showError("الرقم الوظيفي أو الرمز السري غير صحيح");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر، تحقق من رابط API");
-    } finally {
-        setBusy(btn, false, "تسجيل الدخول وتأكيد الهوية");
-    }
-}
-
-async function handleRegister() {
-    const empId = document.getElementById("regEmpId").value.trim();
-    const phone = document.getElementById("regPhone").value.trim();
-    const civilId = document.getElementById("regCivilId").value.trim();
-    const email = document.getElementById("regEmail").value.trim();
-    const clinic = document.getElementById("regClinic").value;
-    const shift = document.getElementById("regShift").value;
-    const pin = document.getElementById("regPin").value.trim();
-    const btn = document.getElementById("registerBtn");
-
-    if (!empId || !phone || !civilId || !email || !pin) { showError("الرجاء تعبئة جميع الحقول"); return; }
-    if (empId.length !== 4) { showError("الرقم الوظيفي يجب أن يكون 4 أرقام"); return; }
-
-    setBusy(btn, true, "اعتماد وحفظ الحساب الجديد");
-    try {
-        const pinHash = await hashPin(pin);
-        const result = await apiPost("REGISTER_SECURE", {
-            emp_id: empId, phone, pin_hash: pinHash,
-            civil_id: civilId, email, clinic, shift
-        });
-
-        if (result.status === "SUCCESS") {
-            showSuccess("تم إنشاء الحساب بنجاح، يمكنك تسجيل الدخول الآن");
-            switchAuthScreen("loginScreen");
-        } else if (result.status === "EXISTS") {
-            showError("هذا الرقم الوظيفي مسجل مسبقًا");
-        } else {
-            showError("تعذر إنشاء الحساب، حاول مجددًا");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر");
-    } finally {
-        setBusy(btn, false, "اعتماد وحفظ الحساب الجديد");
-    }
-}
-
-async function handleForgot() {
-    const empId = document.getElementById("forgotEmpId").value.trim();
-    const phone = document.getElementById("forgotPhone").value.trim();
-    const civilId = document.getElementById("forgotCivilId").value.trim();
-    const email = document.getElementById("forgotEmail").value.trim();
-    const newPin = document.getElementById("forgotNewPin").value.trim();
-    const btn = document.getElementById("forgotBtn");
-
-    if (!empId || !phone || !civilId || !email || !newPin) { showError("الرجاء تعبئة جميع الحقول"); return; }
-
-    setBusy(btn, true, "تحديث الرمز والتحقق");
-    try {
-        const newPinHash = await hashPin(newPin);
-        const result = await apiPost("FORGOT_PIN_SECURE", {
-            emp_id: empId, phone, civil_id: civilId, email, new_pin_hash: newPinHash
-        });
-
-        if (result.status === "SUCCESS") {
-            showSuccess("تم تحديث الرمز السري بنجاح");
-            switchAuthScreen("loginScreen");
-        } else {
-            showError("لم يتم العثور على حساب مطابق لهذه البيانات");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر");
-    } finally {
-        setBusy(btn, false, "تحديث الرمز والتحقق");
-    }
-}
-
-function logout() {
-    session = { empId: null, shift: null, clinic: null, isAdmin: false, token: null };
-    clearPersistedSession();
-    renderTodayPatientsTable([]);
-    if (statsChart) { statsChart.destroy(); statsChart = null; }
-    document.getElementById("chartCard").style.display = "none";
-    document.getElementById("mainDashboard").style.display = "none";
-    document.getElementById("reportSection").style.display = "none";
-    document.getElementById("patientsByDateSection").style.display = "none";
-    document.getElementById("loginEmpId").value = "";
-    document.getElementById("loginPin").value = "";
-    document.getElementById("tabBtnAddPatient").textContent = "➕ إضافة المريض";
-    switchTab("addPatient");
-    switchAuthScreen("loginScreen");
-}
-
-/* ---------- لوحة التحكم والتبويبات ---------- */
-
-function enterDashboard() {
-    ["loginScreen", "registerScreen", "forgotScreen", "authCheckingScreen"].forEach(id => {
-        document.getElementById(id).style.display = "none";
-    });
-    document.getElementById("mainDashboard").style.display = "block";
-
-    // تسمية التبويب الأول تختلف حسب نوع الحساب: عرض المرضى للمسؤول، إضافة مريض للموظف
-    document.getElementById("tabBtnAddPatient").textContent = session.isAdmin ? "👥 عرض المرضى" : "➕ إضافة المريض";
-    document.getElementById("tabBtnManageEmployees").style.display = session.isAdmin ? "block" : "none";
-
-    if (session.isAdmin) {
-        document.getElementById("patientsViewDate").value = todayDateStringLocal();
-    } else {
-        loadTodayShiftPatients();
-    }
-
-    switchTab("addPatient");
-    setDefaultPatientTime();
-}
-
-function todayDateStringLocal() {
-    return new Date().toLocaleDateString("en-CA"); // صيغة yyyy-MM-dd ثابتة
-}
-
-// التبويبان متاحان قبل وبعد تسجيل الدخول. حساب المسؤول يشوف "عرض المرضى"
-// بدل نموذج "إضافة مريض" داخل نفس التبويب الأول
-function switchTab(tab) {
-    const isAdmin = session.isAdmin;
-    const isAddPatient = tab === "addPatient";
-    const isMonthlyStats = tab === "monthlyStats";
-    const isManageEmployees = tab === "manageEmployees" && isAdmin;
-
-    document.getElementById("addPatientSection").style.display = (isAddPatient && !isAdmin) ? "block" : "none";
-    document.getElementById("adminPatientsSection").style.display = (isAddPatient && isAdmin) ? "block" : "none";
-    document.getElementById("monthlyStatsSection").style.display = isMonthlyStats ? "block" : "none";
-    document.getElementById("manageEmployeesSection").style.display = isManageEmployees ? "block" : "none";
-
-    document.getElementById("tabBtnAddPatient").classList.toggle("active", isAddPatient);
-    document.getElementById("tabBtnMonthlyStats").classList.toggle("active", isMonthlyStats);
-    document.getElementById("tabBtnManageEmployees").classList.toggle("active", isManageEmployees);
-
-    // لوحة إدخال الإحصائية اليدوية (العدادات +/-) صارت للمسعفين — بس الشفت المسائي بس
-    // (حسب طلب المسؤول: إحصائية اليوم تُدخل مرة وحدة بنهاية اليوم، بالشفت المسائي)
-    const isEveningShift = !!(session.shift && session.shift.indexOf("مسائي") !== -1);
-    document.getElementById("statsEntryPanel").style.display = (isMonthlyStats && !isAdmin && isEveningShift) ? "block" : "none";
-    document.getElementById("statsEntryMorningNote").style.display = (isMonthlyStats && !isAdmin && !isEveningShift) ? "block" : "none";
-    document.getElementById("monthlyStatsAdminControls").style.display = (isMonthlyStats && isAdmin) ? "block" : "none";
-    if (isMonthlyStats && !isAdmin && isEveningShift && !document.getElementById("statsEntryDate").value) {
-        document.getElementById("statsEntryDate").value = todayDateStringLocal();
-        document.getElementById("statsEntryClinic").value = session.clinic || "عيادة الف";
-        document.getElementById("statsEntryShift").value = session.shift || document.getElementById("statsEntryShift").value;
-        loadStatsEntryCounters();
-    }
-
-    // الإحصائية (جدول العرض) تتحدّث تلقائيًا أول ما نفتح التبويب
-    if (isMonthlyStats && session.token) {
-        loadMonthlyReport();
-    }
-
-    if (isManageEmployees) {
-        loadAllEmployees();
-    }
-}
-
-// يبني قوائم الساعات (00-23) والدقائق (00-59) داخل عنصري select — يضمن نظام 24 ساعة دايمًا بغض النظر عن إعدادات المتصفح
-function populateTimeSelect(selectEl, count) {
-    selectEl.innerHTML = Array.from({ length: count }, (_, i) => {
-        const v = String(i).padStart(2, "0");
-        return `<option value="${v}">${v}</option>`;
-    }).join("");
-}
-populateTimeSelect(document.getElementById("patientTimeHour"), 24);
-populateTimeSelect(document.getElementById("patientTimeMinute"), 60);
-document.getElementById("reportMonth").value = new Date().toLocaleDateString("en-CA").substring(0, 7);
-
-function setDefaultPatientTime() {
-    const now = new Date();
-    document.getElementById("patientTimeHour").value = String(now.getHours()).padStart(2, "0");
-    document.getElementById("patientTimeMinute").value = String(now.getMinutes()).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const yyyy = now.getFullYear();
-    document.getElementById("patientDateDisplay").value = `${dd}/${mm}/${yyyy}`;
-}
-
-/* ---------- إضافة مريض ---------- */
-
-async function savePatient() {
-    const btn = document.getElementById("savePatientBtn");
-
-    const name = document.getElementById("patientName").value.trim();
-    const civilId = document.getElementById("patientCivilId").value.trim();
-    const gender = document.getElementById("patientGender").value;
-    const conditionSelect = document.getElementById("patientCondition").value;
-    const condition = conditionSelect === "__other__"
-        ? document.getElementById("patientConditionOther").value.trim()
-        : conditionSelect;
-    const bp = document.getElementById("patientBP").value.trim();
-    const sugar = document.getElementById("patientSugar").value.trim();
-    const temp = document.getElementById("patientTemp").value.trim();
-    const action = document.getElementById("patientAction").value.trim();
-    const time = document.getElementById("patientTimeHour").value + ":" + document.getElementById("patientTimeMinute").value;
-
-    if (!name || !civilId) { showError("الرجاء إدخال اسم المريض والرقم المدني"); return; }
-    if (conditionSelect === "__other__" && !condition) { showError("الرجاء كتابة نوع الحالة"); return; }
-    if (civilId.length > 12) { showError("الرقم المدني يجب ألا يتجاوز 12 رقمًا"); return; }
-    if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
-
-    setBusy(btn, true, "حفظ بيانات المريض");
-    try {
-        const now = new Date();
-        const payload = {
-            token: session.token,
-            date_target: now.toLocaleDateString("en-CA"),
-            emp_id: session.empId,
-            clinic: session.clinic,
-            shift: session.shift,
-            patient_name: name,
-            civil_id: civilId,
-            gender,
-            condition,
-            blood_pressure: bp,
-            sugar,
-            temperature: temp,
-            treatment: action,
-            time,
-            timestamp: now.toISOString()
-        };
-        const result = await apiPost("ADD_PATIENT", payload);
-
-        if (result.status === "SUCCESS") {
-            showSuccess("تم حفظ بيانات المريض بنجاح");
-            clearPatientForm();
-            loadTodayShiftPatients(); // نحدّث الجدول من السيرفر عشان يظهر لكل زملاء نفس الشفت
-        } else {
-            showError("فشل الحفظ، حاول مرة أخرى");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
-    } finally {
-        setBusy(btn, false, "حفظ بيانات المريض");
-    }
-}
-
-// يبحث عن آخر بيانات محفوظة لنفس الرقم المدني (مريض متكرر) ويعبّي الاسم والجنس تلقائيًا
-// حتى لا يُعاد كتابتهم يدويًا في كل زيارة
-let returningPatientTimer = null;
-function checkReturningPatient() {
-    clearTimeout(returningPatientTimer);
-    const civilId = document.getElementById("patientCivilId").value.trim();
-    if (civilId.length < 5) return; // ما نبحث إلا بعد رقم مدني معقول الطول
-
-    returningPatientTimer = setTimeout(async () => {
-        try {
-            const result = await apiGet({ action: "GET_PATIENT_BY_CIVIL_ID", token: session.token, civil_id: civilId });
-            if (result && result.status === "FOUND") {
-                document.getElementById("patientName").value = result.patient_name || "";
-                if (result.gender) document.getElementById("patientGender").value = result.gender;
-            }
-        } catch (e) {
-            // تجاهل بصمت — لو تعذر البحث، الموظف يكمل التعبئة يدويًا كالمعتاد
-        }
-    }, 400);
-}
-
-function toggleOtherConditionBox() {
-    const isOther = document.getElementById("patientCondition").value === "__other__";
-    document.getElementById("patientConditionOtherGroup").style.display = isOther ? "block" : "none";
-    if (!isOther) document.getElementById("patientConditionOther").value = "";
-}
-
-function clearPatientForm() {
-    document.getElementById("patientName").value = "";
-    document.getElementById("patientCivilId").value = "";
-    document.getElementById("patientGender").selectedIndex = 0;
-    document.getElementById("patientCondition").selectedIndex = 0;
-    document.getElementById("patientConditionOther").value = "";
-    document.getElementById("patientConditionOtherGroup").style.display = "none";
-    document.getElementById("patientBP").value = "";
-    document.getElementById("patientSugar").value = "";
-    document.getElementById("patientTemp").value = "";
-    document.getElementById("patientAction").value = "";
-    setDefaultPatientTime();
-    document.getElementById("patientName").focus();
-}
-
-// يجلب من السيرفر كل مرضى اليوم لنفس العيادة ونفس اسم الشفت المسجّل فيه الموظف
-// (يشوف زملاءه اللي بنفس الفترة، مو بس اللي أضافهم هو بجهازه)
-async function loadTodayShiftPatients() {
-    if (API_URL.includes("PASTE_YOUR")) return;
-    try {
-        const result = await apiGet({ action: "GET_PATIENTS_BY_DATE", token: session.token, clinic: session.clinic, shift: session.shift });
-        if (!Array.isArray(result)) return; // نتجاهل بصمت لو فشل الجلب، الجدول يبقى بآخر حالة معروضة
-        renderTodayPatientsTable(result);
-    } catch (e) {
-        // تجاهل بصمت، المستخدم يقدر يضغط زر التحديث يدويًا لاحقًا
-    }
-}
-
-function renderTodayPatientsTable(rows) {
-    const body = document.getElementById("todayPatientsBody");
-    document.getElementById("todayPatientCount").textContent = rows.length;
-
-    if (!rows.length) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="10">لم تتم إضافة أي مريض بعد اليوم لنفس عيادتك وشفتك</td></tr>`;
-        return;
-    }
-
-    // الأحدث فوق
-    body.innerHTML = rows.slice().reverse().map(p => `
-        <tr>
-            <td>${escapeHtml(p.time) || "-"}</td>
-            <td>${escapeHtml(p.patient_name)}</td>
-            <td>${escapeHtml(p.civil_id)}</td>
-            <td>${escapeHtml(p.gender) || "-"}</td>
-            <td>${escapeHtml(p.condition)}</td>
-            <td>${escapeHtml(p.blood_pressure) || "-"}</td>
-            <td>${escapeHtml(p.sugar) || "-"}</td>
-            <td>${escapeHtml(p.temperature) || "-"}</td>
-            <td>${escapeHtml(p.treatment) || "-"}</td>
-            <td>${escapeHtml(p.emp_id)}</td>
-        </tr>
-    `).join("");
-}
-
-/* ---------- التقرير: يومي أو شهري ---------- */
-
-function currentReportAction() {
-    return "GET_MONTHLY_REPORT";
-}
-
-function currentReportScopeLabel() {
-    return "الشهر";
-}
-
-function currentReportMonth() {
-    return document.getElementById("reportMonth").value || todayDateStringLocal().substring(0, 7);
-}
-
-/* ---------- الإحصائية اليدوية (للمسؤول فقط) ---------- */
-
-const STATS_COUNTER_KEYS = ["sick_cases", "blood_pressure", "sugar", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
-let statsCounters = Object.fromEntries(STATS_COUNTER_KEYS.map(k => [k, 0]));
-let statsEntryExistingId = null; // لو فيه صف موجود لنفس اليوم/العيادة/الشفت، نحفظ رقمه عشان نحدّثه بدل ما نكرره
-
-function updateStatsCounter(key, delta) {
-    statsCounters[key] = Math.max(0, (statsCounters[key] || 0) + delta);
-    document.getElementById("stat_" + key).textContent = statsCounters[key];
-    updateStatsTotalDisplay();
-}
-
-function updateStatsTotalDisplay() {
-    const total = STATS_COUNTER_KEYS.reduce((sum, k) => sum + (statsCounters[k] || 0), 0);
-    document.getElementById("statsTotalDisplay").textContent = total;
-}
-
-function resetStatsCounters() {
-    statsCounters = Object.fromEntries(STATS_COUNTER_KEYS.map(k => [k, 0]));
-    STATS_COUNTER_KEYS.forEach(k => { document.getElementById("stat_" + k).textContent = "0"; });
-    updateStatsTotalDisplay();
-    statsEntryExistingId = null;
-}
-
-// يجيب أي إحصائية محفوظة مسبقًا لنفس (التاريخ + العيادة + الشفت) المختارين، عشان
-// المسؤول يعدّل عليها بدل ما ينشئ صف مكرر
-async function loadStatsEntryCounters() {
-    const date = document.getElementById("statsEntryDate").value;
-    const clinic = document.getElementById("statsEntryClinic").value;
-    const shift = document.getElementById("statsEntryShift").value;
-    if (!date || !clinic || !shift) { resetStatsCounters(); return; }
-
-    try {
-        const result = await apiGet({ action: "GET_DAILY_REPORT", token: session.token, clinic, date });
-        if (!Array.isArray(result)) { resetStatsCounters(); return; }
-
-        const existing = result.find(r => r.shift === shift);
-        if (existing) {
-            STATS_COUNTER_KEYS.forEach(k => {
-                statsCounters[k] = Number(existing[k]) || 0;
-                document.getElementById("stat_" + k).textContent = statsCounters[k];
-            });
-            updateStatsTotalDisplay();
-            statsEntryExistingId = existing.id;
-        } else {
-            resetStatsCounters();
-        }
-    } catch (e) {
-        resetStatsCounters();
-    }
-}
-
-async function saveDailyStats() {
-    const btn = document.getElementById("saveStatsBtn");
-    const date = document.getElementById("statsEntryDate").value;
-    const clinic = document.getElementById("statsEntryClinic").value;
-    const shift = document.getElementById("statsEntryShift").value;
-
-    if (!date || !clinic || !shift) { showError("الرجاء اختيار التاريخ والعيادة والشفت"); return; }
-    if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
-
-    setBusy(btn, true, "حفظ الإحصائية");
-    try {
-        const payload = {
-            token: session.token,
-            date_target: date,
-            emp_id: session.empId,
-            clinic, shift,
-            timestamp: new Date().toISOString(),
-            ...statsCounters
-        };
-        const result = await apiPost("SAVE_DAILY_STATS", payload);
-        if (result.status === "SUCCESS") {
-            showSuccess("تم حفظ الإحصائية بنجاح");
-            statsEntryExistingId = result.id;
-            loadMonthlyReport(); // نحدّث الجدول تحت عشان يبين التغيير فورًا
-            if (session.isAdmin) {
-                document.getElementById("statsEntryPanel").style.display = "none";
-                document.getElementById("statsEntryPanelTitle").textContent = "إدخال إحصائية اليوم";
-            }
-        } else {
-            showError("تعذر حفظ الإحصائية، حاول مرة أخرى");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
-    } finally {
-        setBusy(btn, false, "حفظ الإحصائية");
-    }
-}
-
-async function loadMonthlyReport() {
-    if (API_URL.includes("PASTE_YOUR")) { showError("لم يتم ربط رابط السيرفر بعد (API_URL)"); return; }
-
-    const clinic = document.getElementById("adminClinicSelect").value;
-    const params = { action: currentReportAction(), token: session.token, clinic, month: currentReportMonth() };
-
-    try {
-        const result = await apiGet(params);
-        if (!Array.isArray(result)) {
-            if (result && result.status === "FORBIDDEN") {
-                showError("جلسة الدخول غير صالحة، سجّل الدخول من جديد");
-            } else {
-                showError("تعذر جلب التقرير");
-            }
-            return;
-        }
-        renderReportTable(result);
-        document.getElementById("reportSection").style.display = "block";
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء جلب التقرير");
-    }
-}
-
-const REPORT_EDIT_FIELDS = ["sick_cases", "blood_pressure", "sugar", "headache", "vital_signs", "injuries", "burns", "hospital_transfer"];
-
-/* ---------- الإحصائيات البيانية (دائري / أعمدة / إجمالي مدمج) ---------- */
-
-const CASE_LABELS = {
-    sick_cases: "حالات طبية",
-    blood_pressure: "ضغط الدم",
-    sugar: "السكر",
-    headache: "صداع",
-    vital_signs: "علامات حيوية",
-    injuries: "إصابات",
-    burns: "حروق",
-    hospital_transfer: "نقل مستشفى"
-};
-
-const CASE_COLORS = {
-    sick_cases: "#0d9488",
-    blood_pressure: "#c0392b",
-    sugar: "#e67e22",
-    headache: "#b8860b",
-    vital_signs: "#2980b9",
-    injuries: "#8e44ad",
-    burns: "#d35400",
-    hospital_transfer: "#16a085"
-};
-
-let statsChart = null; // مرجع الرسم البياني الحالي، نحذفه قبل رسم واحد جديد
-
-function setActiveStatBtn(id) {
-    ["btnPieChart", "btnBarSingle", "btnBarChart", "btnCombinedTotal"].forEach(btnId => {
-        document.getElementById(btnId).classList.toggle("active", btnId === id);
-    });
-}
-
-// يجلب بيانات عيادة معينة (أو الكل) ويرجع مجموع كل نوع حالة + الإجمالي العام
-// (يحترم النطاق الحالي: يومي أو شهري)
-async function fetchClinicTotals(clinicValue) {
-    const result = await apiGet({ action: currentReportAction(), token: session.token, clinic: clinicValue, month: currentReportMonth() });
-    if (!Array.isArray(result)) return null;
-
-    const totals = Object.fromEntries(REPORT_EDIT_FIELDS.map(k => [k, 0]));
-    let grandTotal = 0;
-    result.forEach(row => {
-        REPORT_EDIT_FIELDS.forEach(k => { totals[k] += Number(row[k]) || 0; });
-        grandTotal += Number(row.total_daily) || 0;
-    });
-    return { totals, grandTotal, count: result.length };
-}
-
-function showChartCard(title) {
-    document.getElementById("chartCard").style.display = "block";
-    document.getElementById("chartCardTitle").textContent = title;
-    document.getElementById("chartCanvasWrap").style.display = "block";
-    document.getElementById("combinedTotalBox").style.display = "none";
-}
-
-// ١) نسب أنواع الحالات — يدعم عرض دائري أو عمودي لنفس البيانات (يحترم اختيار العيادة بقائمة المسؤول)
-async function showCaseTypeChart(chartType) {
-    setActiveStatBtn(chartType === "doughnut" ? "btnPieChart" : "btnBarSingle");
-
-    if (typeof Chart === "undefined") {
-        showError("تعذر تحميل مكتبة الرسوم البيانية (Chart.js). تحقق من اتصال الإنترنت وأعد تحميل الصفحة.");
-        return;
-    }
-
-    const clinic = document.getElementById("adminClinicSelect").value;
-    const clinicLabel = clinic === "all" ? "كل العيادات" : clinic;
-
-    try {
-        const data = await fetchClinicTotals(clinic);
-        if (!data) { showError("تعذر جلب بيانات الرسم البياني من السيرفر"); return; }
-
-        if (data.grandTotal === 0) {
-            showError("لا توجد بيانات كافية لعرض الرسم البياني لهذه العيادة");
-            return;
-        }
-
-        showChartCard(`نسب أنواع الحالات — ${clinicLabel} (${currentReportScopeLabel()})`);
-
-        const labels = REPORT_EDIT_FIELDS.map(k => CASE_LABELS[k]);
-        const values = REPORT_EDIT_FIELDS.map(k => data.totals[k]);
-        const colors = REPORT_EDIT_FIELDS.map(k => CASE_COLORS[k]);
-
-        if (statsChart) statsChart.destroy();
-        const ctx = document.getElementById("statsCanvas").getContext("2d");
-
-        if (chartType === "doughnut") {
-            statsChart = new Chart(ctx, {
-                type: "doughnut",
-                data: { labels, datasets: [{ data: values, backgroundColor: colors, borderColor: "#fff", borderWidth: 2 }] },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: "bottom", labels: { font: { family: "Tajawal" }, padding: 14 } },
-                        tooltip: {
-                            callbacks: {
-                                label: (c) => `${c.label}: ${c.parsed} (${((c.parsed / data.grandTotal) * 100).toFixed(1)}%)`
-                            }
-                        }
-                    }
-                }
-            });
-        } else {
-            statsChart = new Chart(ctx, {
-                type: "bar",
-                data: { labels, datasets: [{ label: clinicLabel, data: values, backgroundColor: colors, borderRadius: 6 }] },
-                options: {
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true, ticks: { precision: 0 } },
-                        x: { ticks: { font: { family: "Tajawal" } } }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (c) => `${c.label}: ${c.parsed.y} (${((c.parsed.y / data.grandTotal) * 100).toFixed(1)}%)`
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    } catch (e) {
-        showError("حدث خطأ أثناء بناء الرسم البياني: " + (e && e.message ? e.message : "غير معروف"));
-    }
-}
-
-// ٢) رسم أعمدة: مقارنة كل نوع حالة بين العيادتين
-async function showBarChart() {
-    setActiveStatBtn("btnBarChart");
-
-    if (typeof Chart === "undefined") {
-        showError("تعذر تحميل مكتبة الرسوم البيانية (Chart.js). تحقق من اتصال الإنترنت وأعد تحميل الصفحة.");
-        return;
-    }
-
-    try {
-        const [dataA, dataB] = await Promise.all([
-            fetchClinicTotals("عيادة الف"),
-            fetchClinicTotals("عيادة باء")
-        ]);
-        if (!dataA || !dataB) { showError("تعذر جلب بيانات الرسم البياني من السيرفر"); return; }
-
-        if (dataA.grandTotal === 0 && dataB.grandTotal === 0) {
-            showError("لا توجد بيانات كافية لعرض المقارنة");
-            return;
-        }
-
-        showChartCard(`مقارنة أنواع الحالات بين العيادتين (${currentReportScopeLabel()})`);
-
-        const labels = REPORT_EDIT_FIELDS.map(k => CASE_LABELS[k]);
-        const valuesA = REPORT_EDIT_FIELDS.map(k => dataA.totals[k]);
-        const valuesB = REPORT_EDIT_FIELDS.map(k => dataB.totals[k]);
-
-        if (statsChart) statsChart.destroy();
-        const ctx = document.getElementById("statsCanvas").getContext("2d");
-        statsChart = new Chart(ctx, {
-            type: "bar",
-            data: {
-                labels,
-                datasets: [
-                    { label: "عيادة الف", data: valuesA, backgroundColor: "#0d9488", borderRadius: 6 },
-                    { label: "عيادة باء", data: valuesB, backgroundColor: "#b8860b", borderRadius: 6 }
-                ]
-            },
-            options: {
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true, ticks: { precision: 0 } },
-                    x: { ticks: { font: { family: "Tajawal" } } }
-                },
-                plugins: {
-                    legend: { position: "bottom", labels: { font: { family: "Tajawal" }, padding: 14 } }
-                }
-            }
-        });
-    } catch (e) {
-        showError("حدث خطأ أثناء بناء الرسم البياني: " + (e && e.message ? e.message : "غير معروف"));
-    }
-}
-
-// ٣) إجمالي العيادتين معًا (بطاقات أرقام بدون رسم بياني)
-async function showCombinedTotal() {
-    setActiveStatBtn("btnCombinedTotal");
-
-    try {
-        const [dataA, dataB] = await Promise.all([
-            fetchClinicTotals("عيادة الف"),
-            fetchClinicTotals("عيادة باء")
-        ]);
-        if (!dataA || !dataB) { showError("تعذر جلب البيانات"); return; }
-
-        document.getElementById("chartCard").style.display = "block";
-        document.getElementById("chartCardTitle").textContent = `إجمالي الحالات — العيادتين معًا (${currentReportScopeLabel()})`;
-        document.getElementById("chartCanvasWrap").style.display = "none";
-
-        const box = document.getElementById("combinedTotalBox");
-        box.style.display = "flex";
-        box.innerHTML = `
-            <div class="combined-total-card">
-                <div class="label">عيادة الف</div>
-                <div class="value">${dataA.grandTotal}</div>
-            </div>
-            <div class="combined-total-card">
-                <div class="label">عيادة باء</div>
-                <div class="value">${dataB.grandTotal}</div>
-            </div>
-            <div class="combined-total-card grand">
-                <div class="label">الإجمالي الكلي</div>
-                <div class="value">${dataA.grandTotal + dataB.grandTotal}</div>
-            </div>
-        `;
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء جلب البيانات");
-    }
-}
-
-function renderReportTable(rows) {
-    const body = document.getElementById("reportTableBody");
-    body.innerHTML = "";
-
-    const colCount = 14; // نفس عدد الأعمدة للجميع الآن (الإجمالي وكل الحالات تظهر عند الكل)
-
-    if (!rows.length) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="${colCount}">لا توجد بيانات مسجلة بعد لـ${currentReportScopeLabel()}</td></tr>`;
-        return;
-    }
-
-    rows.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.dataset.id = r.id;
-
-        const staticCells = [r.date, r.emp_id, r.clinic, r.shift];
-        staticCells.forEach(val => {
-            const td = document.createElement("td");
-            td.textContent = val ?? "";
-            tr.appendChild(td);
-        });
-
-        // أعمدة الإجمالي وكل الحالات تظهر للجميع الآن (نفس الجدول للمسعفين والمسؤول)
-        const totalTd = document.createElement("td");
-        totalTd.className = "cell-total";
-        totalTd.textContent = r.total_daily;
-        tr.appendChild(totalTd);
-
-        REPORT_EDIT_FIELDS.forEach(key => {
-            const td = document.createElement("td");
-            td.className = "cell-" + key;
-            td.textContent = r[key];
-            td.dataset.value = r[key];
-            tr.appendChild(td);
-        });
-
-        // عمود الإجراءات — التعديل والحذف متاحين للمسؤول فقط (يراقب ويعدّل، ما يضيف)
-        const actionsTd = document.createElement("td");
-        actionsTd.className = "cell-actions";
-        actionsTd.innerHTML = session.isAdmin
-            ? `<button class="row-btn row-edit" onclick="editStatsRow('${r.date}', '${r.clinic}', '${r.shift}')">${t('edit')}</button>
-               <button class="row-btn row-delete" onclick="deleteRow(this)">${t('delete')}</button>`
-            : "";
-        tr.appendChild(actionsTd);
-
-        body.appendChild(tr);
-    });
-
-    // عمود "إجراءات" يظهر للمسؤول فقط — أعمدة الإجمالي/الحالات تظهر للجميع الآن
-    const actionsHeader = document.getElementById("reportActionsHeader");
-    if (actionsHeader) actionsHeader.style.display = session.isAdmin ? "" : "none";
-}
-
-// يفتح لوحة العدادات (نفس اللي يستخدمها المسعفين للإضافة) معبّاة ببيانات الصف
-// المطلوب تعديله — طريقة المسؤول للتعديل بدل التعديل المباشر بخلايا الجدول
-async function editStatsRow(date, clinic, shift) {
-    const panel = document.getElementById("statsEntryPanel");
-    document.getElementById("statsEntryPanelTitle").textContent = "تعديل إحصائية — " + date;
-    panel.style.display = "block";
-    document.getElementById("statsEntryDate").value = date;
-    document.getElementById("statsEntryClinic").value = clinic;
-    document.getElementById("statsEntryShift").value = shift;
-    await loadStatsEntryCounters();
-    panel.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-async function deleteRow(btn) {
-    const tr = btn.closest("tr");
-    const id = tr.dataset.id;
-
-    if (!confirm("هل أنت متأكد من حذف هذا السجل نهائيًا؟")) return;
-
-    setBusy(btn, true, "حذف");
-    try {
-        const result = await apiPost("DELETE_ENTRY", { token: session.token, id });
-        if (result.status === "SUCCESS") {
-            tr.remove();
-            showSuccess("تم حذف السجل بنجاح");
-            const body = document.getElementById("reportTableBody");
-            if (!body.children.length) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="14">لا توجد بيانات مسجلة بعد لـ${currentReportScopeLabel()}</td></tr>`;
-            }
-        } else {
-            showError("تعذر حذف السجل");
-            setBusy(btn, false, "حذف");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء الحذف");
-        setBusy(btn, false, "حذف");
-    }
-}
-
-/* ---------- عرض المرضى حسب التاريخ (للمسؤول) ---------- */
-
-const PATIENT_CONDITION_OPTIONS = ["حالات طبية", "ضغط الدم", "ارتفاع ضغط", "انخفاض ضغط", "قياس سكر الدم", "ارتفاع سكر الدم", "انخفاض سكر الدم", "صداع", "علامات حيوية", "إصابات", "حروق", "نقل مستشفى"];
-const PATIENT_GENDER_OPTIONS = ["ذكر", "أنثى"];
-
-async function loadPatientsByDate() {
-    const date = document.getElementById("patientsViewDate").value;
-    if (!date) { showError("اختر تاريخًا أولاً"); return; }
-
-    const clinic = document.getElementById("patientsViewClinic").value;
-
-    try {
-        const result = await apiGet({ action: "GET_PATIENTS_BY_DATE", token: session.token, date, clinic });
-        if (!Array.isArray(result)) {
-            if (result && result.status === "FORBIDDEN") {
-                showError("هذه الميزة للمسؤول فقط، أو الجلسة غير صالحة");
-            } else {
-                showError("تعذر جلب بيانات المرضى");
-            }
-            return;
-        }
-        renderPatientsByDateTable(result);
-        document.getElementById("patientsByDateSection").style.display = "block";
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء جلب بيانات المرضى");
-    }
-}
-
-const PATIENT_ROW_FIELDS = ["time", "patient_name", "civil_id", "gender", "condition", "blood_pressure", "sugar", "temperature", "treatment"];
-
-function buildPatientRow(r) {
-    const tr = document.createElement("tr");
-    tr.dataset.id = r.id;
-
-    PATIENT_ROW_FIELDS.forEach((key, idx) => {
-        const td = document.createElement("td");
-        td.className = "cell-p-" + idx;
-        const val = r[key] ?? "";
-        td.textContent = val === "" ? "-" : val;
-        td.dataset.value = val;
-        tr.appendChild(td);
-    });
-
-    // حقول للعرض فقط (غير قابلة للتعديل): العيادة، الشفت، الرقم الوظيفي
-    [r.clinic, r.shift, r.emp_id].forEach(val => {
-        const td = document.createElement("td");
-        td.textContent = val ?? "";
-        tr.appendChild(td);
-    });
-
-    const actionsTd = document.createElement("td");
-    actionsTd.className = "cell-actions";
-    actionsTd.innerHTML = `
-        <button class="row-btn row-edit" onclick="startEditPatientRow(this)">${t('edit')}</button>
-        <button class="row-btn row-delete" onclick="deletePatientRow(this)">${t('delete')}</button>
-    `;
-    tr.appendChild(actionsTd);
-    return tr;
-}
-
-// كل شفت يطلع بجدوله الخاص وحصري — بلا اختلاط بين الصباحي والمسائي
-function renderPatientsByDateTable(rows) {
-    const morningBody = document.getElementById("patientsByDateMorningBody");
-    const eveningBody = document.getElementById("patientsByDateEveningBody");
-    morningBody.innerHTML = "";
-    eveningBody.innerHTML = "";
-
-    const morningRows = rows.filter(r => (r.shift || "").includes("صباحي"));
-    const eveningRows = rows.filter(r => (r.shift || "").includes("مسائي"));
-
-    document.getElementById("morningPatientCount").textContent = morningRows.length;
-    document.getElementById("eveningPatientCount").textContent = eveningRows.length;
-
-    if (!morningRows.length) {
-        morningBody.innerHTML = `<tr class="empty-row"><td colspan="13">لا يوجد مرضى مسجلون بالشفت الصباحي بهذا التاريخ</td></tr>`;
-    } else {
-        morningRows.forEach(r => morningBody.appendChild(buildPatientRow(r)));
-    }
-
-    if (!eveningRows.length) {
-        eveningBody.innerHTML = `<tr class="empty-row"><td colspan="13">لا يوجد مرضى مسجلون بالشفت المسائي بهذا التاريخ</td></tr>`;
-    } else {
-        eveningRows.forEach(r => eveningBody.appendChild(buildPatientRow(r)));
-    }
-}
-
-function startEditPatientRow(btn) {
-    const tr = btn.closest("tr");
-    if (tr.classList.contains("editing")) return;
-    tr.classList.add("editing");
-
-    PATIENT_ROW_FIELDS.forEach((key, idx) => {
-        const td = tr.querySelector(".cell-p-" + idx);
-        const val = td.dataset.value;
-        if (key === "condition") {
-            const isKnown = PATIENT_CONDITION_OPTIONS.includes(val);
-            const selectVal = isKnown ? val : "__other__";
-            const optionsHTML = PATIENT_CONDITION_OPTIONS.map(o =>
-                `<option value="${o}" ${o === selectVal ? "selected" : ""}>${o}</option>`).join("")
-                + `<option value="__other__" ${selectVal === "__other__" ? "selected" : ""}>أخرى (اكتب الحالة)</option>`;
-            td.innerHTML = `
-                <select class="row-input cond-select" onchange="this.nextElementSibling.style.display = this.value === '__other__' ? 'block' : 'none';">${optionsHTML}</select>
-                <input type="text" class="row-input cond-other" placeholder="اكتب الحالة" value="${isKnown ? "" : escapeHtml(val)}" style="display:${isKnown ? "none" : "block"}; margin-top:4px;">
-            `;
-        } else if (key === "gender") {
-            const optionsHTML = PATIENT_GENDER_OPTIONS.map(o =>
-                `<option value="${o}" ${o === val ? "selected" : ""}>${o}</option>`).join("");
-            td.innerHTML = `<select class="row-input gender-select">${optionsHTML}</select>`;
-        } else if (key === "time") {
-            const [h, m] = (val || "00:00").split(":");
-            const hourOpts = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"))
-                .map(v => `<option value="${v}" ${v === h ? "selected" : ""}>${v}</option>`).join("");
-            const minOpts = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"))
-                .map(v => `<option value="${v}" ${v === m ? "selected" : ""}>${v}</option>`).join("");
-            td.innerHTML = `<div style="display:flex; gap:4px;">
-                <select class="row-input time-hour-select">${hourOpts}</select>
-                <select class="row-input time-minute-select">${minOpts}</select>
-            </div>`;
-        } else {
-            td.innerHTML = `<input type="text" class="row-input" value="${escapeHtml(val)}">`;
-        }
-    });
-
-    const actionsTd = tr.querySelector(".cell-actions");
-    actionsTd.innerHTML = `
-        <button class="row-btn row-save" onclick="savePatientEditRow(this)">${t('save')}</button>
-        <button class="row-btn row-cancel" onclick="cancelPatientEditRow(this)">${t('cancel')}</button>
-    `;
-}
-
-function cancelPatientEditRow(btn) {
-    const tr = btn.closest("tr");
-    tr.classList.remove("editing");
-    PATIENT_ROW_FIELDS.forEach((key, idx) => {
-        const td = tr.querySelector(".cell-p-" + idx);
-        td.textContent = td.dataset.value === "" ? "-" : td.dataset.value;
-    });
-    const actionsTd = tr.querySelector(".cell-actions");
-    actionsTd.innerHTML = `
-        <button class="row-btn row-edit" onclick="startEditPatientRow(this)">${t('edit')}</button>
-        <button class="row-btn row-delete" onclick="deletePatientRow(this)">${t('delete')}</button>
-    `;
-}
-
-async function savePatientEditRow(btn) {
-    const tr = btn.closest("tr");
-    const id = tr.dataset.id;
-
-    const updated = {};
-    PATIENT_ROW_FIELDS.forEach((key, idx) => {
-        const cell = tr.querySelector(".cell-p-" + idx);
-        if (key === "time") {
-            const h = cell.querySelector(".time-hour-select").value;
-            const m = cell.querySelector(".time-minute-select").value;
-            updated[key] = `${h}:${m}`;
-        } else if (key === "condition") {
-            const selectVal = cell.querySelector(".cond-select").value;
-            updated[key] = selectVal === "__other__"
-                ? cell.querySelector(".cond-other").value.trim()
-                : selectVal;
-        } else if (key === "gender") {
-            updated[key] = cell.querySelector(".gender-select").value;
-        } else {
-            const field = cell.querySelector("input, select");
-            updated[key] = field.value.trim();
-        }
-    });
-
-    setBusy(btn, true, "حفظ");
-    try {
-        const result = await apiPost("UPDATE_PATIENT", { token: session.token, id, ...updated });
-        if (result.status === "SUCCESS") {
-            PATIENT_ROW_FIELDS.forEach((key, idx) => {
-                const td = tr.querySelector(".cell-p-" + idx);
-                td.dataset.value = updated[key];
-                td.textContent = updated[key] === "" ? "-" : updated[key];
-            });
-            tr.classList.remove("editing");
-            const actionsTd = tr.querySelector(".cell-actions");
-            actionsTd.innerHTML = `
-                <button class="row-btn row-edit" onclick="startEditPatientRow(this)">${t('edit')}</button>
-                <button class="row-btn row-delete" onclick="deletePatientRow(this)">${t('delete')}</button>
-            `;
-            showSuccess("تم تحديث بيانات المريض بنجاح");
-        } else {
-            showError("تعذر حفظ التعديل");
-            setBusy(btn, false, "حفظ");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
-        setBusy(btn, false, "حفظ");
-    }
-}
-
-async function deletePatientRow(btn) {
-    const tr = btn.closest("tr");
-    const id = tr.dataset.id;
-    const body = tr.parentElement; // نحفظ مرجع الجدول (صباحي أو مسائي) قبل ما نحذف الصف
-
-    if (!confirm("هل أنت متأكد من حذف بيانات هذا المريض نهائيًا؟")) return;
-
-    setBusy(btn, true, "حذف");
-    try {
-        const result = await apiPost("DELETE_PATIENT", { token: session.token, id });
-        if (result.status === "SUCCESS") {
-            tr.remove();
-            showSuccess("تم حذف المريض بنجاح");
-            if (!body.children.length) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="13">لا يوجد مرضى مسجلون بهذا الشفت بهذا التاريخ</td></tr>`;
-            }
-        } else {
-            showError("تعذر حذف السجل");
-            setBusy(btn, false, "حذف");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء الحذف");
-        setBusy(btn, false, "حذف");
-    }
-}
-
-/* ---------- إدارة الموظفين (للمسؤول فقط) ---------- */
-
-const SHIFT_OPTIONS = ["شفت الف صباحي", "شفت الف مسائي", "شفت باء صباحي", "شفت باء مسائي", "شفت جيم صباحي", "شفت جيم مسائي"];
-const CLINIC_OPTIONS = ["عيادة الف", "عيادة باء"];
-
-async function loadAllEmployees() {
-    const body = document.getElementById("employeesTableBody");
-    try {
-        const result = await apiGet({ action: "GET_ALL_EMPLOYEES", token: session.token });
-        if (!Array.isArray(result)) {
-            body.innerHTML = `<tr class="empty-row"><td colspan="5">تعذر جلب قائمة الموظفين</td></tr>`;
-            return;
-        }
-        if (!result.length) {
-            body.innerHTML = `<tr class="empty-row"><td colspan="5">ما فيه موظفين مسجلين بعد</td></tr>`;
-            return;
-        }
-        body.innerHTML = "";
-        result.forEach(emp => {
-            const tr = document.createElement("tr");
-            tr.dataset.empId = emp.emp_id;
-            tr.innerHTML = `
-                <td>${escapeHtml(emp.emp_id)}</td>
-                <td>${escapeHtml(emp.phone) || "-"}</td>
-                <td class="cell-emp-clinic" data-value="${escapeHtml(emp.clinic)}">${escapeHtml(emp.clinic) || "-"}</td>
-                <td class="cell-emp-shift" data-value="${escapeHtml(emp.shift)}">${escapeHtml(emp.shift) || "-"}</td>
-                <td class="cell-actions">
-                    <button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">${t('edit')}</button>
-                    <button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">${t('deleteAccount')}</button>
-                </td>
-            `;
-            body.appendChild(tr);
-        });
-    } catch (e) {
-        body.innerHTML = `<tr class="empty-row"><td colspan="5">تعذر الاتصال بالسيرفر</td></tr>`;
-    }
-}
-
-function startEditEmployeeRow(btn) {
-    const tr = btn.closest("tr");
-    if (tr.classList.contains("editing")) return;
-    tr.classList.add("editing");
-
-    const clinicTd = tr.querySelector(".cell-emp-clinic");
-    const shiftTd = tr.querySelector(".cell-emp-shift");
-    const currentClinic = clinicTd.dataset.value;
-    const currentShift = shiftTd.dataset.value;
-
-    clinicTd.innerHTML = `<select class="row-input">${CLINIC_OPTIONS.map(c =>
-        `<option value="${c}" ${c === currentClinic ? "selected" : ""}>${c}</option>`).join("")}</select>`;
-    shiftTd.innerHTML = `<select class="row-input">${SHIFT_OPTIONS.map(s =>
-        `<option value="${s}" ${s === currentShift ? "selected" : ""}>${s}</option>`).join("")}</select>`;
-
-    const actionsTd = tr.querySelector(".cell-actions");
-    actionsTd.innerHTML = `
-        <button class="row-btn row-save" onclick="saveEmployeeEditRow(this)">${t('save')}</button>
-        <button class="row-btn row-cancel" onclick="cancelEmployeeEditRow(this)">${t('cancel')}</button>
-    `;
-}
-
-function cancelEmployeeEditRow(btn) {
-    const tr = btn.closest("tr");
-    tr.classList.remove("editing");
-    const clinicTd = tr.querySelector(".cell-emp-clinic");
-    const shiftTd = tr.querySelector(".cell-emp-shift");
-    clinicTd.textContent = clinicTd.dataset.value || "-";
-    shiftTd.textContent = shiftTd.dataset.value || "-";
-    const actionsTd = tr.querySelector(".cell-actions");
-    actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">${t('edit')}</button><button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">${t('deleteAccount')}</button>`;
-}
-
-async function saveEmployeeEditRow(btn) {
-    const tr = btn.closest("tr");
-    const empId = tr.dataset.empId;
-    const clinic = tr.querySelector(".cell-emp-clinic select").value;
-    const shift = tr.querySelector(".cell-emp-shift select").value;
-
-    setBusy(btn, true, "حفظ");
-    try {
-        const result = await apiPost("UPDATE_EMPLOYEE_SHIFT", { token: session.token, emp_id: empId, clinic, shift });
-        if (result.status === "SUCCESS") {
-            const clinicTd = tr.querySelector(".cell-emp-clinic");
-            const shiftTd = tr.querySelector(".cell-emp-shift");
-            clinicTd.dataset.value = clinic;
-            shiftTd.dataset.value = shift;
-            clinicTd.textContent = clinic;
-            shiftTd.textContent = shift;
-            tr.classList.remove("editing");
-            const actionsTd = tr.querySelector(".cell-actions");
-            actionsTd.innerHTML = `<button class="row-btn row-edit" onclick="startEditEmployeeRow(this)">${t('edit')}</button><button class="row-btn row-delete" onclick="deleteEmployeeRow(this)">${t('deleteAccount')}</button>`;
-            showSuccess("تم تحديث بيانات الموظف بنجاح");
-        } else {
-            showError("تعذر حفظ التعديل");
-            setBusy(btn, false, "حفظ");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء الحفظ");
-        setBusy(btn, false, "حفظ");
-    }
-}
-
-async function deleteEmployeeRow(btn) {
-    const tr = btn.closest("tr");
-    const empId = tr.dataset.empId;
-
-    if (!confirm(`هل أنت متأكد من حذف حساب الموظف رقم ${empId} نهائيًا؟ هذا الإجراء لا يمكن التراجع عنه.`)) return;
-
-    setBusy(btn, true, "حذف حساب");
-    try {
-        const result = await apiPost("DELETE_EMPLOYEE", { token: session.token, emp_id: empId });
-        if (result.status === "SUCCESS") {
-            tr.remove();
-            showSuccess("تم حذف حساب الموظف بنجاح");
-            const body = document.getElementById("employeesTableBody");
-            if (!body.children.length) {
-                body.innerHTML = `<tr class="empty-row"><td colspan="5">ما فيه موظفين مسجلين بعد</td></tr>`;
-            }
-        } else {
-            showError("تعذر حذف الحساب");
-            setBusy(btn, false, "حذف حساب");
-        }
-    } catch (e) {
-        showError("تعذر الاتصال بالسيرفر أثناء الحذف");
-        setBusy(btn, false, "حذف حساب");
-    }
-}
-
-/* ---------- طباعة / حفظ PDF (أي قسم — اسم الملف دايمًا بتاريخ اليوم الفعلي) ---------- */
-
-const ORIGINAL_PAGE_TITLE = document.title;
-
-function printSection(sectionId, dateElId, filenamePrefix) {
-    const section = document.getElementById(sectionId);
-    if (!section) { showError("تعذر تجهيز الطباعة، حاول تحديث الصفحة"); return; }
-
-    // نحدّث نص التاريخ على النسخة الأصلية أولاً، عشان ينسخ وياه فورًا بالخطوة الجاية
-    const dateEl = document.getElementById(dateElId);
-    if (dateEl) dateEl.textContent = "تاريخ الطباعة: " + new Date().toLocaleDateString("ar-EG");
-
-    // نستنسخ القسم ونشيل منه أي أزرار/معرّفات — المحتوى المطبوع بس، بدون تشابك مع باقي الصفحة
-    const clone = section.cloneNode(true);
-    clone.querySelectorAll(".btn-secondary").forEach(b => b.remove());
-    clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
-
-    const fileTitle = `${filenamePrefix}_${todayDateStringLocal()}`;
-
-    // نفتح نافذة/تبويب مستقل نظيف (بدون المود الليلي، التدرجات اللونية، أو أي تعقيد من
-    // الصفحة الأصلية) ونطبع منه مباشرة — هذا أضمن بكثير من محاولة إخفاء/إظهار أجزاء من
-    // نفس الصفحة المعقدة، خصوصًا إن سفاري بالآيفون يتعامل بشكل مختلف مع window.print()
-    // على صفحة فيها CSS معقد ومتغيرات ألوان (مود ليلي)
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-        showError("يرجى السماح بالنوافذ المنبثقة (Pop-ups) لهذا الموقع من إعدادات المتصفح عشان تقدر تطبع");
-        return;
-    }
-
-    printWindow.document.open();
-    printWindow.document.write(`<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${fileTitle}</title>
-<style>
-    * { box-sizing: border-box; }
-    body {
-        font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif;
-        color: #000; background: #fff; margin: 0; padding: 16px;
-    }
-    .print-only-header { display: block; text-align: center; border-bottom: 3px solid #000; padding-bottom: 12px; margin-bottom: 16px; }
-    .print-only-header h2 { font-size: 20px; margin-bottom: 4px; }
-    .print-only-header p { color: #555; font-size: 12px; margin: 0; }
-    .report-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 12px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #999; padding: 8px 9px; text-align: center; font-size: 12.5px; }
-    th { background-color: #222 !important; color: #fff !important; font-weight: 700; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    tr:nth-child(even) { background-color: #f5f5f5; }
-    .btn-secondary, .cell-actions, .th-actions, .row-btn { display: none !important; }
-    @page { margin: 12mm; }
-</style>
-</head>
-<body>${clone.innerHTML}</body>
-</html>`);
-    printWindow.document.close();
-
-    // ننتظر تحميل المحتوى فعليًا قبل ما نطبع (بعض متصفحات الجوال، خصوصًا سفاري،
-    // تحتاج مهلة بسيطة بعد كتابة المحتوى قبل ما تقدر تطبعه صح)
-    printWindow.onload = () => {
-        setTimeout(() => {
-            printWindow.focus();
-            printWindow.print();
-        }, 250);
-    };
-}
-</script>
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/session.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/patients.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/employees.js"></script>
+<script src="js/exporter.js"></script>
+<script src="js/print.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
