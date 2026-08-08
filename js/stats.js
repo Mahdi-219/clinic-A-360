@@ -62,9 +62,10 @@ function renderReportTable(rows) {
         tr.title = trText("rowClickTooltip");
 
         const staticCells = [r.date, r.emp_id, valueLabel(r.clinic)];
-        staticCells.forEach(val => {
+        staticCells.forEach((val, idx) => {
             const td = document.createElement("td");
             td.textContent = val ?? "";
+            if (idx === 1) td.className = "col-emp-id"; // عمود الرقم الوظيفي دايمًا "آلي" هنا — يُخفى بالطباعة (شوف @media print)
             tr.appendChild(td);
         });
 

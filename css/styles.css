@@ -379,8 +379,8 @@ select:focus, input:focus, textarea:focus { border-color: var(--accent); box-sha
         margin-top: 10px;
     }
     #printArea th, #printArea td {
-        border: 1px solid #999; padding: 4px 3px; text-align: center;
-        font-size: 9px; line-height: 1.3;
+        border: 1px solid #999; padding: 5px 4px; text-align: center;
+        font-size: 10.5px; line-height: 1.35;
         word-break: break-word; overflow-wrap: break-word;
     }
     #printArea th {
@@ -391,10 +391,14 @@ select:focus, input:focus, textarea:focus { border-color: var(--accent); box-sha
 
     #printArea .btn-secondary, #printArea .cell-actions, #printArea .th-actions, #printArea .row-btn { display: none !important; }
 
-    /* جداولنا فيها عمود كثير (لين 13 عمود بالتقرير الشهري) — عرض ورقة طولي (portrait)
-       على جوال ما يكفيها أبدًا مهما صغّرنا الخط، فتنقطع أعمدة. نجبر الورقة نفسها
-       تطلع بشكل عرضي (landscape) دايمًا وقت الطباعة، بغض النظر عن اتجاه الجهاز
-       فعليًا وقت الطباعة — يعطي ضعف المساحة تقريبًا لعرض كل الأعمدة بوضوح
-       بدون ما يحتاج المستخدم يلف جهازه يدويًا */
-    @page { size: landscape; margin: 10mm; }
+    /* عمود "الرقم الوظيفي" بالتقرير الشهري التلقائي دايمًا يطلع "آلي" (ما فيه معلومة
+       حقيقية) — نخفيه بالطباعة بس عشان نوفر مساحة لعمود أوضح وأكبر بالأعمدة الباقية.
+       ملاحظة: هذا الكلاس موجود بس بجدول التقرير الشهري، مو بجداول المرضى الثانية
+       اللي فيها رقم وظيفي حقيقي مفيد */
+    #printArea .col-emp-id { display: none !important; }
+
+    /* شلنا إجبار اتجاه الورقة (landscape) — Safari بالآيفون ما يطبّقه تلقائي، ولما
+       يتبدّل يدويًا من داخل معاينة الطباعة يصير خلل ويختفي المحتوى. نسيب اتجاه
+       الورقة زي ما المستخدم/النظام يختاره افتراضيًا (طولي عادة) */
+    @page { margin: 10mm; }
 }
