@@ -330,7 +330,11 @@ select:focus, input:focus, textarea:focus { border-color: var(--accent); box-sha
 #printArea { display: none; }
 
 @media print {
-    body.printing-mode > *:not(#printArea) { display: none !important; }
+    /* بدون شرط .printing-mode عمدًا — القاعدة تنطبق دايمًا بوضع الطباعة، مهما كان
+       مصدر تفعيلها (زر الطباعة بالتطبيق، أو قائمة طباعة عامة بالمتصفح/النظام).
+       لو اعتمدنا على كلاس تحطه جافاسكربت، أي طريقة طباعة ثانية غير زر التطبيق
+       (زر مشاركة النظام، قائمة المتصفح) كانت تطبع الصفحة كاملة بدون تصفية */
+    body > *:not(#printArea) { display: none !important; }
 
     #printArea {
         display: block !important;

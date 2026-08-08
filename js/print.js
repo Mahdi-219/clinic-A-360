@@ -43,18 +43,15 @@ function printSection(sectionId, dateElId, filenamePrefix) {
     printArea.appendChild(clone);
 
     document.title = `${filenamePrefix}_${todayDateStringLocal()}`;
-    document.body.classList.add("printing-mode");
 
-    // مهم: ما نفضّي #printArea أو نشيل "printing-mode" فورًا بعد استدعاء print().
-    // بالأندرويد (كروم/سامسونج إنترنت) window.print() غير متزامن — لو نظّفنا المحتوى
-    // مباشرة، معاينة الطباعة تفتح على جدول فاضي (نفس مشكلة "الجدول المنثقب" اللي
-    // صارت). التنظيف الحين يصير بس بعد ما تنتهي الطباعة فعليًا (afterprint)، ولو
-    // المتصفح ما يدعم afterprint نستخدم مهلة احتياطية سخية بدل التنظيف الفوري.
-    // تركه بدون تنظيف بينهم ما يأثر على الشكل العادي للصفحة أصلاً، لأن #printArea
-    // و.printing-mode ما لهم أي تأثير مرئي خارج @media print.
+    // مهم: ما نفضّي #printArea فورًا بعد استدعاء print(). بالأندرويد (كروم/سامسونج
+    // إنترنت) window.print() غير متزامن — لو نظّفنا المحتوى مباشرة، معاينة الطباعة
+    // تفتح على جدول فاضي. التنظيف الحين يصير بس بعد ما تنتهي الطباعة فعليًا
+    // (afterprint)، ولو المتصفح ما يدعمه نستخدم مهلة احتياطية سخية. تركه بدون
+    // تنظيف بينهم ما يأثر على الشكل العادي للصفحة، لأن #printArea مخفي دايمًا
+    // خارج @media print بغض النظر عن محتواه.
     clearTimeout(printCleanupTimer);
     const cleanup = () => {
-        document.body.classList.remove("printing-mode");
         document.title = ORIGINAL_PAGE_TITLE;
         printArea.innerHTML = "";
         window.removeEventListener("afterprint", cleanup);
