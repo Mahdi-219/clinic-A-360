@@ -309,6 +309,10 @@ select:focus, input:focus, textarea:focus { border-color: var(--accent); box-sha
 .pdf-header h2 { color: var(--ink); font-size: 22px; margin-bottom: 5px; font-weight: 700; }
 .pdf-header p { color: #555; font-size: 14px; }
 
+/* رأس خاص بالنسخة المطبوعة فقط (تاريخ/عنوان التقرير) — مخفي بالواجهة العادية،
+   يظهر بس داخل حاوية الطباعة #printArea وقت الطباعة (شوف @media print تحت) */
+.print-only-header { display: none; }
+
 @media (max-width: 480px) {
     .container { padding: 22px 16px; }
     header h1 { font-size: 22px; }
@@ -317,7 +321,43 @@ select:focus, input:focus, textarea:focus { border-color: var(--accent); box-sha
 
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
-/* أثناء التقاط صورة PDF، نخفي زر التصدير حتى لا يظهر داخل الملف الناتج */
+/* ===== الطباعة / حفظ PDF =====
+   نبني نسخة القسم المطلوب طباعته داخل #printArea (بنفس صفحة التطبيق)، ووقت
+   الطباعة نخفي كل شيء غير #printArea. هذا بديل عن فتح نافذة/تبويب منبثق
+   (window.open) لأن التطبيق المثبّت كـ PWA (standalone) على الأندرويد
+   والآيفون غالبًا ما يدعم فتح نافذة جديدة أو طباعتها — لكن window.print()
+   على نفس النافذة يشتغل بالحالتين. شوف printSection بملف print.js */
+#printArea { display: none; }
 
-/* ملاحظة: الطباعة/حفظ PDF ما تعتمد على @media print هنا — تفتح نافذة مستقلة
-   نظيفة وتطبع منها مباشرة (أضمن بكثير عبر أندرويد وآيفون، شوف printSection بالجافاسكربت) */
+@media print {
+    body.printing-mode > *:not(#printArea) { display: none !important; }
+
+    #printArea {
+        display: block !important;
+        background: #fff;
+        margin: 0;
+        padding: 16px;
+    }
+    #printArea * { color: #000 !important; background: transparent !important; }
+
+    #printArea .print-only-header {
+        display: block; text-align: center; border-bottom: 3px solid #000;
+        padding-bottom: 12px; margin-bottom: 16px;
+    }
+    #printArea .print-only-header h2 { font-size: 20px; margin-bottom: 4px; }
+    #printArea .print-only-header p { color: #555 !important; font-size: 12px; margin: 0; }
+
+    #printArea .report-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 12px; }
+
+    #printArea table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    #printArea th, #printArea td { border: 1px solid #999; padding: 8px 9px; text-align: center; font-size: 12.5px; }
+    #printArea th {
+        background-color: #222 !important; color: #fff !important; font-weight: 700;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    #printArea tr:nth-child(even) { background-color: #f5f5f5 !important; }
+
+    #printArea .btn-secondary, #printArea .cell-actions, #printArea .th-actions, #printArea .row-btn { display: none !important; }
+
+    @page { margin: 12mm; }
+}

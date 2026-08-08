@@ -1,4 +1,4 @@
-const CACHE_NAME = "clinic-app-cache-v3";
+const CACHE_NAME = "clinic-app-cache-v6";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
@@ -15,6 +15,7 @@ const FILES_TO_CACHE = [
   "./js/stats.js",
   "./js/charts.js",
   "./js/employees.js",
+  "./js/exporter.js",
   "./js/print.js",
   "./js/main.js",
   "./icons/favicon.ico",

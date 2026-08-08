@@ -64,6 +64,8 @@ async function handleLogin() {
             enterDashboard();
         } else if (result.status === "WRONG_SHIFT_DAY") {
             showError(trText("loginFailedShift", { team: shiftLabel(result.on_duty_team), yours: shiftLabel(result.your_team) }));
+        } else if (result.status === "LOCKED") {
+            showError(trText("loginLocked", { minutes: result.retry_after_minutes || 15 }));
         } else {
             showError(trText("loginFailed"));
         }
