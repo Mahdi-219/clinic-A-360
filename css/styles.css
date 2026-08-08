@@ -365,8 +365,23 @@ select:focus, input:focus, textarea:focus { border-color: var(--accent); box-sha
 
     #printArea .report-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 12px; }
 
-    #printArea table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    #printArea th, #printArea td { border: 1px solid #999; padding: 8px 9px; text-align: center; font-size: 12.5px; }
+    /* .monthly-table بالشاشة العادية لها min-width: 900px (عشان التمرير الأفقي)،
+       وهالقيد يفضل مطبّق حتى داخل الطباعة لو ما ألغيناه صراحة — يخلي الجدول
+       أعرض من ورقة الطباعة فتنقطع/تختفي أعمدة كاملة. نلغيه ونخلي الجدول
+       يتقلّص لعرض الورقة الفعلي مهما كان اتجاهها (طولي/عرضي)، مع خط أصغر
+       وتفاف النص بدل ما يوسّع العمود */
+    #printArea table, #printArea .monthly-table {
+        width: 100% !important;
+        min-width: 0 !important;
+        table-layout: fixed;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    #printArea th, #printArea td {
+        border: 1px solid #999; padding: 3px 2px; text-align: center;
+        font-size: 8px; line-height: 1.25;
+        word-break: break-word; overflow-wrap: break-word;
+    }
     #printArea th {
         background-color: #222 !important; color: #fff !important; font-weight: 700;
         -webkit-print-color-adjust: exact; print-color-adjust: exact;
