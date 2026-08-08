@@ -9,10 +9,26 @@ const ORIGINAL_PAGE_TITLE = document.title;
 // و@media print بملف styles.css) ثم نستدعي window.print() مباشرة.
 let printCleanupTimer = null;
 
+// آبل ما تدعم window.print() إطلاقًا داخل تطبيق مثبّت على الشاشة الرئيسية
+// بالآيفون (standalone) — قيد بنظام iOS نفسه، ولا يوجد كود يتجاوزه. لو حاولنا
+// نستدعيها بهالوضع، الصفحة "تعلّق" على شاشة فاضية بدون طريقة رجوع. نكتشف
+// الحالة هذي مبكرًا ونعرض تعليمة بدل ما نحاول ونفشل.
+function isIOSStandalone() {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.navigator.standalone === true ||
+        (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+    return isIOS && isStandalone;
+}
+
 function printSection(sectionId, dateElId, filenamePrefix) {
     const section = document.getElementById(sectionId);
     const printArea = document.getElementById("printArea");
     if (!section || !printArea) { showError(trText("printFailed")); return; }
+
+    if (isIOSStandalone()) {
+        showError(trText("printNeedsSafariIOS", { url: window.location.href }), 25000);
+        return;
+    }
 
     // نحدّث نص التاريخ على النسخة الأصلية أولاً، عشان ينسخ وياه فورًا بالخطوة الجاية
     const dateEl = document.getElementById(dateElId);

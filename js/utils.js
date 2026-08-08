@@ -14,13 +14,13 @@ function limitTwelveDigits(input) {
     if (input.value.length > 12) input.value = input.value.slice(0, 12);
 }
 
-function showError(msg) {
+function showError(msg, durationMs = 5000) {
     const el = document.getElementById("errorMessage");
     document.getElementById("successMessage").style.display = "none";
     el.textContent = msg;
     el.style.display = "block";
     clearTimeout(el._t);
-    el._t = setTimeout(() => { el.style.display = "none"; }, 5000);
+    el._t = setTimeout(() => { el.style.display = "none"; }, durationMs);
 }
 
 function showSuccess(msg) {
