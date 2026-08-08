@@ -26,8 +26,11 @@ async function printSection(sectionId, dateElId, filenamePrefix) {
     captureArea.appendChild(clone);
     captureArea.classList.add("capturing");
 
+    // ملاحظة: setBusy تخزّن نفس النص اللي تمرره وقت busy=true وترجعه لاحقًا وقت
+    // busy=false (شوف utils.js) — لازم نمرر نص الزر الطبيعي بالحالتين، مو نص "busy"
+    // مختلف، وإلا الزر يعلق على نص التحميل حتى بعد ما يخلص
     const btn = document.querySelector(`[data-print-section="${sectionId}"]`);
-    if (btn) setBusy(btn, true, trText("pdfPreparing"));
+    if (btn) setBusy(btn, true, trText("printSaveBtn"));
 
     try {
         // نستنى إطارين عشان المتصفح يخلص يرسم المحتوى فعليًا قبل ما نلتقط الصورة
