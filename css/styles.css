@@ -330,6 +330,18 @@ select:focus, input:focus, textarea:focus { border-color: var(--accent); box-sha
 #printArea { display: none; }
 
 @media print {
+    /* أهم سطر هنا: خلفية <html>/<body> بالوضع الليلي سودة (متغيّر --bg) ومطبّقة
+       على body مباشرة — إخفاء العناصر الداخلية بس ما يشيل خلفية body نفسها،
+       فتطلع سودة حوالين/تحت محتوى الطباعة الأبيض (خصوصًا وقت تقسيم الصفحات
+       بتدوير الجهاز) وتبين نص المعاينة أسود ونص أبيض غير واضح. نجبر خلفية
+       بيضاء ونص أسود دايمًا بوضع الطباعة بغض النظر عن الوضع الليلي */
+    html, body {
+        background: #fff !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
     /* بدون شرط .printing-mode عمدًا — القاعدة تنطبق دايمًا بوضع الطباعة، مهما كان
        مصدر تفعيلها (زر الطباعة بالتطبيق، أو قائمة طباعة عامة بالمتصفح/النظام).
        لو اعتمدنا على كلاس تحطه جافاسكربت، أي طريقة طباعة ثانية غير زر التطبيق
@@ -338,7 +350,7 @@ select:focus, input:focus, textarea:focus { border-color: var(--accent); box-sha
 
     #printArea {
         display: block !important;
-        background: #fff;
+        background: #fff !important;
         margin: 0;
         padding: 16px;
     }
