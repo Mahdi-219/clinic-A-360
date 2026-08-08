@@ -425,6 +425,11 @@
     <div class="footer-note" data-i18n="footerNote">جميع البيانات تُحفظ وتُوثّق آليًا لحظة الضغط على زر الحفظ</div>
 </div>
 
+<!-- حاوية الطباعة/حفظ PDF — تُملأ بمحتوى القسم المطلوب طباعته وقت الضغط على الزر،
+     ونطبعها بنفس نافذة التطبيق (بدون فتح نافذة/تبويب منبثق) عشان تشتغل صح حتى
+     داخل التطبيق المثبّت (PWA) بالأندرويد والآيفون، اللي ما يدعم window.open() -->
+<div id="printArea"></div>
+
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/i18n.js"></script>
