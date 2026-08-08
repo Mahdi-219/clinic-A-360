@@ -1,6 +1,17 @@
-/* ---------- تصدير البيانات إلى ملف Excel (.xlsx) يدعم العربية والـ RTL ---------- */
+/* ---------- تصدير البيانات إلى ملف Excel (.xlsx) — ثيم موحّد مطابق لألوان الموقع ---------- */
 /* الورقة الأولى = الإحصائية الشهرية، ثم ورقة لكل يوم من أيام الشهر بالتفاصيل.
-   التوليد بالكامل من جهة المتصفح عبر مكتبة SheetJS (تُحمّل من CDN مثل Chart.js) */
+   نستخدم مكتبة ExcelJS (بدل SheetJS) لأن كتابة التنسيقات الفعلية (ألوان تعبئة،
+   خط أبيض بالرأس...) مو مدعومة بالنسخة المجانية من SheetJS — بس بالنسخة المدفوعة.
+   ExcelJS تدعمها مجانًا بالكامل. التوليد بالكامل من جهة المتصفح (بدون سيرفر) */
+
+// نفس ألوان الموقع بالضبط (شوف :root بملف styles.css) — عشان ملف الإكسل يطلع
+// بنفس هوية الموقع البصرية دايمًا، بغض النظر عن الوضع الليلي أو أي شي ثاني
+const EXCEL_THEME = {
+    headerFill: "0F2942",  // نفس لون رأس جدول الموقع (--ink)
+    titleColor: "0D9488",  // نفس لون العلامة التجارية (--accent)
+    stripeFill: "F7F9FA",  // نفس لون الصف المتبدّل بالموقع (--surface)
+    borderColor: "C7CED3"
+};
 
 function sanitizeSheetName(name) {
     let s = String(name).replace(/[[\]:*?/\\]/g, " ").replace(/\s+/g, " ").trim();
@@ -12,29 +23,48 @@ function sanitizeFilename(name) {
     return String(name).replace(/[\\/:*?"<>|]/g, "-").trim();
 }
 
-// يبني ورقة من مصفوفة صفوف، مع تنسيق جاهز: العنوان (صف 0) والرأس (صف 1) عريضين،
-// وكل الخلايا متمركزة، والورقة بالاتجاه RTL لتبدو سليمة في إكسل
-function buildExcelSheet(aoa, opts) {
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws["!dir"] = "rtl";
-    if (opts.colWidths) ws["!cols"] = opts.colWidths.map(w => ({ wch: w }));
-    if (opts.mergeCols) ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: opts.mergeCols - 1 } }];
-    if (opts.freezeRows) ws["!freeze"] = { xSplit: 0, ySplit: opts.freezeRows };
+// يبني ورقة بثيم موحّد: عنوان بلون العلامة التجارية (صف 0)، رأس جدول غامق بخط
+// أبيض (صف 1)، صفوف بيانات متبدّلة اللون، حدود رفيعة على كل الخلايا، واتجاه RTL
+function addThemedSheet(workbook, sheetName, aoa, opts) {
+    const ws = workbook.addWorksheet(sanitizeSheetName(sheetName), {
+        views: [{ rightToLeft: true, state: opts.freezeRows ? "frozen" : "normal", ySplit: opts.freezeRows || 0 }]
+    });
 
-    const range = XLSX.utils.decode_range(ws["!ref"]);
-    for (let R = range.s.r; R <= range.e.r; R++) {
-        for (let C = range.s.c; C <= range.e.c; C++) {
-            const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
-            if (!cell) continue;
-            if (R === 0) {
-                cell.s = { font: { bold: true, sz: 13 }, alignment: { horizontal: "center" } };
-            } else if (R === 1) {
-                cell.s = { font: { bold: true }, alignment: { horizontal: "center" } };
-            } else {
-                cell.s = { alignment: { horizontal: "center" } };
-            }
-        }
+    if (opts.colWidths) {
+        ws.columns = opts.colWidths.map(w => ({ width: w }));
     }
+
+    const thinBorder = {
+        top: { style: "thin", color: { argb: "FF" + EXCEL_THEME.borderColor } },
+        bottom: { style: "thin", color: { argb: "FF" + EXCEL_THEME.borderColor } },
+        left: { style: "thin", color: { argb: "FF" + EXCEL_THEME.borderColor } },
+        right: { style: "thin", color: { argb: "FF" + EXCEL_THEME.borderColor } }
+    };
+
+    aoa.forEach((rowValues, rIdx) => {
+        const row = ws.addRow(rowValues);
+        row.eachCell({ includeEmpty: true }, (cell) => {
+            cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+            cell.border = thinBorder;
+
+            if (rIdx === 0) {
+                cell.font = { bold: true, size: 13, color: { argb: "FF" + EXCEL_THEME.titleColor } };
+            } else if (rIdx === 1) {
+                cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+                cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF" + EXCEL_THEME.headerFill } };
+            } else {
+                cell.font = { color: { argb: "FF1A1A1A" } };
+                if ((rIdx - 2) % 2 === 1) {
+                    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF" + EXCEL_THEME.stripeFill } };
+                }
+            }
+        });
+    });
+
+    if (opts.mergeCols) {
+        ws.mergeCells(1, 1, 1, opts.mergeCols);
+    }
+
     return ws;
 }
 
@@ -48,7 +78,7 @@ async function exportExcel() {
     if (!btn) return;
     const originalText = btn.textContent;
 
-    if (typeof XLSX === "undefined") {
+    if (typeof ExcelJS === "undefined") {
         showError(trText("excelLibraryMissing"));
         return;
     }
@@ -74,8 +104,7 @@ async function exportExcel() {
             return;
         }
 
-        const wb = XLSX.utils.book_new();
-        wb.Workbook = { Views: [{ RTL: true }] };
+        const workbook = new ExcelJS.Workbook();
 
         // ---- الورقة الأولى: الإحصائية الشهرية ----
         const catHeaders = REPORT_EDIT_FIELDS.map(excelCategoryLabel);
@@ -91,12 +120,11 @@ async function exportExcel() {
         });
         monthlyAoa.push([trText("excelMonthTotal"), "", "", totals.total, ...REPORT_EDIT_FIELDS.map(k => totals[k])]);
 
-        const monthlyWs = buildExcelSheet(monthlyAoa, {
+        addThemedSheet(workbook, trText("excelMonthlySheet"), monthlyAoa, {
             colWidths: [14, 13, 12, 10, ...catHeaders.map(() => 13)],
             mergeCols: monthlyHeader.length,
             freezeRows: 2
         });
-        XLSX.utils.book_append_sheet(wb, monthlyWs, trText("excelMonthlySheet"));
 
         // ---- ورقة لكل يوم من أيام الشهر بالتفاصيل ----
         const dayHeader = [trText("thTime"), trText("thPatientName"), trText("thCivilId"), trText("thGender"), trText("thCondition"), trText("thBP"), trText("thSugar"), trText("thTemp"), trText("thTreatment"), trText("thRecordedBy"), trText("thShift")];
@@ -122,18 +150,28 @@ async function exportExcel() {
                     aoa.push([p.time, p.patient_name, p.civil_id, valueLabel(p.gender), valueLabel(p.condition), p.blood_pressure, p.sugar, p.temperature, p.treatment, p.emp_id, valueLabel(p.shift)]);
                 });
 
-                const ws = buildExcelSheet(aoa, {
+                addThemedSheet(workbook, name, aoa, {
                     colWidths: [10, 26, 14, 9, 18, 11, 11, 11, 26, 13, 15],
                     mergeCols: dayHeader.length,
                     freezeRows: 2
                 });
-                XLSX.utils.book_append_sheet(wb, ws, sanitizeSheetName(name));
             });
         });
 
         const clinicPart = clinic === "all" ? trText("excelAllClinics") : valueLabel(clinic).replace(/^(عيادة |Clinic )/, "");
         const filename = sanitizeFilename(`${trText("excelMonthlySheet")}_${month}_${clinicPart}.xlsx`);
-        XLSX.writeFile(wb, filename);
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
         showSuccess(trText("excelSuccess"));
     } catch (e) {
         showError(trText("excelFailed"));
