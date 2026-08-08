@@ -368,18 +368,19 @@ select:focus, input:focus, textarea:focus { border-color: var(--accent); box-sha
     /* .monthly-table بالشاشة العادية لها min-width: 900px (عشان التمرير الأفقي)،
        وهالقيد يفضل مطبّق حتى داخل الطباعة لو ما ألغيناه صراحة — يخلي الجدول
        أعرض من ورقة الطباعة فتنقطع/تختفي أعمدة كاملة. نلغيه ونخلي الجدول
-       يتقلّص لعرض الورقة الفعلي مهما كان اتجاهها (طولي/عرضي)، مع خط أصغر
-       وتفاف النص بدل ما يوسّع العمود */
+       يتقلّص لعرض الورقة الفعلي، مع تخطيط تلقائي (auto) للأعمدة بدل الثابت —
+       كل عمود ياخذ العرض اللي يحتاجه فعليًا (عمود "الوقت" صغير، "التعامل" أكبر)
+       بدل ما توزّع الأعمدة بالتساوي وتضغط النص بلا داعي */
     #printArea table, #printArea .monthly-table {
         width: 100% !important;
         min-width: 0 !important;
-        table-layout: fixed;
+        table-layout: auto;
         border-collapse: collapse;
         margin-top: 10px;
     }
     #printArea th, #printArea td {
-        border: 1px solid #999; padding: 3px 2px; text-align: center;
-        font-size: 8px; line-height: 1.25;
+        border: 1px solid #999; padding: 4px 3px; text-align: center;
+        font-size: 9px; line-height: 1.3;
         word-break: break-word; overflow-wrap: break-word;
     }
     #printArea th {
@@ -390,5 +391,10 @@ select:focus, input:focus, textarea:focus { border-color: var(--accent); box-sha
 
     #printArea .btn-secondary, #printArea .cell-actions, #printArea .th-actions, #printArea .row-btn { display: none !important; }
 
-    @page { margin: 12mm; }
+    /* جداولنا فيها عمود كثير (لين 13 عمود بالتقرير الشهري) — عرض ورقة طولي (portrait)
+       على جوال ما يكفيها أبدًا مهما صغّرنا الخط، فتنقطع أعمدة. نجبر الورقة نفسها
+       تطلع بشكل عرضي (landscape) دايمًا وقت الطباعة، بغض النظر عن اتجاه الجهاز
+       فعليًا وقت الطباعة — يعطي ضعف المساحة تقريبًا لعرض كل الأعمدة بوضوح
+       بدون ما يحتاج المستخدم يلف جهازه يدويًا */
+    @page { size: landscape; margin: 10mm; }
 }
