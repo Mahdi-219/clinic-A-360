@@ -1,63 +1,86 @@
-/* ---------- طباعة / حفظ PDF (أي قسم — اسم الملف دايمًا بتاريخ اليوم الفعلي) ---------- */
+/* ---------- حفظ PDF (أي قسم — اسم الملف دايمًا بتاريخ اليوم الفعلي) ---------- */
 
-const ORIGINAL_PAGE_TITLE = document.title;
-
-// نطبع من نفس نافذة التطبيق (بدون window.open) عشان يشتغل صح حتى داخل
-// التطبيق المثبّت كـ PWA (standalone) بالأندرويد والآيفون — فتح نافذة/تبويب
-// منبثق غير مضمون إطلاقًا بوضع standalone، بينما window.print() على نفس
-// النافذة يشتغل بالحالتين. نبني نسخة القسم داخل #printArea (شوف index.html
-// و@media print بملف styles.css) ثم نستدعي window.print() مباشرة.
-let printCleanupTimer = null;
-
-// آبل ما تدعم window.print() إطلاقًا داخل تطبيق مثبّت على الشاشة الرئيسية
-// بالآيفون (standalone) — قيد بنظام iOS نفسه، ولا يوجد كود يتجاوزه. لو حاولنا
-// نستدعيها بهالوضع، الصفحة "تعلّق" على شاشة فاضية بدون طريقة رجوع. نكتشف
-// الحالة هذي مبكرًا ونعرض تعليمة بدل ما نحاول ونفشل.
-function isIOSStandalone() {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = window.navigator.standalone === true ||
-        (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
-    return isIOS && isStandalone;
-}
-
-function printSection(sectionId, dateElId, filenamePrefix) {
+// نولّد ملف PDF حقيقي من جهة المتصفح (html2canvas يصوّر المحتوى، jsPDF يحطه
+// بملف) بدل الاعتماد على معاينة طباعة المتصفح (window.print). هذا يضمن نفس
+// الشكل بالضبط على أي جهاز (آيفون، أندرويد، كمبيوتر) لأننا نتحكم بالتنسيق
+// بالكامل من الكود، مو المتصفح. شوف #printArea.capturing بملف styles.css.
+async function printSection(sectionId, dateElId, filenamePrefix) {
     const section = document.getElementById(sectionId);
-    const printArea = document.getElementById("printArea");
-    if (!section || !printArea) { showError(trText("printFailed")); return; }
+    const captureArea = document.getElementById("printArea");
+    if (!section || !captureArea) { showError(trText("printFailed")); return; }
 
-    if (isIOSStandalone()) {
-        showError(trText("printNeedsSafariIOS", { url: window.location.href }), 25000);
+    if (typeof html2canvas === "undefined" || typeof window.jspdf === "undefined") {
+        showError(trText("pdfLibraryMissing"));
         return;
     }
 
-    // نحدّث نص التاريخ على النسخة الأصلية أولاً، عشان ينسخ وياه فورًا بالخطوة الجاية
     const dateEl = document.getElementById(dateElId);
     if (dateEl) dateEl.textContent = trText("printDatePrefix") + new Date().toLocaleDateString(currentLang() === "en" ? "en-GB" : "ar-EG");
 
-    // نستنسخ القسم ونشيل منه أي أزرار/معرّفات — المحتوى المطبوع بس، بدون تشابك مع باقي الصفحة
+    // نستنسخ القسم ونشيل منه أي أزرار/معرّفات — المحتوى المطلوب بس، بدون تشابك مع باقي الصفحة
     const clone = section.cloneNode(true);
     clone.querySelectorAll(".btn-secondary").forEach(b => b.remove());
     clone.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
 
-    printArea.innerHTML = "";
-    printArea.appendChild(clone);
+    captureArea.innerHTML = "";
+    captureArea.appendChild(clone);
+    captureArea.classList.add("capturing");
 
-    document.title = `${filenamePrefix}_${todayDateStringLocal()}`;
+    const btn = document.querySelector(`[data-print-section="${sectionId}"]`);
+    if (btn) setBusy(btn, true, trText("pdfPreparing"));
 
-    // مهم: ما نفضّي #printArea فورًا بعد استدعاء print(). بالأندرويد (كروم/سامسونج
-    // إنترنت) window.print() غير متزامن — لو نظّفنا المحتوى مباشرة، معاينة الطباعة
-    // تفتح على جدول فاضي. التنظيف الحين يصير بس بعد ما تنتهي الطباعة فعليًا
-    // (afterprint)، ولو المتصفح ما يدعمه نستخدم مهلة احتياطية سخية. تركه بدون
-    // تنظيف بينهم ما يأثر على الشكل العادي للصفحة، لأن #printArea مخفي دايمًا
-    // خارج @media print بغض النظر عن محتواه.
-    clearTimeout(printCleanupTimer);
-    const cleanup = () => {
-        document.title = ORIGINAL_PAGE_TITLE;
-        printArea.innerHTML = "";
-        window.removeEventListener("afterprint", cleanup);
-    };
-    window.addEventListener("afterprint", cleanup);
-    printCleanupTimer = setTimeout(cleanup, 60000);
+    try {
+        // نستنى إطارين عشان المتصفح يخلص يرسم المحتوى فعليًا قبل ما نلتقط الصورة
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-    window.print();
+        const canvas = await html2canvas(captureArea, {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            useCORS: true
+        });
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+        const pageWidthMm = pdf.internal.pageSize.getWidth();
+        const pageHeightMm = pdf.internal.pageSize.getHeight();
+        const marginMm = 8;
+        const usableWidthMm = pageWidthMm - marginMm * 2;
+        const usableHeightMm = pageHeightMm - marginMm * 2;
+
+        const pxPerMm = canvas.width / usableWidthMm;
+        const pageHeightPx = Math.max(1, Math.floor(usableHeightMm * pxPerMm));
+
+        let renderedPx = 0;
+        let pageIndex = 0;
+        while (renderedPx < canvas.height) {
+            const sliceHeightPx = Math.min(pageHeightPx, canvas.height - renderedPx);
+
+            const pageCanvas = document.createElement("canvas");
+            pageCanvas.width = canvas.width;
+            pageCanvas.height = sliceHeightPx;
+            const ctx = pageCanvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+            ctx.drawImage(canvas, 0, renderedPx, canvas.width, sliceHeightPx, 0, 0, canvas.width, sliceHeightPx);
+
+            const imgData = pageCanvas.toDataURL("image/jpeg", 0.92);
+            const sliceHeightMm = sliceHeightPx / pxPerMm;
+
+            if (pageIndex > 0) pdf.addPage();
+            pdf.addImage(imgData, "JPEG", marginMm, marginMm, usableWidthMm, sliceHeightMm);
+
+            renderedPx += sliceHeightPx;
+            pageIndex++;
+        }
+
+        pdf.save(`${filenamePrefix}_${todayDateStringLocal()}.pdf`);
+        showSuccess(trText("pdfSaveSuccess"));
+    } catch (e) {
+        showError(trText("pdfSaveFailed"));
+    } finally {
+        captureArea.classList.remove("capturing");
+        captureArea.innerHTML = "";
+        if (btn) setBusy(btn, false, trText("printSaveBtn"));
+    }
 }
